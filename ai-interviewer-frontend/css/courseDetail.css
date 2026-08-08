@@ -1,0 +1,474 @@
+body {
+    background-color: #f6f8fa;
+}
+
+.atmosphere {
+    height: 180px;
+    opacity: 0.3;
+    -webkit-filter: blur(100px);
+    /* -moz-filter: blur(100px);
+    -o-filter: blur(100px);
+    -ms-filter: blur(100px); */
+    filter: blur(100px);
+    /* filter: progid:DXImageTransform.Microsoft.Blur(PixelRadius='100'); */
+    z-index: -1000;
+}
+
+.atmosphere {
+    width: 100%;
+    height: 500px;
+    position: absolute;
+    top: 0px;
+    /* Removed external course image; use neutral gradient background instead */
+    background-image: radial-gradient(circle at 0 0, #0a84ff, transparent 55%),
+        radial-gradient(circle at 100% 100%, #34c759, transparent 55%),
+        linear-gradient(135deg, #1d1d1f, #3a3a3c);
+    background-size: cover;
+    transition: all .1s;
+}
+
+/* CSS */
+.container {
+    /* width: 1600px; */
+    /* margin: 0 auto; */
+    /* margin-top: 30px; */
+    margin-bottom: 50px;
+    padding: 25px 0;
+    min-width: 1150px;
+    /* height: 300px; */
+    /* min-height: 1000px; */
+    /* min-height: 880px; */
+
+    /* Flex layout: main content divided into left, center and right sections */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+
+    font-size: 16px;
+    color: black;
+}
+
+.price-container {
+    /* padding: 25px 0; */
+    min-width: 1150px;
+    /* height: 100%; */
+    /* min-height: 1000px; */
+    /* min-height: 880px; */
+
+    /* Flex layout: main content divided into left, center and right sections */
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+
+    background-color: #f6f8fa;
+
+    /* border-radius: 10px; */
+
+    font-size: 16px;
+    color: black;
+
+}
+
+
+.basic-info-box {
+    margin-top: 25px;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+}
+
+.course-cover {
+    width: 400px;
+    height: 245px;
+    border-radius: 10px;
+}
+
+.course-desc-wrapper {
+    margin-left: 25px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.course-title {
+    font-size: 26px;
+    font-weight: 600;
+}
+
+.second-title {
+    font-size: 14px;
+    color: #586470;
+}
+
+.course-info-line {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+}
+
+.course-teacher-box {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    margin-top: 12px;
+}
+
+.course-teacher {
+    font-size: 14px;
+    color: #586470;
+
+    margin-left: 4px;
+    align-self: center;
+}
+
+.course-small-icon {
+    width: 20px;
+    height: 20px;
+
+    align-self: center;
+}
+
+.course-tags {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+
+    padding: 6px 0;
+}
+
+.one-tag {
+    color: #119e8f;
+
+    border: 1px solid #119e8f;
+    border-radius: 10px;
+
+    padding: 4px 10px;
+    margin: 5px 8px 5px 0;
+}
+
+.one-tag:hover {
+    cursor: pointer;
+    background-color: #119e8f;
+    color: #ffffff;
+}
+
+.course-infomation {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+}
+
+.info-item {
+    align-self: center;
+
+    /* display: flex;
+    flex-direction: row;
+    justify-content: flex-start; */
+
+    margin-right: 20px;
+}
+
+.show-numbers {
+    font-weight: 500;
+    font-size: 17px;
+    color: #181818;
+
+    align-self: flex-end;
+
+    margin-right: 4px;
+}
+
+.other-words {
+    color: #586470;
+    font-size: 14px;
+
+    align-self: flex-end;
+}
+
+.course-price-wrapper {
+    padding: 20px 0;
+    /* width: 100%; */
+    min-width: 1150px;
+
+    background-color: #ffffff;
+
+    /* align-self: center; */
+
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    border-radius: 16px;
+
+    margin-top: -50px;
+
+
+    /* Shadow effect */
+    box-shadow: 0 2px 3px 0 rgba(7, 17, 27, 0.1);
+}
+
+.price-left-part {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+}
+
+.course-price {
+    align-self: center;
+
+    font-size: 36px;
+    font-weight: 500;
+
+    color: #119e8f;
+
+    margin-left: 20px;
+}
+
+.old-price {
+    align-self: center;
+
+    font-size: 16px;
+    font-weight: 500;
+
+    color: #8a8f93;
+
+    margin-left: 6px;
+    /* margin-top: 12px; */
+    text-decoration: line-through;
+}
+
+.course-price-remark {
+    color: #8a8f93;
+    font-size: 14px;
+    font-weight: 500;
+
+    align-self: center;
+}
+
+.separater {
+    font-size: 14px;
+    color: #c0c5cc;
+    margin: 0 18px;
+    align-self: center;
+}
+
+.price-right-part {
+    /* display: flex;
+    flex-direction: row;
+    justify-content: flex-start; */
+
+    /* font-size: 16px; */
+    align-self: center;
+    margin-right: 20px;
+}
+
+.content-container {
+    padding: 22px 0;
+    min-width: 1150px;
+    /* height: 100%; */
+    /* min-height: 1000px; */
+    /* min-height: 880px; */
+
+    /* Flex layout: main content divided into left, center and right sections */
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+
+    background-color: #f6f8fa;
+
+    border-radius: 16px;
+
+    /* font-size: 16px;
+    color: black; */
+
+    margin-bottom: 50px;
+}
+
+.course-main-content-wrapper {
+    /* padding: 20px 0; */
+    /* width: 100%; */
+    min-width: 1150px;
+
+    /* background-color: #ffffff; */
+
+    /* align-self: center; */
+
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    border-radius: 16px;
+
+    margin-top: 6px;
+
+    /* Shadow effect */
+    box-shadow: 0 2px 3px 0 rgba(7, 17, 27, 0.1);
+}
+
+.course-content-wrapper {
+    height: auto;
+    min-width: 1150px;
+    max-width: 1150px;
+
+    background-color: #ffffff;
+    border-radius: 16px;
+
+    align-self: center;
+
+    padding: 10px 20px;
+
+    /* Shadow effect */
+    box-shadow: 0 2px 3px 0 rgba(7, 17, 27, 0.1);
+}
+
+.course-side-info-wrapper {
+    height: 300px;
+    min-width: 320px;
+
+    background-color: #119e8f;
+}
+
+.el-tabs__nav-wrap::after {
+    background-color: #ffffff;
+}
+
+.el-tabs__item {
+    font-size: 16px;
+}
+
+.el-collapse-item__header {
+    font-size: 16px;
+    color: #474d54;
+}
+
+.course-every-item {
+    font-size: 16px;
+    color: #59626b;
+}
+
+.before-buy-wrapper {
+    margin-top: 100px;
+    margin-bottom: 200px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.before-buy-words {
+    align-self: center;
+    font-size: 18px;
+    font-weight: bold;
+    color: #181818;
+}
+
+.my-qrcode {
+    width: 300px;
+    align-self: center;
+}
+
+.user-comment-wrapper {
+    min-height: 500px;
+
+    padding-bottom: 20px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.one-comment-box {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+
+    padding: 30px 0;
+
+    border-top: #dbe1e8 1px solid;
+    /* border-bottom: #dbe1e8 1px solid; */
+}
+
+.face-wrapper {
+    width: 8%;
+}
+
+.small-face {
+    width: 60px;
+    height: 60px;
+
+    border-radius: 50%;
+    margin-right: 22px;
+
+    align-self: center;
+}
+
+.comment-user {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.comment-username {
+    color: #181818;
+    font-size: 16px;
+    font-weight: 400;
+}
+
+.comment-content-wrapper {
+    /* width: 90%; */
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.comment-content {
+    color: #181818;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.pay-tips-wrapper {
+    font-size: 16px;
+    margin-bottom: 16px;
+}
+
+.price-tips {
+    font-size: 18px;
+    font-weight: 600;
+    color: #119e8f;
+}
+
+.pay-method-box {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.pay-radio-wrapper {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+}
+
+.pay-code {
+    width: 220px;
+    height: 220px;
+}
+
+.wechatpay-logo {
+    width: 140px;
+}
+
+.alipay-logo {
+    width: 90px;
+}
+
+.pay-notice-wrapper {
+    margin-top: 12px;
+    font-size: 12px;
+    color: #8a8f93;
+}

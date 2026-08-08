@@ -1,0 +1,46 @@
+{
+    "pages" : [
+        // The first item in the pages array represents the app launch page, refer to: https://uniapp.dcloud.io/collocation/pages
+		{
+		    "path" : "pages/welcome",
+		    "style" : {
+				"navigationBarTitleText" : "Home",
+		        "app-plus" : {
+		            "titleNView" : false, 	// Disable native navigation bar
+					"bounce" : "none"  		// Turn off bounce property
+		        },
+		        "enablePullDownRefresh" : false // Enable pull-down refresh for single page
+		    }
+		},
+		{
+			"path" : "pages/interviewer",
+			"style" : {
+				"navigationBarTitleText" : "AI Interviewer",
+			    "app-plus" : {
+			        "titleNView" : false, 	// Disable native navigation bar
+					"bounce" : "none"  		// Turn off bounce property
+			    },
+			    "enablePullDownRefresh" : false // Enable pull-down refresh for single page
+			}
+		},
+		{
+		    "path" : "pages/me",
+		    "style" : {
+				"navigationBarTitleText" : "Submission Result",
+		        "app-plus" : {
+		            "titleNView" : false, 	// Disable native navigation bar
+		        	"bounce" : "none"  		// Turn off bounce property
+		        },
+		        "enablePullDownRefresh" : false // Enable pull-down refresh for single page
+		    }
+		}
+    ],
+    "globalStyle" : {
+        "navigationBarTextStyle" : "black",
+        "navigationBarBackgroundColor" : "#F2F2F7",
+        "backgroundColor" : "#F2F2F7",
+		"backgroundColorTop" : "#F2F2F7",
+		"backgroundColorBottom" : "#FFFFFF",
+		"fontSize": "34rpx"
+    }
+}

@@ -1,0 +1,54 @@
+server:
+  port: 8080
+
+spring:
+  datasource: # Data source related configuration
+    type: com.zaxxer.hikari.HikariDataSource # Data source type, can be changed to other data source configurations, such as druid
+    driver-class-name: com.mysql.cj.jdbc.Driver # MySQL/MariaDB database driver class name
+    url: jdbc:mysql://127.0.0.1:6606/interviewer?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: root
+    password: root
+    hikari:
+      pool-name: DataSourceHikariCP # Connection pool name
+      connection-timeout: 30000 # Maximum time (milliseconds) to wait for connection pool to allocate connection, if no available connection after this time, will throw SQLException
+      minimum-idle: 5 # Minimum number of connections
+      maximum-pool-size: 20 # Maximum number of connections
+      auto-commit: true # Auto commit
+      idle-timeout: 600000 # Maximum idle timeout (milliseconds), will be released (retired) if timeout
+      max-lifetime: 18000000 # Maximum lifetime of connection pool (milliseconds), will be released (retired) if timeout
+      connection-test-query: SELECT 1
+  data:
+    redis:
+      host: 127.0.0.1     # Fill in the IP address where Redis service is located (recommended internal network IP)
+      port: 6380
+      database: 0
+      password: interviewer
+
+interviewer-url:
+  frontend:
+    domain: http://127.0.0.1:5500
+
+minio:
+  endpoint: http://127.0.0.1:9010     # MinIO service address
+  fileHost: http://192.168.0.104:9010      # File address host (change this to your own ip)
+  bucketName: interviewer          # Bucket name
+  accessKey: root
+  secretKey: root1234
+
+# Ollama (local): base URL of ollama serve, model name for interview analysis
+ollama:
+  base-url: http://localhost:11434
+  model: llama3.2:3b   # must match "ollama list" (e.g. llama3.2:3b, mistral, qwen2)
+
+# Google Cloud Speech-to-Text：必须配置凭证，否则语音识别会报错
+# 方式1：设置环境变量 GOOGLE_APPLICATION_CREDENTIALS=/绝对路径/xxx.json
+# 方式2：在下面 location 里直接写绝对路径（不要提交到 Git）
+google:
+  cloud:
+    credentials:
+      location: /Users/yide/Downloads/learnwise/ai-interviewer-504209-69aa57deb195.json
+    speech:
+      # GCP 项目 ID，与密钥 JSON 里的 project_id 一致。可用环境变量 GOOGLE_CLOUD_PROJECT，未设置时用下面的默认值
+      project-id: ai-interviewer-504209
+      language-code: en-US   # language, en-US、zh-CN
+

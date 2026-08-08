@@ -1,0 +1,372 @@
+/* iOS Design System - Welcome Page */
+
+.page {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	background-color: #F2F2F7; /* iOS system background color */
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	align-items: center;
+	font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+	padding: 0 48rpx;
+	box-sizing: border-box;
+}
+
+.login-box {
+	display: flex;
+	flex-direction: column;
+	margin-top: 160rpx; /* More top breathing room */
+	padding: 0 24rpx;
+	width: 100%;
+	max-width: 600rpx;
+	box-sizing: border-box;
+	align-items: center;
+	flex: 0 0 auto;
+}
+
+.unlogin-face-box {
+	width: 70rpx;
+	height: 70rpx;
+	align-self: center;
+	border-radius: 20rpx;
+	border: 1rpx solid rgba(0, 0, 0, 0.1);
+	padding: 20rpx; /* 10px equivalent */
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	background-color: #FFFFFF;
+	margin-top: 40rpx; /* 20px equivalent */
+	box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+}
+
+.img-unlogin-face {
+	margin-top: 40rpx; /* 20px equivalent */
+	margin-bottom: 80rpx; /* 40px equivalent - Add space below image */
+	width: 100rpx;
+	height: 100rpx;
+	align-self: center;
+	border-radius: 50%;
+	box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.08);
+}
+
+.img-login-face {
+	width: 120rpx;
+	height: 120rpx;
+	align-self: center;
+	border-radius: 24rpx;
+	border: 0.5px solid rgba(0, 0, 0, 0.1);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.logined-mobile {
+	font-size: 52rpx;
+	font-weight: 600;
+	align-self: center;
+	color: #000000;
+	margin-top: 0;
+	margin-bottom: 64rpx; /* More space below title */
+	letter-spacing: -0.6rpx;
+	text-align: center;
+}
+
+/* Input Group Container */
+.input-group {
+	display: flex;
+	flex-direction: column;
+	margin-bottom: 48rpx; /* More space between input groups */
+	width: 100%;
+	align-self: stretch;
+}
+
+.input-label {
+	font-size: 30rpx; /* 15px equivalent */
+	font-weight: 500; /* iOS medium weight */
+	color: #000000;
+	margin-bottom: 16rpx; /* 8px equivalent */
+	letter-spacing: -0.2rpx;
+}
+
+.input-wrapper {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	background-color: #FFFFFF;
+	border-radius: 24rpx; /* 12px equivalent, iOS standard corner radius */
+	padding: 0 40rpx; /* 20px equivalent */
+	height: 176rpx; /* 88px equivalent, iOS standard touch target */
+	box-shadow: 0 1rpx 0 rgba(0, 0, 0, 0.1);
+	width: 100%;
+}
+
+.input-wrapper-with-button {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	background-color: #FFFFFF;
+	border-radius: 24rpx; /* 12px equivalent */
+	padding: 0 40rpx; /* 20px equivalent */
+	height: 176rpx; /* 88px equivalent */
+	box-shadow: 0 1rpx 0 rgba(0, 0, 0, 0.1);
+	gap: 20rpx; /* Space between input and button */
+	width: 100%;
+}
+
+.txt-prefix-words {
+	font-size: 34rpx; /* 17px equivalent */
+	font-weight: 400;
+	color: #8E8E93; /* iOS secondary text color */
+	letter-spacing: -0.4rpx;
+	margin-right: 16rpx; /* 8px equivalent */
+	min-width: 60rpx; /* Minimum width for +1 */
+}
+
+.mobile-input {
+	flex: 1;
+	color: #000000;
+	font-weight: 400;
+	font-size: 34rpx; /* 17px equivalent */
+	letter-spacing: -0.4rpx;
+	height: 100%;
+	width: 100%;
+	background-color: transparent;
+	border: none;
+	outline: none;
+}
+
+.mobile-verify-code-input {
+	flex: 1;
+	color: #000000;
+	font-weight: 400;
+	font-size: 34rpx; /* 17px equivalent */
+	letter-spacing: -0.4rpx;
+	height: 100%;
+	width: 100%;
+	background-color: transparent;
+	border: none;
+	outline: none;
+	min-width: 0; /* Allow input to shrink if needed */
+}
+
+/* Legacy styles - keeping for compatibility */
+.txt-code-words {
+	width: 240rpx; /* 120px equivalent */
+	font-size: 34rpx; /* 17px equivalent, iOS standard font size */
+	font-weight: 400;
+	align-self: center;
+	color: #000000;
+	letter-spacing: -0.4rpx;
+}
+
+.txt-cn-words {
+	font-size: 34rpx; /* 17px equivalent */
+	font-weight: 400;
+	align-self: center;
+	margin-left: 32rpx; /* 16px equivalent */
+	color: #000000;
+	letter-spacing: -0.4rpx;
+}
+
+.mobile-box {
+	height: 176rpx; /* 88px equivalent, iOS standard touch target */
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
+	background-color: #FFFFFF;
+	border-radius: 24rpx; /* 12px equivalent, iOS standard corner radius */
+	margin-bottom: 2rpx; /* 1px equivalent, separator line */
+	padding: 0 40rpx; /* 20px equivalent */
+	box-shadow: 0 1rpx 0 rgba(0, 0, 0, 0.1);
+}
+
+.mobile-box-left {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	flex: 1;
+}
+
+.mobile-prefix {
+	color: #8E8E93; /* iOS secondary text color */
+	font-weight: 400;
+	font-size: 34rpx; /* 17px equivalent */
+	letter-spacing: -0.4rpx;
+}
+
+.mobile {
+	margin-left: 32rpx; /* 16px equivalent */
+	color: #000000;
+	font-weight: 400;
+	font-size: 34rpx; /* 17px equivalent */
+	flex: 1;
+	align-self: center;
+	letter-spacing: -0.4rpx;
+}
+
+.mobile-verify-code {
+	margin-left: 32rpx; /* 16px equivalent */
+	color: #000000;
+	font-weight: 400;
+	font-size: 34rpx; /* 17px equivalent */
+	flex: 1;
+	align-self: center;
+	letter-spacing: -0.4rpx;
+}
+
+.mobile-placeholder {
+	color: #C7C7CC; /* iOS placeholder color */
+	font-weight: 400;
+	font-size: 34rpx; /* 17px equivalent */
+	letter-spacing: -0.4rpx;
+}
+
+.line {
+	height: 1rpx; /* 0.5px equivalent */
+	background-color: #C6C6C8; /* iOS separator color */
+	margin: 0 40rpx; /* 20px equivalent */
+}
+
+.txt-go-regist {
+	margin-top: 64rpx; /* 32px equivalent */
+	font-size: 30rpx; /* 15px equivalent */
+	font-weight: 400;
+	color: #007AFF; /* iOS system blue */
+	text-align: center;
+	letter-spacing: -0.2rpx;
+}
+
+.login-btn-text {
+	font-size: 34rpx; /* 17px equivalent */
+	color: #FFFFFF;
+	font-weight: 600; /* iOS semibold for buttons */
+	align-self: center;
+	letter-spacing: -0.4rpx;
+}
+
+.code-btn-text {
+	font-size: 30rpx; /* 15px equivalent */
+	color: #007AFF; /* iOS system blue */
+	font-weight: 400;
+	letter-spacing: -0.2rpx;
+	white-space: nowrap; /* Prevent text wrapping */
+}
+
+.btn-login {
+	background-color: #007AFF; /* iOS system blue */
+	box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+}
+
+.btn-login-touched {
+	background-color: #0051D5; /* Darker blue on press */
+	box-shadow: 0 2px 8px rgba(0, 122, 255, 0.25);
+	opacity: 0.9;
+}
+
+.btn-code {
+	background-color: transparent;
+	border: none;
+}
+
+.btn-code-touched {
+	background-color: rgba(0, 122, 255, 0.1); /* Light blue background on press */
+	border-radius: 16rpx; /* 8px equivalent */
+}
+
+.bottom-side-box {
+	margin-top: auto; /* Push to bottom with flexible space above */
+	padding-top: 80rpx;
+	padding-bottom: 80rpx;
+	width: 100%;
+	max-width: 600rpx;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+	align-items: center;
+}
+
+.bottom-side-box .btn-go-login {
+	max-width: 600rpx; /* Match input group width */
+	width: 100%;
+}
+
+.btn-go-login {
+	margin-top: 0;
+	border-width: 0;
+	border-color: transparent;
+	width: 100%;
+	height: 100rpx; /* 50px equivalent, iOS standard button height */
+	border-radius: 24rpx; /* 12px equivalent, iOS standard corner radius */
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+	align-self: center;
+	transition: all 0.2s ease;
+}
+
+.btn-get-code {
+	border-width: 0;
+	border-color: transparent;
+	padding: 16rpx 32rpx; /* 8px 16px equivalent */
+	border-radius: 16rpx; /* 8px equivalent */
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+	transition: all 0.2s ease;
+	min-width: 200rpx; /* 100px equivalent */
+	height: 88rpx; /* 44px equivalent */
+	flex-shrink: 0; /* Prevent button from shrinking */
+}
+
+.txt-bottom-nav {
+	font-size: 30rpx; /* 15px equivalent */
+	font-weight: 400;
+	color: #007AFF;
+	align-self: center;
+	letter-spacing: -0.2rpx;
+}
+
+.change-page-box {
+	margin-top: 80rpx;
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-start;
+	align-self: center;
+}
+
+.country-box {
+	width: 100%;
+	background-color: #FFFFFF;
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
+	border-radius: 24rpx; /* 12px equivalent */
+	padding: 0 40rpx; /* 20px equivalent */
+	height: 176rpx; /* 88px equivalent */
+}
+
+.icon-choose-country {
+	width: 40rpx; /* 20px equivalent */
+	height: 40rpx; /* 20px equivalent */
+	align-self: center;
+	opacity: 0.6;
+}
+
+.question-number-1 {
+	background-color: rgba(0, 122, 255, 0.15);
+	border-radius: 16rpx; /* 8px equivalent */
+	padding: 20rpx 40rpx;
+	color: #007AFF;
+	font-size: 30rpx; /* 15px equivalent */
+	font-weight: 600;
+	position: fixed;
+	bottom: 180rpx;
+	backdrop-filter: blur(20px);
+	-webkit-backdrop-filter: blur(20px);
+}

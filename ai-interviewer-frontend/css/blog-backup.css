@@ -1,0 +1,304 @@
+body {
+    background-color: #f9fbfd;
+    font-size: 16px;
+    color: #2b2c2d;
+}
+
+/* CSS */
+.container {
+    /* width: 1400px; */
+    min-width: 1150px;
+    /* Horizontally centered */
+    /* margin: 0 auto; */
+    /* margin-top: 16px; */
+    /* padding: 26px 0; */
+    /* min-height: 1000px; */
+    min-height: 880px;
+    
+    
+    /* Flex layout: main content divided into left, center and right sections */
+    /* display: flex; */
+    /* flex-direction: row; */
+    /* justify-content: space-between; */
+}
+
+
+.blog-in-one {
+    /* height: 100vh; */
+    min-height: 900px;
+    border-top: #f1f1f1 1px solid;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+}
+
+.aside-container {
+    background-color: #fff;
+    min-width: 260px;
+    /* box-shadow: 0 12px 36px 0 rgba(0, 4, 7, 0.18); */
+
+    padding: 10px 20px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+
+    box-shadow: 0 12px 16px 0 rgba(0, 0, 0, 0.1);
+
+    z-index: 100;
+}
+
+.every-group {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.every-group .category-title {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 30px;
+
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.every-group .sub-titles {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.every-group .article-title {
+    font-size: 14px;
+    font-weight: 400;
+    /* line-height: 26px; */
+
+    margin-left: 16px;
+    padding: 4px 0;
+}
+
+.every-group .article-title:hover {
+    color: #119e81;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.every-group .article-title-selected {
+    color: #119e81;
+    font-weight: bold;
+}
+
+.category-title-hover {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+}
+.category-title-hover:hover {
+    cursor: pointer;
+}
+
+.icon-arrow {
+    width: 12px;
+    height: 12px;
+
+    align-self: center;
+
+    margin-left: 8px;
+}
+
+/******************************* Above: sidebar; below: article content *******************************/
+
+.article-container-wrapper {
+    width: 100%;
+}
+
+.article-container {
+    /* margin-top: 20px; */
+    background-color: #f9fbfd;
+    /* z-index: -100; */
+
+    padding: 20px;
+}
+
+.website-block {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+
+    background-color: #ffffff;
+    border-radius: 10px;
+
+}
+
+.block-box {
+    height: fit-content;
+    background-color: #ffffff;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+
+    border-radius: 10px;
+}
+
+.topic-title {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    height: 50px;
+    /* border-bottom: 1px solid #e8e6e6; */
+
+    color: #262626;
+    font-size: 36px;
+    font-weight: 700;
+
+    /* padding-left: 22px; */
+    padding: 50px 0 30px 22px;
+}
+
+
+.publisher-box {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+
+    font-size: 16px;
+
+    border-bottom: 1px solid #e8e6e6;
+
+    padding: 10px 0 16px 44px;
+}
+
+.zan-box {
+    margin-top: 60px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+
+    align-self: center;
+}
+
+.icon-like {
+    width: 50px;
+    height: 50px;
+    align-self: center;
+    margin-bottom: 20px;
+}
+.icon-like:hover {
+    cursor: pointer;
+}
+
+.zan-tips {
+    align-self: center;
+    font-size: 14px;
+}
+
+.zan-users-list {
+    width: 780px;
+    align-self: center;
+    margin-top: 20px;
+
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+
+    padding-bottom: 50px;
+}
+
+.zan-user-face {
+    width: 36px;
+    height: 36px;
+    margin-right: 10px;
+
+    border-radius: 50%;
+    margin-top: 8px;
+}
+
+.small-user-face {
+    width: 44px;
+    height: 44px;
+    margin-right: 10px;
+
+    border-radius: 50%;
+    align-self: center;
+}
+
+.publisher-info-box {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+
+.publisher {
+    font-weight: 600;
+}
+
+.publish-ext {
+    font-size: 14px;
+}
+
+.publish-date {
+    align-self: center;
+}
+
+.read-counts {
+    align-self: center;
+    margin-left: 10px;
+}
+
+.detail-box {
+    padding: 40px;
+}
+
+.zan-box {
+    margin-top: 60px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+
+    align-self: center;
+}
+
+.zan-tips {
+    align-self: center;
+    font-size: 14px;
+}
+
+.zan-users-list {
+    width: 780px;
+    align-self: center;
+    margin-top: 20px;
+
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+
+    padding-bottom: 50px;
+}
+
+.zan-user-face {
+    width: 36px;
+    height: 36px;
+    margin-right: 10px;
+
+    border-radius: 50%;
+    margin-top: 8px;
+}
+
+/******************************* Custom styles for Cherry editor *******************************/
+.cherry {
+    box-shadow: 0 0 0px rgba(255, 255, 255, 255);
+}
+
+.cherry-previewer {
+    border-left: 0px;
+    background-color: #ffffff;
+}

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1.0, user-scalable=0">
+
+	<!-- Homepage -->
+	<link rel="stylesheet" type="text/css" href="css/app.css" />
+	<link rel="stylesheet" type="text/css" href="css/index.css" />
+	<link rel="stylesheet" type="text/css" href="css/style.css" />
+	<link rel="stylesheet" type="text/css" href="css/index/topHeader.css" />
+	<link rel="stylesheet" type="text/css" href="css/index/searchButton.css" />
+	<link rel="stylesheet" type="text/css" href="css/index/aboutUs.css" />
+	<link rel="stylesheet" type="text/css" href="css/index/motto.css" />
+	<link rel="stylesheet" type="text/css" href="css/index/footer.css" />
+	<link rel="stylesheet" type="text/css" href="css/index/copyRight.css" />
+	<!-- Third Party -->
+	<link rel="stylesheet" type="text/css" href="css/index/carousel.css" />
+    
+    <title>Page Not Found - AI Interviewer</title>
+    <script type="text/javascript">
+    </script>
+    <style type="text/css">
+        body {
+            text-align: center
+        }
+
+        h1 {
+            font-family: "Arial", sans-serif
+        }
+    </style>
+</head>
+
+<body>
+    <div id="errorPage"  v-cloak>
+        <div style="width: 520px; height: 320px; margin: 20px auto; background: linear-gradient(135deg, #007aff 0%, #5856d6 100%); border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 32px rgba(0, 122, 255, 0.3);">
+            <div style="color: white; font-size: 80px;">404</div>
+        </div>
+        <h1>Sorry, this page has been abducted by aliens~</h1>
+        <p style="font-size: 16px;">You will be redirected to <a href="./index.html">home page</a> in {{leftTimes}} seconds</p>
+    </div>
+</body>
+
+<script src="libs/vue.min.js"></script>
+<script src="libs/axios.min.js"></script>
+<script src="libs/jquery-3.4.1.min.js"></script>
+<!-- <script src="libs/jquery-1.7.2.min.js"></script> -->
+<!-- <script src="libs/carousel/jquery.min.js"></script> -->
+<script src="libs/carousel/HappyImage.min.js"></script>
+<script src="libs/moment-with-locales.min.js"></script>
+<script src="js/app.js"></script>
+
+<script type="text/javascript">
+
+	var errorPage = new Vue({
+		el: "#errorPage",
+		data: {
+			leftTimes: 5,
+		},
+		created() {
+			var me = this;
+
+            this.initTimes();
+		},
+		mounted() {
+		},
+		methods: {
+			initTimes() {
+                var me = this;
+                setInterval(function() {
+                    me.doCounts();
+                }, 1000);
+			},
+			doCounts() {
+                var leftTimes = this.leftTimes;
+                leftTimes--;
+                this.leftTimes = leftTimes;
+
+				if(leftTimes == 0){
+					window.location = "./index.html"
+                }
+            }
+		}
+	});
+
+</script>
+
+</html>

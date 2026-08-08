@@ -1,0 +1,28 @@
+server:
+  port: 8099
+
+spring:
+  datasource:                                     # Data source related configuration
+    type: com.zaxxer.hikari.HikariDataSource      # Data source type, can be changed to other data source configurations, such as druid
+    driver-class-name: com.mysql.cj.jdbc.Driver      # MySQL/MariaDB database driver class name
+    url: jdbc:mysql://127.0.0.1:6606/interviewer?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: root
+    password: root
+    hikari:
+      pool-name: DataSourceHikariCP           # Connection pool name
+      connection-timeout: 30000               # Maximum time (milliseconds) to wait for connection pool to allocate connection, if no available connection after this time, will throw SQLException
+      minimum-idle: 5                         # Minimum number of connections
+      maximum-pool-size: 20                   # Maximum number of connections
+      auto-commit: true                       # Auto commit
+      idle-timeout: 600000                    # Maximum idle timeout (milliseconds), will be released (retired) if timeout
+      max-lifetime: 18000000                  # Maximum lifetime of connection pool (milliseconds), will be released (retired) if timeout
+      connection-test-query: SELECT 1
+
+
+ollama:
+  base-url: http://localhost:11434
+  model: llama3.2:3b
+
+interviewer-url:
+  frontend:
+    domain: http://127.0.0.1:6600

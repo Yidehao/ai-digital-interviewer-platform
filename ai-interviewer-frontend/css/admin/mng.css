@@ -1,0 +1,443 @@
+/* Admin console page CSS - Apple Design Style */
+* {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    min-width: 1150px;
+    background-color: #f5f5f7;
+    color: #1d1d1f;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    /* Container styles */
+}
+
+/* Animation effects */
+.v-enter,
+.v-leave-to {
+    opacity: 0;
+    transform: translateX(9.375rem);
+}
+
+.v-enter-active,
+.v-leave-active {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+
+/* .el-header,
+.el-footer {
+    background-color: #B3C0D1;
+    color: #333;
+    text-align: center;
+    line-height: 60px;
+} */
+
+/* .el-aside {
+    background-color: #D3DCE6;
+    color: #333;
+    text-align: center;
+    line-height: 200px;
+} */
+
+/* .el-main {
+    background-color: #E9EEF3;
+    color: #333;
+    text-align: center;
+    line-height: 160px;
+} */
+
+/* body>.el-container {
+    margin-bottom: 40px;
+} */
+
+/* .el-container:nth-child(5) .el-aside,
+.el-container:nth-child(6) .el-aside {
+    line-height: 260px;
+} */
+
+/* .el-container:nth-child(7) .el-aside {
+    line-height: 320px;
+} */
+
+.dashboard-in-one {
+    height: 100vh;
+}
+
+/* 页面左右与浏览器边界的空隙（保持一致） */
+#dashboardPage.container {
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+/* Top header - Apple Style */
+.header-container {
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    height: 70px;
+    border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
+}
+
+.header-box {
+    width: 100%;
+    height: 70px;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 0 24px;
+}
+
+/* .header-box .el-menu {
+    background-color: #f9fbfd;
+    border-bottom: solid 0 #e6e6e6;
+    width: 200px;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+} */
+
+/* .menu-header:hover {
+    color: #119e8f;
+    background-color: #e5f6f4;  
+    font-weight: 400;
+} */
+
+.el-dropdown-link {
+    cursor: pointer;
+    color: #1d1d1f;
+    display: flex;
+    flex-direction: column;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.el-icon-arrow-down {
+    font-size: 12px;
+}
+
+.dropdown-myinfo-box {
+    align-self: center;
+}
+
+.mobile-content {
+    color: #86868b;
+    font-size: 13px;
+}
+
+.myinfo-dropdown-item {
+    font-size: 14px;
+    font-weight: 400;
+    width: 90px;
+}
+
+.el-dropdown-menu__item:not(.is-disabled):hover {
+    background-color: #f5f5f7 !important;
+    color: #007aff !important;
+}
+
+.my-name-wrapper {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.el-icon-caret-bottom {
+    align-self: center;
+}
+
+/* end */
+
+/* Sidebar menu - Apple Style */
+.menu-container {
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-right: 0.5px solid rgba(0, 0, 0, 0.1);
+    box-shadow: none;
+    z-index: 50;
+    min-width: 280px;
+    width: 280px !important;
+    padding-left: 16px;
+    padding-right: 12px;
+    box-sizing: border-box;
+}
+
+.menu-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.menu-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.menu-container::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+}
+
+.menu-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.logo-box {
+    height: 70px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 0 20px;
+    border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
+}
+
+.app-logo {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1d1d1f;
+    letter-spacing: -0.5px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.app-logo-icon {
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, #007aff 0%, #5856d6 100%);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+/* Legacy logo class (kept empty to avoid leaking original brand name) */
+.app-legacy-logo {}
+
+.el-menu-item-group__title {
+    /* color: #917ecd; */
+}
+
+.el-menu {
+    border-right: none;
+    background-color: transparent;
+    padding: 8px 0;
+}
+
+.el-menu-item {
+    color: #1d1d1f;
+    font-weight: 400;
+    font-size: 14px;
+    height: 44px;
+    line-height: 44px;
+    margin: 2px 8px;
+    border-radius: 8px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.el-menu-item.is-active {
+    color: #007aff;
+    background-color: rgba(0, 122, 255, 0.1);
+    font-weight: 500;
+}
+
+.el-menu-item:hover {
+    color: #007aff;
+    background-color: rgba(0, 122, 255, 0.08);
+    font-weight: 400;
+}
+
+.el-submenu__title {
+    color: #1d1d1f;
+    font-size: 14px;
+    height: 44px;
+    line-height: 44px;
+    margin: 2px 8px;
+    border-radius: 8px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+}
+
+.el-submenu__title:hover {
+    color: #007aff;
+    background-color: rgba(0, 122, 255, 0.08);
+    font-weight: 400;
+}
+
+.el-menu-item i {
+    color: #86868b;
+    margin-right: 12px;
+    font-size: 16px;
+}
+
+.el-menu-item.is-active i {
+    color: #007aff;
+}
+
+.el-submenu__title i {
+    color: #86868b;
+    margin-right: 12px;
+    font-size: 16px;
+}
+
+.el-submenu__title:hover i {
+    color: #007aff;
+}
+
+/* end */
+
+/* Main content area - Apple Style */
+.main-container {
+    background-color: #f5f5f7;
+    padding: 24px;
+    overflow-y: auto;
+}
+
+/* Apple-style card */
+.el-card {
+    border-radius: 12px;
+    border: 0.5px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+}
+
+.el-card__header {
+    border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
+    padding: 20px 24px;
+    font-weight: 600;
+    font-size: 17px;
+    color: #1d1d1f;
+}
+
+.el-card__body {
+    padding: 24px;
+}
+
+/* Apple-style buttons */
+.el-button {
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 14px;
+    padding: 10px 20px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.el-button--primary {
+    background-color: #007aff;
+    border-color: #007aff;
+}
+
+.el-button--primary:hover {
+    background-color: #0051d5;
+    border-color: #0051d5;
+}
+
+/* Apple-style tables */
+.el-table {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.el-table th {
+    background-color: #f5f5f7;
+    color: #1d1d1f;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.el-table td {
+    font-size: 14px;
+    color: #1d1d1f;
+}
+
+.el-table--border {
+    border: 0.5px solid rgba(0, 0, 0, 0.1);
+}
+
+.el-table--border th,
+.el-table--border td {
+    border-right: 0.5px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Apple-style inputs */
+.el-input__inner {
+    border-radius: 8px;
+    border: 0.5px solid rgba(0, 0, 0, 0.2);
+    font-size: 14px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.el-input__inner:focus {
+    border-color: #007aff;
+    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+/* Apple-style tags */
+.el-tag {
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border: none;
+}
+
+/* Override Element UI pagination text to English */
+.el-pagination__total {
+    font-weight: 400;
+    color: #606266;
+    font-size: 13px;
+}
+
+/* Override Element UI empty text */
+.el-table__empty-text {
+    color: #909399;
+    font-size: 14px;
+}
+
+/* Override Element UI select dropdown empty text */
+.el-select-dropdown__empty {
+    color: #909399;
+    font-size: 14px;
+}
+
+/* Ensure menu items have enough padding to avoid text overlap with dropdown arrow */
+.el-menu-item,
+.el-submenu__title {
+    padding-left: 20px !important;
+    padding-right: 40px !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Override Element UI date picker Chinese text */
+.el-date-picker__header-label,
+.el-month-table .cell,
+.el-year-table .cell {
+    font-size: 14px;
+}
+
+.el-date-table th {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 8px 0;
+}
+
+.el-picker-panel__link-btn {
+    font-size: 12px;
+}
+
+/* End */

@@ -1,0 +1,118 @@
+/* iOS Design System - Completion Page */
+
+page {
+	display: flex;
+	flex-direction: column;
+	background-color: #F2F2F7; /* iOS system background color */
+	font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.page-content {
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	min-height: 100vh;
+}
+
+.submit-box {
+	position: fixed;
+	top: 300rpx;
+	align-self: center;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	align-items: center;
+}
+
+.icon-submit-emoji {
+	display: block;
+	font-size: 120rpx;
+	color: #34C759;
+	align-self: center;
+	opacity: 0.9;
+}
+
+.done-text {
+	align-self: center;
+	color: #34C759; /* iOS system green */
+	font-weight: 600; /* iOS semibold */
+	font-size: 40rpx; /* 20px equivalent */
+	margin-top: 40rpx;
+	letter-spacing: -0.6rpx;
+	text-align: center;
+	padding: 0 60rpx;
+	line-height: 1.4;
+}
+
+.say-something-block {
+	position: fixed;
+	bottom: 60rpx;
+	margin-top: 80upx;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	align-self: center;
+	margin-bottom: 60upx;
+	width: 100%;
+	padding: 0 60rpx;
+}
+
+.say-something-box {
+	align-self: center;
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	margin-bottom: 16rpx; /* 8px equivalent */
+}
+
+.more-text {
+	color: #8E8E93; /* iOS secondary text color */
+	font-size: 26rpx; /* 13px equivalent, iOS small text size */
+	font-weight: 400;
+	align-self: center;
+	letter-spacing: -0.2rpx;
+	text-align: center;
+	line-height: 1.4;
+}
+
+.smill-box {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	margin-top: 40rpx; /* 20px equivalent */
+}
+
+.smill-emoji {
+	font-size: 80rpx;
+	margin-bottom: 40rpx;
+	opacity: 0.8;
+}
+
+.header-left-part {
+	color: #000000;
+	align-self: center;
+	font-size: 34rpx; /* 17px equivalent */
+	font-weight: 600;
+	letter-spacing: -0.4rpx;
+}
+
+.header-right-part {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+}
+
+.icon-qrcode {
+	width: 44rpx; /* 22px equivalent */
+	height: 44rpx; /* 22px equivalent */
+	align-self: center;
+	margin-right: 40rpx; /* 20px equivalent */
+	opacity: 0.6;
+}
+
+.right-arrow {
+	width: 24rpx; /* 12px equivalent */
+	height: 24rpx; /* 12px equivalent */
+	align-self: center;
+	opacity: 0.4;
+}

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.interviewer.mapper.CandidateMapperCustom">
+
+    <select id="queryCandidateList" parameterType="map" resultType="org.interviewer.entity.vo.CandidateVO">
+        SELECT
+            c.id as candidateId,
+            c.real_name as realName,
+            c.identity_num as identityNum,
+            c.mobile as mobile,
+            c.sex as sex,
+            c.email as email,
+            c.birthday as birthday,
+            c.job_id as jobId,
+            c.created_time as createTime,
+            j.job_name as jobName
+        FROM
+            candidate c
+                LEFT JOIN
+            job j
+            ON
+                c.job_id = j.id
+        WHERE
+            1 = 1
+            <if test="paramMap.realName != null and paramMap.realName != ''">
+                AND c.real_name LIKE concat('%', #{paramMap.realName},'%')
+            </if>
+            <if test="paramMap.mobile != null and paramMap.mobile != ''">
+                AND c.mobile LIKE concat('%', #{paramMap.mobile},'%')
+            </if>
+            ORDER BY
+                c.created_time
+            DESC
+    </select>
+
+</mapper>

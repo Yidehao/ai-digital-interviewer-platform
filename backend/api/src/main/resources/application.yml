@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: interviewer
+  profiles:
+    active: dev
+  servlet:
+    multipart:
+      max-file-size: 10MB         # File upload size limit, maximum value set, cannot exceed, otherwise will error
+      max-request-size: 10MB      # Maximum file request limit, can be used for batch upload
+
+
+logging:
+  level:
+    root: info
+
+
+server:
+  tomcat:
+    uri-encoding: utf-8
+    max-swallow-size: -1 # No limitation to request size
+
+
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: assign_id
+      banner: false
+      update-strategy: not_empty
+  mapper-locations: classpath*:/mapper/*.xml
+
+# Pagination plugin helper configuration
+pagehelper:
+  helper-dialect: MYSQL
+  support-methods-arguments: true

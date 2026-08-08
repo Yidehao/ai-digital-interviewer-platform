@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1.0, user-scalable=0">
+
+
+	<!-- Third Party -->
+	<!-- <link rel="stylesheet" href="../../libs/element-ui/index.css"> -->
+	<!-- <link rel="stylesheet" href="../../libs/element-2.15.13/index.css"> -->
+	<link rel="stylesheet" href="../../css/theme/style/theme/index.css">
+	<!-- <link rel="stylesheet" href="https://unpkg.com/element-ui@2.15.13/lib/theme-chalk/index.css"> -->
+	<!-- <link rel="stylesheet" href="../../libs/cherry-markdown/dist/cherry-markdown.css"> -->
+	<!-- <link rel="stylesheet" href="https://unpkg.com/cherry-markdown@0.8.40/dist/cherry-markdown.min.css"> -->
+
+	<link rel="stylesheet" type="text/css" href="../../css/app.css" />
+	<link rel="stylesheet" type="text/css" href="../../css/style.css" />
+	<link rel="stylesheet" type="text/css" href="../../css/admin/mng.css" />
+
+
+	<style type="text/css">
+	</style>
+
+	<link rel="shortcut icon"
+		href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23007aff'/><text x='50' y='70' font-size='60' font-weight='bold' text-anchor='middle' fill='white'>AI</text></svg>"
+		type="image/svg+xml">
+
+	<title>AI Interviewer · Management Center & Comprehensive Management Platform</title>
+</head>
+
+<body>
+	<div id="dashboardPage" class="container">
+
+		<el-container class="dashboard-in-one">
+			<el-aside width="280px" class="menu-container">
+				<div class="logo-box">
+					<!-- 1781 × 662 -->
+					<a href="#" class="app-logo">
+						<div class="app-logo-icon">AI</div>
+						<span>Interviewer</span>
+					</a>
+				</div>
+
+				<!-- <el-menu
+					class=""
+					@open="handleOpen"
+					@close="handleClose"
+					@select="handleSelect"
+					>
+						<el-submenu index="1">
+							<template slot="title">
+								<i class="el-icon-location"></i>
+								<span>Website Management</span>
+							</template>
+							<el-menu-item index="1-1"><i class="el-icon-document"></i>Option 1</el-menu-item>
+							<el-menu-item index="1-2">Option 2</el-menu-item>
+						</el-submenu>
+						<el-menu-item index="2">
+							<i class="el-icon-menu"></i>
+							<span slot="title">Navigation 2</span>
+						</el-menu-item>
+						<el-submenu index="3">
+							<template slot="title">
+								<i class="el-icon-location"></i>
+								<span>Settings</span>
+							</template>
+							<el-menu-item index="3-1"><i class="el-icon-document"></i>Account Information</i></el-menu-item>
+						</el-submenu>
+				</el-menu> -->
+
+				<!-- :default-active="activeMenu" -->
+				<el-menu @select="handleSelect" :default-active="activeMenu" ref="leeMenu">
+					<div v-for="item in menuList" :key="item.path">
+						<span v-show="item.role == currentRole">
+							<el-menu-item v-if="item.children.length === 0" :index="item.index"
+								@click="saveRoutePath(item.index)">
+								<i :class="item.icon"></i>
+								<span slot="title">{{item.title}}</span>
+							</el-menu-item>
+							<el-submenu v-else :index="item.index">
+								<template slot="title">
+									<i :class="item.icon"></i>
+									<span slot="title">{{item.title}}</span>
+								</template>
+								<el-menu-item-group>
+									<div v-for="item1 in item.children" :key="item1.path">
+										<el-menu-item v-if="item1.children.length === 0" :index="item1.index"
+											@click="saveRoutePath(item1.index)">
+											<i :class="item1.icon"></i>
+											<span slot="title">{{item1.title}}</span>
+										</el-menu-item>
+										<el-submenu v-else :index="item1.index" @click="saveRoutePath(item1.index)">
+											<template slot="title">
+												<i :class="item1.icon"></i>
+												<span v-show="!isCollapse" slot="title">{{item1.title}}</span>
+											</template>
+											<el-menu-item-group>
+												<div v-for="item2 in item1.children" :key="item2.path">
+													<el-menu-item v-if="item2.children.length === 0"
+														:index="item2.index" @click="saveRoutePath(item2.index)">
+														<i :class="item2.icon"></i>
+														<span slot="title">{{item2.title}}</span>
+													</el-menu-item>
+													<el-submenu v-else :index="item2.index"
+														@click="saveRoutePath(item2.index)">
+														<template slot="title">
+															<i :class="item2.icon"></i>
+															<span slot="title">{{item2.title}}</span>
+														</template>
+														<el-menu-item-group>
+															<div v-for="item3 in item2.children" :key="item3.path">
+																<el-menu-item v-if="item3.children.length === 0"
+																	:index="item3.index"
+																	@click="saveRoutePath(item3.index)">
+																	<i :class="item3.icon"></i>
+																	<span slot="title">{{item3.title}}</span>
+																</el-menu-item>
+															</div>
+														</el-menu-item-group>
+													</el-submenu>
+												</div>
+											</el-menu-item-group>
+										</el-submenu>
+									</div>
+								</el-menu-item-group>
+							</el-submenu>
+						</span>
+					</div>
+				</el-menu>
+
+			</el-aside>
+			<el-container>
+				<el-header class="header-container">
+
+					<div class="header-box">
+					</div>
+
+				</el-header>
+				<el-main class="main-container">
+
+					<!-- Router outlet -->
+					<!-- Components matched by routes will be rendered here -->
+					<transition mode="out-in">
+						<router-view @changemenuformrouteview="updateSelectedMenu"></router-view>
+						<!-- <router-view @resetmenu="changeActiveMenu"></router-view> -->
+					</transition>
+
+					<!-- <router-link to="/login">Login</router-link>
+					<router-link to="/register">Register</router-link>
+					<router-link to="/register">External Import</router-link> -->
+
+					<!-- <my-component></my-component> -->
+				</el-main>
+			</el-container>
+		</el-container>
+
+	</div>
+</body>
+
+<script src="../../libs/vue.min.js"></script>
+<script src="../../libs/axios.min.js"></script>
+<script src="../../libs/jquery-3.4.1.min.js"></script>
+<script src="../../libs/js.cookie.min.js"></script>
+<script src="../../js/app.js"></script>
+
+<script src="../../libs/sweetalert.min.js"></script>
+<!-- <script src="../../libs/element-ui/index.js"></script> -->
+<script src="../../libs/element-2.15.13/index.js"></script>
+<!-- <script src="https://unpkg.com/element-ui@2.15.13/lib/index.js"></script> -->
+<script>
+	// Set Element UI locale to English
+	if (typeof ELEMENT !== 'undefined' && ELEMENT.locale && ELEMENT.lang && ELEMENT.lang.en) {
+		ELEMENT.locale(ELEMENT.lang.en);
+	}
+
+	// Override pagination text after Vue is loaded
+	function replacePaginationText() {
+		var totalElements = document.querySelectorAll('.el-pagination__total');
+		totalElements.forEach(function (el) {
+			var text = el.textContent || el.innerText;
+			if (text && (text.includes('共') || text.includes('条') || text.match(/^\d+$/))) {
+				var match = text.match(/(\d+)/);
+				if (match) {
+					el.textContent = 'Total ' + match[1] + ' items';
+				} else if (!text.includes('Total')) {
+					// If it's just a number, add Total and items
+					var numMatch = text.trim();
+					if (/^\d+$/.test(numMatch)) {
+						el.textContent = 'Total ' + numMatch + ' items';
+					}
+				}
+			}
+		});
+	}
+
+	// Replace date picker Chinese text to English
+	function replaceDatePickerText() {
+		// 1) Fix month table first: set whole cell text so 十一月/十二月 show as Nov/Dec (not split 十 一 月)
+		var monthMap = { '一月':'Jan','二月':'Feb','三月':'Mar','四月':'Apr','五月':'May','六月':'Jun','七月':'Jul','八月':'Aug','九月':'Sep','十月':'Oct','十一月':'Nov','十二月':'Dec' };
+		document.querySelectorAll('.el-month-table td').forEach(function (td) {
+			var t = (td.textContent || '').trim();
+			if (monthMap[t]) { td.textContent = monthMap[t]; }
+		});
+
+		// 2) Replace text in leaf nodes (skip removing 年/月/日 from header labels here; done below)
+		var allElements = document.querySelectorAll('.el-picker-panel *, .el-date-picker *, .el-date-table *, .el-month-table *, .el-year-table *');
+		allElements.forEach(function (el) {
+			if (el.children.length > 0) return;
+
+			var text = el.textContent || el.innerText;
+			if (text && text.trim()) {
+				var originalText = text;
+				// Replace month names (full month names)
+				text = text.replace(/一月/g, 'Jan').replace(/二月/g, 'Feb').replace(/三月/g, 'Mar')
+					.replace(/四月/g, 'Apr').replace(/五月/g, 'May').replace(/六月/g, 'Jun')
+					.replace(/七月/g, 'Jul').replace(/八月/g, 'Aug').replace(/九月/g, 'Sep')
+					.replace(/十月/g, 'Oct').replace(/十一月/g, 'Nov').replace(/十二月/g, 'Dec');
+
+				// Replace weekday names (only if it's a single character weekday)
+				if (/^[日一二三四五六]$/.test(text.trim())) {
+					text = text.replace('日', 'Sun').replace('一', 'Mon').replace('二', 'Tue')
+						.replace('三', 'Wed').replace('四', 'Thu').replace('五', 'Fri')
+						.replace('六', 'Sat');
+				}
+
+				// Replace button and label text (do NOT remove 年/月/日 here for header - it breaks year/month navigation)
+				text = text.replace(/今天/g, 'Today').replace(/昨天/g, 'Yesterday')
+					.replace(/明天/g, 'Tomorrow').replace(/确定/g, 'OK').replace(/取消/g, 'Cancel');
+				// Only remove 年/月/日 from elements that are NOT the main header label (header is handled below)
+				if (!el.classList || !el.classList.contains('el-date-picker__header-label')) {
+					text = text.replace(/年/g, '').replace(/月/g, '').replace(/日/g, '');
+				}
+
+				if (text !== originalText) {
+					el.textContent = text;
+				}
+			}
+		});
+
+		// 3) Header labels: show year and month in English form (e.g. "2024 Nov") so year/month switching works
+		var headerLabels = document.querySelectorAll('.el-date-picker__header-label');
+		headerLabels.forEach(function (el) {
+			var raw = (el.textContent || el.innerText).trim();
+			if (!raw) return;
+			// Match patterns like "2024年11月" or "2024 年 11 月" or "十一月"
+			var yearMatch = raw.match(/(\d{4})\s*年?/);
+			var monthMatch = raw.match(/(\d{1,2})\s*月?/);
+			var monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+			if (yearMatch && monthMatch) {
+				var y = yearMatch[1];
+				var m = parseInt(monthMatch[1], 10);
+				if (m >= 1 && m <= 12) {
+					el.textContent = monthNames[m - 1] + ' ' + y;
+					return;
+				}
+			}
+			if (monthMatch && !yearMatch) {
+				var m = parseInt(monthMatch[1], 10);
+				if (m >= 1 && m <= 12) {
+					el.textContent = monthNames[m - 1];
+					return;
+				}
+			}
+			// Fallback: only strip 年/月/日
+			var text = raw.replace(/[年月日]/g, ' ').replace(/\s+/g, ' ').trim();
+			if (text && text !== raw) { el.textContent = text; }
+		});
+	}
+
+	document.addEventListener('DOMContentLoaded', function () {
+		setTimeout(function () {
+			replacePaginationText();
+			replaceDatePickerText();
+			// Watch for new pagination and date picker elements
+			var observer = new MutationObserver(function (mutations) {
+				replacePaginationText();
+				// Check if date picker panel was added
+				var hasDatePicker = document.querySelector('.el-picker-panel, .el-date-picker, .el-date-table');
+				if (hasDatePicker) {
+					setTimeout(replaceDatePickerText, 100);
+				}
+			});
+			observer.observe(document.body, {
+				childList: true,
+				subtree: true
+			});
+
+			// When date picker is opened or user switches month/year, replace text again
+			document.addEventListener('click', function (e) {
+				if (e.target.closest('.el-date-editor, .el-date-picker, .el-picker-panel')) {
+					setTimeout(replaceDatePickerText, 150);
+					setTimeout(replaceDatePickerText, 400);
+				}
+			});
+		}, 1000);
+	});
+</script>
+<style>
+	/* Override Element UI pagination text - will be handled by JavaScript */
+	.el-pagination__total {
+		font-weight: 400;
+		color: #606266;
+		font-size: 13px;
+	}
+</style>
+
+<script src="../../libs/vue-router.js"></script>
+<script src="../../libs/httpVueLoader.js"></script>
+<!-- <script src="../../libs/cherry-markdown/dist/cherry-markdown.min.js"></script> -->
+<!-- <script src="https://unpkg.com/cherry-markdown@0.8.40/dist/cherry-markdown.min.js"></script> -->
+
+<script src="./adminrouter.js"></script>
+
+<script src="../../js/cookieUtils.js"></script>
+<script src="../../js/request.js"></script>
+<script src="../../js/apis/admin/interviewerApi.js"></script>
+<script src="../../js/apis/admin/jobApi.js"></script>
+<script src="../../js/apis/admin/questionLibApi.js"></script>
+<script src="../../js/apis/admin/candidateApi.js"></script>
+<script src="../../js/apis/admin/interviewerRecordApi.js"></script>
+
+<script>
+
+	// var routes = [
+	// 	{ path: '/', component: login },
+	// 	{ path: '/login', component: login },
+	// 	{ path: '/register', component: httpVueLoader('my-component.vue') }
+	// ]
+
+	// const routes = [
+	// 	{ path: '/dashboard', component: dashboard },
+	// 	// { path: '/publishMng', component: publishMng },
+	// 	{ path: '/publishMng/publishContent', component: publishContent },
+	// 	{ path: '/publishMng/contentMng', component: contentMng },
+	// 	// { path: '/settings', component: settings },
+	// 	{ path: '/settings/userInfo', component: userInfo },
+	// ]
+
+	const routes = myrouter.routes;
+
+	var router = new VueRouter({
+		routes // (abbreviation) equivalent to routes: routes
+	})
+
+	var dashboardPage = new Vue({
+		el: "#dashboardPage",
+		components: {
+			// 'my-component': httpVueLoader('my-component.vue')
+		},
+		router: router,
+		data() {
+			return {
+				// currentRole: 1,
+				currentRole: 1,
+				userInfo: {},
+
+				activeMenu: "dashboard",
+
+				isCollapse: true,
+				routerList: [],
+				menuList: [
+					// { title: 'Dashboard', path: '/dashboard', index: 'dashboard', component: dashboard, icon: 'el-icon-data-line', children: [] },
+					// { title: 'Publish Management', path: '/publishMng', index: 'publishMng', component: publishMng, icon: 'el-icon-film', children: [
+					// 		{ title: 'Publish Content', path: '/publishMng/publishContent', index: 'publishContent', component: publishContent, icon: 'el-icon-set-up', children: [] },
+					// 		{ title: 'Content Management', path: '/publishMng/contentMng', index: 'contentMng', component: contentMng, icon: 'el-icon-set-up', children: [] },
+					// 	]
+					// },
+					// { title: 'Settings', path: '/settings', index: 'settings', component: settings, icon: 'el-icon-film', children: [
+					// 		{ title: 'Account Information', path: '/settings/userInfo', index: 'userInfo',component: userInfo,  icon: 'el-icon-set-up', children: []},
+					// 	]
+					// },
+				],
+			}
+		},
+		created() {
+			var me = this;
+			// Check if user is logged in via cookies
+			// app.judgeUserLoginStatus(me);
+
+			// Assign menuList from external router.js
+			// console.log(myrouter.menuList);
+			this.menuList = myrouter.menuList;
+			// Set route list
+			// this.setRouterList(this.menuList);
+
+			// console.log(this.$router)
+			// console.log(this.$route.currentRoute);
+			// console.log(this.$route.params.m);
+
+			// localStorage.setItem("path", "msgCenter");
+			var routePath = sessionStorage.getItem("path");
+			console.log("routePath = " + routePath);
+			if (routePath != null && routePath != "" && routePath != undefined) {
+				this.activeMenu = routePath;
+				// sessionStorage.setItem("path", null);
+			}
+
+			// var userInfo = cookieUtils.getUserInfo();
+			// var userToken = cookieUtils.getToken();
+			// this.userInfo = userInfo;
+			// // console.log(userInfo);
+			// // If no information, exit
+			// if (userInfo == null || userInfo == undefined || userToken == null || userToken == undefined) {
+			// 	window.location = "/index.html";
+			// }
+
+			// // If not admin, exit directly
+			// if (userInfo.role != 1) {
+			// 	cookieUtils.removeToken();
+			// 	cookieUtils.removeUserInfo();
+			// 	window.location = "/index.html";
+			// }
+		},
+		mounted() {
+			// console.log(this.$route.currentRoute);
+			// console.log(this.$route.params.m);
+			console.log("mounted this.activeMenu = " + this.activeMenu);
+
+		},
+		watch: {
+		},
+		methods: {
+			handleDropdown(command) {
+				if (command === "logout") {
+					this.logout();
+				}
+			},
+
+			logout() {
+				// var userInfo = this.userInfo;
+
+				// var bo = {
+				// 	userId: userInfo.id
+				// }
+				// login.logout(bo).then(response => {
+				// 	// console.log(response);
+				// 	cookieUtils.removeToken();
+				// 	cookieUtils.removeUserInfo();
+				// 	window.location = "/index.html";
+				// });
+			},
+
+			updateSelectedMenu(index) {
+				console.log("fatherMethod index = " + index);
+				this.saveRoutePath(index);
+				this.activeMenu = index;
+			},
+
+			// changeActiveMenu(targetIndex) {
+			// 	// console.log("targetIndex = " + targetIndex);
+
+			// 	sessionStorage.setItem("path", targetIndex);
+			// 	this.activeMenu = targetIndex;
+			// 	console.log("this.activeMenu = " + this.activeMenu);
+
+			// 	// this.$refs.leeMenu.activedIndex = targetIndex;
+			// },
+
+			saveRoutePath(index) {
+				sessionStorage.setItem("path", index);
+			},
+
+			// Set route list
+			setRouterList(menuList) {
+				menuList.forEach(item => {
+					if (item.children.length === 0) {
+						this.routerList[item.index] = item.path;
+					} else {
+						this.setRouterList(item.children);
+					}
+				});
+				// console.log(this.routerList);
+			},
+
+			// handleOpen(key, keyPath) {
+			// 	console.log(key, keyPath);
+			// },
+			// handleClose(key, keyPath) {
+			// 	console.log(key, keyPath);
+			// },
+
+			handleSelect(key, keyPath) {
+				// console.log(key, keyPath);
+				// console.log(keyPath);
+
+				var path = "/" + keyPath[0];
+				if (keyPath[1] != null && keyPath[1] != undefined) {
+					path = "/" + keyPath[0] + "/" + keyPath[1];
+				}
+				// console.log(path);
+				this.$router.push({ path: path });
+			},
+
+
+		}
+	});
+
+</script>
+
+</html>

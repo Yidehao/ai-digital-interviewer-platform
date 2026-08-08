@@ -1,0 +1,83 @@
+/* Global styles */
+body {
+    width: 100%;
+    height: 100%;
+    margin:0;
+    font-family: "PingFang SC","Hiragino Sans GB","Microsoft YaHei","Microsoft YaHei UI",Arial,sans-serif;
+    /* The Helvetica configuration below had garbled characters in some environments */
+    /* font-family: "Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Microsoft YaHei UI",Arial,sans-serif; */
+    /* font-family:"PingFang SC,Hiragino Sans GB,Microsoft YaHei,WenQuanYi Micro Hei,Helvetica Neue,Arial,sans-serif"; */
+    /* font-family: "Helvetica Neue,Helvetica,PingFang SC,Hiragino Sans GB,Microsoft YaHei,SimSun,sans-serif"; */
+    font-size: 12px;
+    line-height: 1.5;
+    color: #657181;
+    background-color: #fff;
+    -webkit-font-smoothing: antialiased;
+} 
+
+.category-tag {
+    font-size: 10px;
+    /* color: #7da2b6; */
+    margin-right: 10px;
+    padding: 1px 5px;
+    border: 1px solid;
+    /* border-color: #7da2b6; */
+}
+
+.attention {
+    min-width: 1150px;
+    position: relative;
+    background-color: rgb(237 249 238);
+    text-align: center;
+    border-width: 1px;
+    border-style: solid;
+    border-image: initial;
+    padding: 4px 0px;
+    border-color: rgb(53 197 48);
+    font: 16px / 1.5 tahoma, arial, "Hiragino Sans GB", "SimSun", sans-serif;
+}
+
+.badge {
+    min-width: 10px;
+    height: 10px;
+
+    padding: 4px;
+
+    /* width: 40px; */
+    color: #fff;
+    font-weight: 500;
+    font-size: 8px;
+
+    border-radius: 50px;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-self: center;
+    align-items: center;
+
+    /* Use default box model to avoid conflicts with Bootstrap */
+	box-sizing:content-box
+}
+
+.primary {
+    background-color: #119e8f;
+}
+
+/* Add strikethrough */
+.strike-through {
+    text-decoration: line-through;
+}
+/* Add overline */
+.over-line {
+    text-decoration: overline;
+}
+/* Add underline */
+.under-line {
+    text-decoration: underline;
+}
+
+/* Avoid showing {{}} bindings before Vue loads */
+[v-cloak] {
+    display: none;
+}
