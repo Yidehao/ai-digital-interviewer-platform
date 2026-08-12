@@ -29,8 +29,36 @@
             </if>
     </select>
 
-    <select id="queryRandomQuestion" parameterType="map" resultType="org.interviewer.entity.vo.InitQuestionsVO">
-        SELECT * FROM question_lib WHERE question_lib.is_on=1 LIMIT #{paramMap.indexNum}, 1
+    <!--
+        Random enabled questions for one interviewer, in a single query.
+
+        Replaces a per-question `LIMIT #{indexNum}, 1` lookup whose offsets were computed from a
+        count filtered by interviewer_id while the query itself filtered only on is_on - so it
+        could return another interviewer's questions, and could overrun the offset and return
+        null rows into the list.
+
+        The column list is explicit and omits reference_answer on purpose: this result is sent
+        to the candidate's device.
+    -->
+    <select id="queryRandomQuestions" parameterType="map" resultType="org.interviewer.entity.vo.InitQuestionsVO">
+        SELECT
+            q.id            as id,
+            q.question      as question,
+            q.ai_src        as aiSrc,
+            q.interviewer_id as interviewerId
+        FROM
+            question_lib q
+        WHERE
+            q.is_on = 1
+            AND q.interviewer_id = #{paramMap.interviewerId}
+            <if test="paramMap.excludeIds != null and paramMap.excludeIds.size() > 0">
+                AND q.id NOT IN
+                <foreach item="excludeId" collection="paramMap.excludeIds" open="(" separator="," close=")">
+                    #{excludeId}
+                </foreach>
+            </if>
+        ORDER BY RAND()
+        LIMIT #{paramMap.num}
     </select>
 
 </mapper>

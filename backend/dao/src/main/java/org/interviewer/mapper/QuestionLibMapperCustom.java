@@ -16,6 +16,10 @@ public interface QuestionLibMapperCustom {
 
     public List<QuestionLibVO> queryQuestionLibList(@Param("paramMap") Map<String, Object> map);
 
-    public InitQuestionsVO queryRandomQuestion(@Param("paramMap") Map<String, Object> map);
+    /**
+     * Random enabled questions belonging to one interviewer. Returns no reference answers -
+     * the result travels to the candidate's device.
+     */
+    public List<InitQuestionsVO> queryRandomQuestions(@Param("paramMap") Map<String, Object> map);
 
 }

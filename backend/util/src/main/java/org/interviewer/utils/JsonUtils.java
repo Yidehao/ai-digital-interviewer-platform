@@ -3,64 +3,74 @@ package org.interviewer.utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 /**
- * JSON conversion utility class
+ * JSON conversion utility class.
+ *
+ * Note the failure contract: every method returns null on error rather than throwing. Callers
+ * that must not silently lose data (session persistence, anything that round-trips through
+ * Redis) should use the Spring-managed ObjectMapper instead.
  */
 public class JsonUtils {
 
-    // Define jackson object
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final Logger log = LoggerFactory.getLogger(JsonUtils.class);
+
+    // Registers JavaTimeModule: without it every LocalDate/LocalDateTime field on the entities
+    // and VOs fails to serialise, which surfaces as a mysterious null rather than an error.
+    private static final ObjectMapper MAPPER = new ObjectMapper()
+            .registerModule(new JavaTimeModule())
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
     /**
      * Convert object to JSON string
      * @param data
-     * @return
+     * @return the JSON string, or null if serialisation failed
      */
     public static String objectToJson(Object data) {
     	try {
-			String string = MAPPER.writeValueAsString(data);
-			return string;
+			return MAPPER.writeValueAsString(data);
 		} catch (JsonProcessingException e) {
-			e.printStackTrace();
+			log.error("Failed to serialise {} to JSON", data == null ? "null" : data.getClass().getName(), e);
 		}
     	return null;
     }
-    
+
     /**
      * Convert JSON result set to object
-     * 
+     *
      * @param jsonData JSON data
      * @param beanType Object type in the object
-     * @return
+     * @return the parsed object, or null if parsing failed
      */
     public static <T> T jsonToPojo(String jsonData, Class<T> beanType) {
         try {
-            T t = MAPPER.readValue(jsonData, beanType);
-            return t;
+            return MAPPER.readValue(jsonData, beanType);
         } catch (Exception e) {
-        	e.printStackTrace();
+        	log.error("Failed to parse JSON into {}", beanType.getName(), e);
         }
         return null;
     }
-    
+
     /**
      * Convert JSON data to POJO object list
      * @param jsonData
      * @param beanType
-     * @return
+     * @return the parsed list, or null if parsing failed
      */
     public static <T>List<T> jsonToList(String jsonData, Class<T> beanType) {
     	JavaType javaType = MAPPER.getTypeFactory().constructParametricType(List.class, beanType);
     	try {
-    		List<T> list = MAPPER.readValue(jsonData, javaType);
-    		return list;
+    		return MAPPER.readValue(jsonData, javaType);
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("Failed to parse JSON into List<{}>", beanType.getName(), e);
 		}
-    	
+
     	return null;
     }
 

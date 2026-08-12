@@ -7,6 +7,13 @@ spring:
     multipart:
       max-file-size: 10MB         # File upload size limit, maximum value set, cannot exceed, otherwise will error
       max-request-size: 10MB      # Maximum file request limit, can be used for batch upload
+  flyway:
+    enabled: true
+    # An existing database is recorded as version 1 and V1__baseline.sql is skipped;
+    # only V2 onwards apply. A fresh empty schema gets the full set.
+    baseline-on-migrate: true
+    baseline-version: 1
+    locations: classpath:db/migration
 
 
 logging:

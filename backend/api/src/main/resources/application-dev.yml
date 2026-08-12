@@ -26,7 +26,9 @@ spring:
 
 interviewer-url:
   frontend:
-    domain: http://127.0.0.1:5500
+    # Comma-separated allow-list. allowCredentials(true) forbids "*", so every origin that
+    # needs access must be named: admin panel on 5500, uni-app H5 dev server on 8081.
+    domain: http://127.0.0.1:5500,http://localhost:5500,http://127.0.0.1:8081,http://localhost:8081
 
 minio:
   endpoint: http://127.0.0.1:9010     # MinIO service address
@@ -40,13 +42,17 @@ ollama:
   base-url: http://localhost:11434
   model: llama3.2:3b   # must match "ollama list" (e.g. llama3.2:3b, mistral, qwen2)
 
-# Google Cloud Speech-to-Text：必须配置凭证，否则语音识别会报错
-# 方式1：设置环境变量 GOOGLE_APPLICATION_CREDENTIALS=/绝对路径/xxx.json
-# 方式2：在下面 location 里直接写绝对路径（不要提交到 Git）
+# Google Cloud Speech-to-Text credentials.
+#
+# Set the environment variable - it takes precedence and keeps the key path out of git:
+#     export GOOGLE_APPLICATION_CREDENTIALS=/absolute/path/to/key.json
+#
+# `location` below is the fallback for machines where setting an env var is inconvenient.
+# Leave it empty in committed config; a real path here ends up in the repository.
 google:
   cloud:
     credentials:
-      location: /Users/yide/Downloads/learnwise/ai-interviewer-504209-69aa57deb195.json
+      location: ${GOOGLE_APPLICATION_CREDENTIALS:}
     speech:
       # GCP 项目 ID，与密钥 JSON 里的 project_id 一致。可用环境变量 GOOGLE_CLOUD_PROJECT，未设置时用下面的默认值
       project-id: ai-interviewer-504209

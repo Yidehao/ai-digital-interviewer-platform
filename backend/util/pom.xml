@@ -60,13 +60,18 @@
             <artifactId>pagehelper-spring-boot-starter</artifactId>
         </dependency>
 
+        <!-- test scope only: at compile scope this put Mockito/AssertJ/Hamcrest into the
+             production runtime of every module. JUnit 4 (junit:junit) removed - Boot 3 ships JUnit 5 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
         </dependency>
+
+        <!-- json schema validation, used by the agent tool layer -->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>com.networknt</groupId>
+            <artifactId>json-schema-validator</artifactId>
         </dependency>
 
         <dependency>

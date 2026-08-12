@@ -69,26 +69,14 @@
                 <version>8.5.5</version>
             </dependency>
 
-            <!-- jackson -->
+            <!-- jackson: versions intentionally unmanaged here so the Spring Boot BOM
+                 keeps core/annotations/databind/jsr310 on one consistent version -->
+
+            <!-- json schema validation for the agent tool layer -->
             <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-core</artifactId>
-                <version>2.14.2</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-annotations</artifactId>
-                <version>2.14.2</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-databind</artifactId>
-                <version>2.14.2</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.datatype</groupId>
-                <artifactId>jackson-datatype-jsr310</artifactId>
-                <version>2.18.0</version>
+                <groupId>com.networknt</groupId>
+                <artifactId>json-schema-validator</artifactId>
+                <version>1.5.6</version>
             </dependency>
 
             <!-- apache tool -->

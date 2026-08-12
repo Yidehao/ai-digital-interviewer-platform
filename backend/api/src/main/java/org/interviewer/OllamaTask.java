@@ -8,6 +8,7 @@ import org.interviewer.entity.bo.SubmitAnswerBO;
 import org.interviewer.entity.ollama.OllamaGenerateChunk;
 import org.interviewer.service.InterviewRecordService;
 import org.interviewer.service.JobService;
+import org.interviewer.service.QuestionLibService;
 import org.interviewer.utils.OllamaConfig;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -44,6 +46,9 @@ public class OllamaTask {
     private InterviewRecordService interviewRecordService;
 
     @Resource
+    private QuestionLibService questionLibService;
+
+    @Resource
     private OllamaConfig ollamaConfig;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -57,12 +62,22 @@ public class OllamaTask {
         String prompt = job != null ? job.getPrompt() : "";
 
         List<AnswerBO> answerList = submitAnswerBO.getQuestionAnswerList();
+
+        // Reference answers are no longer sent to the candidate's device, so they cannot be
+        // read back off the submitted payload - resolve them from the question bank instead.
+        List<String> questionIds = answerList.stream()
+                .map(AnswerBO::getId)
+                .filter(Objects::nonNull)
+                .toList();
+        Map<String, String> referenceAnswers = questionLibService.getReferenceAnswers(questionIds);
+
         StringBuilder content = new StringBuilder();
         content.append("[Instruction: For each item below, \"Reference Answer\" is the ideal/standard answer for comparison only. \"Candidate's Answer\" is what the candidate actually said (from speech-to-text). Please evaluate and comment on the candidate's answer, using the reference only as a standard—do not treat the reference as what the candidate said.]\n\n");
 
         for (AnswerBO answer : answerList) {
+            String reference = referenceAnswers.getOrDefault(answer.getId(), "");
             content.append("Question: ").append(answer.getQuestion()).append("\n");
-            content.append("Reference Answer (standard for comparison only): ").append(answer.getReferenceAnswer()).append("\n");
+            content.append("Reference Answer (standard for comparison only): ").append(reference).append("\n");
             content.append("Candidate's Answer (actual, from speech-to-text): ").append(answer.getAnswerContent()).append("\n\n");
         }
 

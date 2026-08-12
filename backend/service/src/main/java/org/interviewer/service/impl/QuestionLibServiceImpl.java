@@ -6,6 +6,7 @@ import org.interviewer.base.BaseInfoProperties;
 import org.interviewer.enums.YesOrNo;
 import org.interviewer.mapper.QuestionLibMapper;
 import org.interviewer.mapper.QuestionLibMapperCustom;
+import org.interviewer.entity.Candidate;
 import org.interviewer.entity.Job;
 import org.interviewer.entity.QuestionLib;
 import org.interviewer.entity.bo.QuestionLibBO;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * QuestionLibServiceImpl
@@ -106,52 +108,62 @@ public class QuestionLibServiceImpl extends BaseInfoProperties implements Questi
     @Override
     public List<InitQuestionsVO> getRandomQuestions(String candidateId, Integer questionNum) {
 
-        // 1. Get interviewer responsible for interviewing the candidate
-        String jobId = candidateService.getDetail(candidateId).getJobId();
-        String interviewerId = jobService.getDetail(jobId).getInterviewerId();
-
-        // 2. Get total number of interview questions based on interviewer
-        Long questionCounts = questionLibMapper.selectCount(
-            new QueryWrapper<QuestionLib>()
-                    .eq("interviewer_id", interviewerId)
-        );
-
-        // 题库为空时直接返回空列表
-        if (questionCounts == null || questionCounts == 0) {
+        Candidate candidate = candidateService.getDetail(candidateId);
+        if (candidate == null || StringUtils.isBlank(candidate.getJobId())) {
             return new ArrayList<>();
         }
 
-        // 3. 若题库题目数少于请求数量，则全部返回；否则随机选取 questionNum 道
-        int actualNum = (int) Math.min(questionNum, questionCounts);
-        List<Long> randomList = new ArrayList<>();
-
-        if (actualNum >= questionCounts) {
-            // 全部题目都要返回：0 到 questionCounts-1，然后打乱顺序
-            for (long i = 0; i < questionCounts; i++) {
-                randomList.add(i);
-            }
-            Collections.shuffle(randomList);
-        } else {
-            // 随机选取 actualNum 个不重复的索引
-            Random random = new Random();
-            Set<Long> indexSet = new HashSet<>();
-            while (indexSet.size() < actualNum) {
-                indexSet.add(random.nextLong(questionCounts));
-            }
-            randomList.addAll(indexSet);
-            Collections.shuffle(randomList);
+        Job job = jobService.getDetail(candidate.getJobId());
+        if (job == null || StringUtils.isBlank(job.getInterviewerId())) {
+            return new ArrayList<>();
         }
 
-        // 4. Get interview questions from database based on index
-        List<InitQuestionsVO> questionList = new ArrayList<>();
-        for (Long l : randomList) {
-            Map<String, Object> map = new HashMap<>();
-            map.put("indexNum", l);
+        return getAvailableQuestions(job.getInterviewerId(), questionNum, null);
+    }
 
-            InitQuestionsVO question = questionLibMapperCustom.queryRandomQuestion(map);
-            questionList.add(question);
+    @Override
+    public List<InitQuestionsVO> getAvailableQuestions(String interviewerId,
+                                                       Integer questionNum,
+                                                       Collection<String> excludeIds) {
+
+        if (StringUtils.isBlank(interviewerId) || questionNum == null || questionNum <= 0) {
+            return new ArrayList<>();
         }
 
-        return questionList;
+        Map<String, Object> map = new HashMap<>();
+        map.put("interviewerId", interviewerId);
+        map.put("num", questionNum);
+        if (excludeIds != null && !excludeIds.isEmpty()) {
+            map.put("excludeIds", excludeIds);
+        }
+
+        // Single query: the database does the randomisation and the limit. Asking for more
+        // questions than the bank holds simply returns the whole bank.
+        List<InitQuestionsVO> questions = questionLibMapperCustom.queryRandomQuestions(map);
+        return questions == null ? new ArrayList<>() : questions;
+    }
+
+    @Override
+    public Map<String, String> getReferenceAnswers(Collection<String> questionIds) {
+
+        if (questionIds == null || questionIds.isEmpty()) {
+            return new HashMap<>();
+        }
+
+        Set<String> ids = questionIds.stream()
+                .filter(StringUtils::isNotBlank)
+                .collect(Collectors.toSet());
+        if (ids.isEmpty()) {
+            return new HashMap<>();
+        }
+
+        List<QuestionLib> rows = questionLibMapper.selectBatchIds(ids);
+        Map<String, String> referenceAnswers = new HashMap<>();
+        for (QuestionLib row : rows) {
+            if (row != null && StringUtils.isNotBlank(row.getReferenceAnswer())) {
+                referenceAnswers.put(row.getId(), row.getReferenceAnswer());
+            }
+        }
+        return referenceAnswers;
     }
 }
