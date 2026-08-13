@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://interviewer.org/tools/run_code.result.json",
+  "title": "run_code result",
+  "description": "The same six fields for every outcome, including failure. A timeout is exitCode 124 with timedOut true, not an error envelope: the candidate's code hanging is data about the candidate, not a system fault, and the model must be able to reason about it as such.",
+  "type": "object",
+  "properties": {
+    "stdout": {
+      "type": "string",
+      "description": "Capped at 4000 characters. See truncated."
+    },
+    "stderr": {
+      "type": "string",
+      "description": "Capped at 4000 characters. See truncated."
+    },
+    "exitCode": {
+      "type": "integer",
+      "description": "124 when the sandbox killed the process on timeout."
+    },
+    "timedOut": {
+      "type": "boolean"
+    },
+    "truncated": {
+      "type": "boolean",
+      "description": "True when stdout or stderr hit the 4000-character cap."
+    },
+    "durationMs": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Wall clock inside the sandbox, excluding container start."
+    }
+  },
+  "required": ["stdout", "stderr", "exitCode", "timedOut", "truncated", "durationMs"],
+  "additionalProperties": false
+}

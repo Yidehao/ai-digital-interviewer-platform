@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://interviewer.org/tools/record_evidence.result.json",
+  "title": "record_evidence result",
+  "description": "A quote that matches no ANSWER turn is rejected with accepted:false, which is how fabricated quotes are caught. Matching is normalised (lowercased, punctuation stripped, whitespace collapsed) and similarity-based, not literal containment: strict containment over-rejects because STT punctuation varies and models near-quote rather than quote.",
+  "type": "object",
+  "properties": {
+    "accepted": {
+      "type": "boolean"
+    },
+    "evidenceId": {
+      "type": ["string", "null"],
+      "description": "Null when rejected. Stable for a repeated (competency, quote) pair, which makes the tool effectively idempotent."
+    },
+    "competency": {
+      "type": "string",
+      "enum": ["correctness", "depth", "communication", "practical_experience"]
+    },
+    "matchedTurnSeq": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Sequence number of the ANSWER turn the quote was matched against. Null when rejected."
+    },
+    "similarity": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Best normalised similarity found against any ANSWER turn. Null when there were no answer turns to compare against."
+    },
+    "reason": {
+      "type": ["string", "null"],
+      "enum": ["quote_not_found", "no_answer_turns", "unknown_question", null],
+      "description": "Why the quote was rejected. Null when accepted is true."
+    }
+  },
+  "required": ["accepted", "evidenceId", "competency", "matchedTurnSeq", "similarity", "reason"],
+  "additionalProperties": false
+}

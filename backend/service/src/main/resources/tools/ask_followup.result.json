@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://interviewer.org/tools/ask_followup.result.json",
+  "title": "ask_followup result",
+  "description": "One shape whether the follow-up was delivered or refused. Follow-ups are capped at 2 per question and 6 per session; hitting a cap is delivered:false with a reason, never an exception.",
+  "type": "object",
+  "properties": {
+    "delivered": {
+      "type": "boolean"
+    },
+    "turnId": {
+      "type": ["string", "null"],
+      "description": "Null when the follow-up was refused."
+    },
+    "text": {
+      "type": "string",
+      "description": "The question as actually put to the candidate. Echoed back so the model sees what it committed to."
+    },
+    "followupCount": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Follow-ups asked about parentQuestionId so far, including this one."
+    },
+    "reason": {
+      "type": ["string", "null"],
+      "enum": ["question_cap", "session_cap", "unknown_parent", null],
+      "description": "Why delivery was refused. Null when delivered is true."
+    }
+  },
+  "required": ["delivered", "turnId", "text", "followupCount", "reason"],
+  "additionalProperties": false
+}

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://interviewer.org/tools/fetch_question.json",
+  "title": "fetch_question",
+  "description": "Fetch the next scripted question from this job's question bank. Use when you are ready to move on to a new topic.",
+  "type": "object",
+  "properties": {
+    "topic": {
+      "type": "string",
+      "maxLength": 64,
+      "description": "Optional topic hint."
+    },
+    "difficulty": {
+      "type": "string",
+      "enum": ["easy", "medium", "hard"]
+    },
+    "excludeServed": {
+      "type": "boolean",
+      "default": true,
+      "description": "Skip questions already asked."
+    }
+  },
+  "required": [],
+  "additionalProperties": false
+}

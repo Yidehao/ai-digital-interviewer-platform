@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://interviewer.org/tools/score_response.result.json",
+  "title": "score_response result",
+  "description": "Idempotent on (questionId, dimension): calling twice overwrites rather than appending. supersededPrevious tells the model it has already scored this pair, which is the signal that stops it re-scoring in a loop.",
+  "type": "object",
+  "properties": {
+    "recorded": {
+      "type": "boolean"
+    },
+    "questionId": {
+      "type": "string"
+    },
+    "dimension": {
+      "type": "string",
+      "enum": ["correctness", "depth", "communication", "practical_experience"]
+    },
+    "score": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "supersededPrevious": {
+      "type": "boolean",
+      "description": "True when a working score already existed for this (questionId, dimension) and was replaced."
+    },
+    "dimensionsScored": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4,
+      "description": "Distinct competencies with at least one working score across the session so far. Coverage hint."
+    }
+  },
+  "required": ["recorded", "questionId", "dimension", "score", "supersededPrevious", "dimensionsScored"],
+  "additionalProperties": false
+}

@@ -1,0 +1,6 @@
+{
+  "competency": "practical_experience",
+  "quote": "we ended up sharding by tenant id because the hot tenant was half the traffic",
+  "judgment": "positive",
+  "questionId": "1859402215739392001"
+}

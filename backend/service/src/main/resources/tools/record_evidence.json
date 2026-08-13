@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://interviewer.org/tools/record_evidence.json",
+  "title": "record_evidence",
+  "description": "Attach a short quote from the candidate's answer to a competency, building an auditable trail. The quote must come from what the candidate actually said.",
+  "type": "object",
+  "properties": {
+    "competency": {
+      "type": "string",
+      "enum": ["correctness", "depth", "communication", "practical_experience"]
+    },
+    "quote": {
+      "type": "string",
+      "maxLength": 500
+    },
+    "judgment": {
+      "type": "string",
+      "enum": ["positive", "negative", "neutral"]
+    },
+    "questionId": {
+      "type": "string"
+    }
+  },
+  "required": ["competency", "quote", "judgment", "questionId"],
+  "additionalProperties": false
+}

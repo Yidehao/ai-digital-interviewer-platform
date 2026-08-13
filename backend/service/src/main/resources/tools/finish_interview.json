@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://interviewer.org/tools/finish_interview.json",
+  "title": "finish_interview",
+  "description": "End the interview. Call this when coverage is sufficient, the bank is exhausted, or the candidate asks to stop. Ending is an explicit action.",
+  "type": "object",
+  "properties": {
+    "reason": {
+      "type": "string",
+      "enum": [
+        "complete",
+        "questions_exhausted",
+        "candidate_request",
+        "time_exhausted",
+        "budget",
+        "error_budget",
+        "degraded"
+      ]
+    },
+    "closingMessage": {
+      "type": "string",
+      "maxLength": 600
+    }
+  },
+  "required": ["reason", "closingMessage"],
+  "additionalProperties": false
+}

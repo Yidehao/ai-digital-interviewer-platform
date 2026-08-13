@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://interviewer.org/tools/finish_interview.result.json",
+  "title": "finish_interview result",
+  "description": "The only terminal tool. Calling it twice returns finished:true with alreadyFinished:true rather than failing, so a duplicate call at the end of a session is harmless.",
+  "type": "object",
+  "properties": {
+    "finished": {
+      "type": "boolean"
+    },
+    "reason": {
+      "type": "string",
+      "enum": [
+        "complete",
+        "questions_exhausted",
+        "candidate_request",
+        "time_exhausted",
+        "budget",
+        "error_budget",
+        "degraded"
+      ],
+      "description": "Echoed back. On a forced finish this is the loop's reason, which may differ from what the model asked for."
+    },
+    "alreadyFinished": {
+      "type": "boolean",
+      "description": "True when the session was already in a terminal state before this call."
+    },
+    "questionsAsked": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "gradingQueued": {
+      "type": "boolean",
+      "description": "Whether the session was handed to the grader. False on a detached MCP call, where nothing is persisted."
+    }
+  },
+  "required": ["finished", "reason", "alreadyFinished", "questionsAsked", "gradingQueued"],
+  "additionalProperties": false
+}
