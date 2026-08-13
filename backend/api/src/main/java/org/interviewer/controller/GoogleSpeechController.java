@@ -21,7 +21,8 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
-import java.io.InputStream;
+import javax.sound.sampled.UnsupportedAudioFileException;
+import java.io.ByteArrayInputStream;
 import java.util.List;
 
 @RestController
@@ -46,8 +47,8 @@ public class GoogleSpeechController {
         log.info("[speech-upload] Received audio: filename={}, size={} bytes, contentType={}",
                 filename, file.getSize(), file.getContentType());
 
-        byte[] pcmBytes = mp3ConvertToPcm(file.getInputStream());
-        log.info("[speech-upload] MP3->PCM done: pcmLength={} bytes (approx {} seconds @16kHz)",
+        byte[] pcmBytes = convertToPcm(file.getBytes());
+        log.info("[speech-upload] decoded to PCM: pcmLength={} bytes (~{} seconds @16kHz mono)",
                 pcmBytes.length, pcmBytes.length / 32000);
 
         String result = recognizePcm(pcmBytes);
@@ -56,32 +57,78 @@ public class GoogleSpeechController {
         return GraceJSONResult.ok(result);
     }
 
+    /** What Google STT is told it is receiving: 16 kHz, 16-bit, mono, signed, little-endian. */
+    private static final AudioFormat STT_FORMAT = new AudioFormat(
+            AudioFormat.Encoding.PCM_SIGNED, 16000f, 16, 1, 2, 16000f, false);
+
     /**
-     * Convert MP3 to PCM (16kHz, 16bit, mono, same as original Baidu logic).
+     * Decode an uploaded clip to the exact PCM format {@link #recognizePcm} declares.
+     *
+     * Handles two input families:
+     *   - containers the JDK reads natively (WAV, AIFF, AU) - what a browser produces via
+     *     Web Audio, and what the eval harness sends
+     *   - MP3, via the mp3spi SPI - what the uni-app recorder produces
+     *
+     * Previously this ran MP3 decoding unconditionally, so any non-MP3 upload threw. It also
+     * built its target format from the *source* sample rate and channel count while
+     * recognizePcm hardcoded 16 kHz mono - meaning a 44.1 kHz stereo clip was decoded
+     * faithfully and then described to Google as something it was not, which produces
+     * confident nonsense rather than an error. Both are fixed by converting to one canonical
+     * format here and deriving the recogniser config from that same constant.
      */
-    public static byte[] mp3ConvertToPcm(InputStream inputStream) throws Exception {
-        AudioInputStream audioInputStream = getPcmAudioInputStream(inputStream);
-        return IOUtils.toByteArray(audioInputStream);
+    public static byte[] convertToPcm(byte[] audioBytes) throws Exception {
+        try (AudioInputStream decoded = openAnyFormat(audioBytes);
+             AudioInputStream pcm = toSttFormat(decoded)) {
+            return IOUtils.toByteArray(pcm);
+        }
     }
 
-    private static AudioInputStream getPcmAudioInputStream(InputStream inputStream) {
+    /** Open the clip with whichever reader understands it. */
+    private static AudioInputStream openAnyFormat(byte[] bytes) throws Exception {
+        // The JDK's own readers cover WAV/AIFF/AU and, because mp3spi registers an SPI, often
+        // MP3 as well. Try them first so the common case needs no special handling.
         try {
-            MpegAudioFileReader mp = new MpegAudioFileReader();
-            AudioInputStream in = mp.getAudioInputStream(inputStream);
-            AudioFormat baseFormat = in.getFormat();
-            AudioFormat targetFormat = new AudioFormat(
-                    AudioFormat.Encoding.PCM_SIGNED,
-                    baseFormat.getSampleRate(),
-                    16,
-                    baseFormat.getChannels(),
-                    baseFormat.getChannels() * 2,
-                    baseFormat.getSampleRate(),
-                    false
-            );
-            return AudioSystem.getAudioInputStream(targetFormat, in);
-        } catch (Exception e) {
-            throw new RuntimeException("MP3 to PCM conversion failed", e);
+            return AudioSystem.getAudioInputStream(new ByteArrayInputStream(bytes));
+        } catch (UnsupportedAudioFileException ignored) {
+            // fall through to an explicit MP3 attempt
         }
+        try {
+            return new MpegAudioFileReader().getAudioInputStream(new ByteArrayInputStream(bytes));
+        } catch (UnsupportedAudioFileException e) {
+            throw new UnsupportedAudioFileException(
+                    "Unsupported audio format. Supported: WAV/AIFF/AU (PCM) and MP3. " +
+                    "Note that WebM/Opus and MP4/AAC - what MediaRecorder produces by default - " +
+                    "cannot be decoded by the JVM; record 16 kHz mono WAV via Web Audio instead.");
+        }
+    }
+
+    /** Convert to 16 kHz mono 16-bit PCM, in two steps so each conversion is one the JDK offers. */
+    private static AudioInputStream toSttFormat(AudioInputStream in) {
+        AudioFormat source = in.getFormat();
+        if (source.matches(STT_FORMAT)) {
+            return in;
+        }
+
+        // Step 1: get to signed 16-bit PCM, keeping the source rate and channel count. Encoding
+        // conversion (e.g. MP3 frames, or unsigned 8-bit) is separate from resampling, and the
+        // JDK will not always do both at once.
+        AudioFormat intermediate = new AudioFormat(
+                AudioFormat.Encoding.PCM_SIGNED,
+                source.getSampleRate(),
+                16,
+                source.getChannels(),
+                source.getChannels() * 2,
+                source.getSampleRate(),
+                false);
+        AudioInputStream pcm = source.getEncoding() == AudioFormat.Encoding.PCM_SIGNED
+                && source.getSampleSizeInBits() == 16 && !source.isBigEndian()
+                ? in
+                : AudioSystem.getAudioInputStream(intermediate, in);
+
+        // Step 2: downmix and resample to exactly what the recogniser is told to expect.
+        return pcm.getFormat().matches(STT_FORMAT)
+                ? pcm
+                : AudioSystem.getAudioInputStream(STT_FORMAT, pcm);
     }
 
     /**
@@ -92,7 +139,7 @@ public class GoogleSpeechController {
         SpeechClient speechClient = speechClientProvider.get();
         RecognitionConfig config = RecognitionConfig.newBuilder()
                 .setEncoding(RecognitionConfig.AudioEncoding.LINEAR16)
-                .setSampleRateHertz(16000)
+                .setSampleRateHertz((int) STT_FORMAT.getSampleRate())
                 .setLanguageCode(googleSpeechConfig.getSpeech().getLanguageCode())
                 .build();
 
