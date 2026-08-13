@@ -27,6 +27,11 @@ logs/
 # identifying details are stripped.
 eval/audio/
 
+# Local working notes and course material — stays on this machine.
+# Nothing here is tracked, so ignoring the directory is enough; if a file from
+# docs/ ever needs committing, `git add -f docs/<file>` overrides this.
+docs/
+
 .idea/
 .vscode/
 .DS_Store
