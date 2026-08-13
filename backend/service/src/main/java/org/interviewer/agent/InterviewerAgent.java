@@ -127,6 +127,13 @@ public class InterviewerAgent {
             }
 
             session.setTurnCount(session.getTurnCount() + 1);
+            if (response.getPromptEvalCount() != null) {
+                session.setPromptTokens(session.getPromptTokens() + response.getPromptEvalCount());
+            }
+            if (response.getEvalCount() != null) {
+                session.setCompletionTokens(
+                        session.getCompletionTokens() + response.getEvalCount());
+            }
 
             if (!response.hasToolCalls()) {
                 if (handleNoToolCall(session, events, response)) {
@@ -181,7 +188,7 @@ public class InterviewerAgent {
 
         // Deterministic branch: move the interview forward without the model if there is anything
         // left to ask, otherwise close cleanly.
-        if (serveNextQuestionOurselves(session)) {
+        if (serveNextQuestionOurselves(session, events)) {
             return false;
         }
         close(session, events, FallbackReason.NO_TOOL_CALL_REPEATED);
@@ -194,14 +201,14 @@ public class InterviewerAgent {
      *
      * @return true when a question was served
      */
-    private boolean serveNextQuestionOurselves(InterviewSession session) {
+    private boolean serveNextQuestionOurselves(InterviewSession session, AgentEvents events) {
         String name = ToolName.FETCH_QUESTION.wireName();
         if (gateway.describe(name).isEmpty()) {
             return false;
         }
         try {
             ToolOutcome outcome = gateway.invoke(name, objectMapper.createObjectNode(),
-                    contextFor(session));
+                    contextFor(session, events));
             JsonNode exhausted = outcome.result().get("exhausted");
             if (exhausted != null && exhausted.asBoolean()) {
                 return false;
@@ -242,6 +249,7 @@ public class InterviewerAgent {
         // Rung 2 - schema-invalid arguments, one repair.
         List<String> argErrors = schemas.validateArgs(tool, args);
         if (!argErrors.isEmpty()) {
+            logTool(session, name, args, "SCHEMA_REJECTED", FallbackReason.INVALID_ARGS, 0L);
             recordError(session, events, FallbackReason.INVALID_ARGS,
                     name + ": " + String.join("; ", argErrors));
             if (session.getRepairCount() < agentProperties.getMaxRepairs()) {
@@ -253,7 +261,7 @@ public class InterviewerAgent {
             // errors will not fix them on the third attempt either - it re-emits the same value.
             // Demote to rung 1's deterministic branch rather than repairing again.
             session.setRepairCount(0);
-            if (serveNextQuestionOurselves(session)) {
+            if (serveNextQuestionOurselves(session, events)) {
                 return false;
             }
             close(session, events, FallbackReason.INVALID_ARGS);
@@ -275,9 +283,13 @@ public class InterviewerAgent {
         ToolOutcome outcome;
         long started = System.nanoTime();
         try {
-            outcome = dispatchWithTimeout(session, name, args, descriptor.get().timeoutMs());
+            outcome = dispatchWithTimeout(session, events, name, args, descriptor.get().timeoutMs());
         } catch (ToolExecutionException e) {
-            events.onToolEnd(name, (System.nanoTime() - started) / 1_000_000L, false);
+            long ms = (System.nanoTime() - started) / 1_000_000L;
+            events.onToolEnd(name, ms, false);
+            logTool(session, name, args,
+                    "timeout".equals(e.code()) ? "TIMEOUT" : "ERROR",
+                    FallbackReason.TOOL_ERROR, ms);
             recordError(session, events, FallbackReason.TOOL_ERROR, e.code() + ": " + e.getMessage());
             session.getMessages().add(fallback.toolError(name, e.code(), e.getMessage()));
             return false;
@@ -285,6 +297,7 @@ public class InterviewerAgent {
         events.onToolEnd(name, outcome.durationMs(), true);
         session.setToolCallCount(session.getToolCallCount() + 1);
         session.setRepairCount(0);
+        logTool(session, name, args, "OK", null, outcome.durationMs());
 
         // Rung 5 - our own result failed our own schema. Our bug.
         List<String> resultErrors = schemas.validateResult(tool, outcome.result());
@@ -311,10 +324,11 @@ public class InterviewerAgent {
     }
 
     private ToolOutcome dispatchWithTimeout(InterviewSession session,
+                                            AgentEvents events,
                                             String name,
                                             JsonNode args,
                                             long timeoutMs) {
-        ToolContext ctx = contextFor(session);
+        ToolContext ctx = contextFor(session, events);
         Future<ToolOutcome> future = toolExecutor.submit(() -> gateway.invoke(name, args, ctx));
         try {
             return future.get(timeoutMs, TimeUnit.MILLISECONDS);
@@ -349,7 +363,7 @@ public class InterviewerAgent {
         session.recordFallback(FallbackReason.MODEL_UNREACHABLE);
         events.onFallback(FallbackReason.MODEL_UNREACHABLE, "serving remaining questions unaided");
 
-        while (serveNextQuestionOurselves(session)) {
+        while (serveNextQuestionOurselves(session, events)) {
             if (session.getToolCallCount() >= agentProperties.getMaxToolCalls()) {
                 break;
             }
@@ -422,6 +436,16 @@ public class InterviewerAgent {
         return specs;
     }
 
+    private void logTool(InterviewSession session,
+                         String name,
+                         JsonNode args,
+                         String outcome,
+                         FallbackReason reason,
+                         long durationMs) {
+        session.getToolLog().add(new InterviewSession.ToolRecord(
+                name, canonical(args), outcome, reason == null ? null : reason.name(), durationMs));
+    }
+
     private void recordError(InterviewSession session,
                              AgentEvents events,
                              FallbackReason reason,
@@ -431,8 +455,8 @@ public class InterviewerAgent {
         events.onFallback(reason, truncate(detail));
     }
 
-    private ToolContext contextFor(InterviewSession session) {
-        return new SessionToolContext(session);
+    private ToolContext contextFor(InterviewSession session, AgentEvents events) {
+        return new SessionToolContext(session, events);
     }
 
     private String hashOf(String name, JsonNode args) {
@@ -466,10 +490,21 @@ public class InterviewerAgent {
     }
 
     /** The session, exposed to tools through the narrow contract they are allowed to see. */
-    private record SessionToolContext(InterviewSession session) implements ToolContext {
+    private record SessionToolContext(InterviewSession session, AgentEvents events)
+            implements ToolContext {
         @Override
         public String sessionId() {
             return session.getSessionId();
+        }
+
+        @Override
+        public InterviewSession session() {
+            return session;
+        }
+
+        @Override
+        public AgentEvents events() {
+            return events;
         }
 
         @Override

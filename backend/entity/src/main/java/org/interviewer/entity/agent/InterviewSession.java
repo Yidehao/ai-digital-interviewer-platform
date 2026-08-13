@@ -113,6 +113,33 @@ public class InterviewSession {
     /** Rung tallies, for {@code interview_fallback_total{reason}}. */
     private Map<FallbackReason, Integer> fallbackCounts = new LinkedHashMap<>();
 
+    /**
+     * Every tool call, in order. This is what the "adaptive" claim is checked against: two
+     * candidates who answer differently should produce different sequences here.
+     */
+    private List<ToolRecord> toolLog = new ArrayList<>();
+
+    /**
+     * Summed {@code prompt_eval_count}. Prompt evaluation dominates first-token latency, so this
+     * growing faster than the interview does is the signal that the sliding window is not working.
+     */
+    private int promptTokens;
+
+    private int completionTokens;
+
+    /**
+     * One tool call as it happened.
+     *
+     * @param outcome        OK, SCHEMA_REJECTED, ERROR or TIMEOUT
+     * @param fallbackReason which ladder rung fired, when one did
+     */
+    public record ToolRecord(String toolName,
+                             String argsJson,
+                             String outcome,
+                             String fallbackReason,
+                             long durationMs) {
+    }
+
     // ------------------------------------------------------------------ behaviour
 
     public int nextSeq() {

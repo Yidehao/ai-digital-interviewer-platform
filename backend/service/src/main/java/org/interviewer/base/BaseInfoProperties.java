@@ -45,6 +45,15 @@ public class BaseInfoProperties {
 
     public static final String WEBSITE_ANNOUNCEMENT = "website_announcement";
 
+    // ---------------------------------------------------------------- agent loop
+    // Same KEY + ":" + id convention as everything above. The session TTL matches
+    // REDIS_USER_TOKEN's three hours: a session cannot outlive the login that started it.
+
+    public static final String REDIS_INTERVIEW_SESSION = "redis_interview_session";
+    public static final String REDIS_INTERVIEW_CANDIDATE = "redis_interview_candidate";
+    public static final String REDIS_INTERVIEW_TURN_LOCK = "redis_interview_turn_lock";
+    public static final Integer INTERVIEW_SESSION_TTL_SECONDS = 3 * 60 * 60;
+
     public static final String REDIS_BLOG_BOOK_LIST = "blog_book_list";
     public static final String REDIS_BLOG_ARTICLE_LIST = "blog_article_list";
 
