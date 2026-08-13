@@ -53,6 +53,19 @@ public class ToolSchemas {
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * A compiled instance without a Spring context.
+     *
+     * <p>Not a test convenience: the offline eval harness runs the loop headless, and requiring a
+     * container to load twelve classpath resources would be the first thing forcing the eval path
+     * to differ from production.
+     */
+    public static ToolSchemas compiled(ObjectMapper objectMapper) {
+        ToolSchemas schemas = new ToolSchemas(objectMapper);
+        schemas.compile();
+        return schemas;
+    }
+
     @PostConstruct
     void compile() {
         JsonSchemaFactory factory =
