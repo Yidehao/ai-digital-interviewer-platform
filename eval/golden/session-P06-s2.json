@@ -1,0 +1,97 @@
+{
+  "synthetic": true,
+  "sessionId": "P06-s2",
+  "participant": "P06",
+  "jobName": "SDE",
+  "mode": "scripted",
+  "totalSeconds": 705,
+  "transcript": [
+    {
+      "seq": 0,
+      "kind": "QUESTION",
+      "questionId": "q-testing",
+      "text": "How do you decide what to test, when there is never time to test everything?"
+    },
+    {
+      "seq": 1,
+      "kind": "ANSWER",
+      "questionId": "q-testing",
+      "text": "I'd prioritise the critical paths, the things users actually do most. Unit tests for the business logic and integration tests for the main flows. Try to cover edge cases where things could break. like, probably not worth testing simple getters and setters.",
+      "sttConfidence": 0.837
+    },
+    {
+      "seq": 2,
+      "kind": "QUESTION",
+      "questionId": "q-concurrency",
+      "text": "Two requests arrive at the same time and both try to update the same record. What can go wrong, and what would you do about it?"
+    },
+    {
+      "seq": 3,
+      "kind": "ANSWER",
+      "questionId": "q-concurrency",
+      "text": "There would be a race condition. like, i'd use a lock so only one request can update at a time, or put them in a queue so they get processed one after another.",
+      "sttConfidence": 0.89
+    },
+    {
+      "seq": 4,
+      "kind": "QUESTION",
+      "questionId": "q-explain-technical",
+      "text": "Explain something technical you have worked on to someone who is smart but not an engineer."
+    },
+    {
+      "seq": 5,
+      "kind": "ANSWER",
+      "questionId": "q-explain-technical",
+      "text": "I'd use an analogy. Like if I was explaining an API I'd say it's like a waiter in a restaurant, you tell them what you want and they go to the kitchen and bring it back, you don't need to know how the kitchen works. like, try to avoid technical terms and check if they're following.",
+      "sttConfidence": 0.931
+    },
+    {
+      "seq": 6,
+      "kind": "QUESTION",
+      "questionId": "q-tradeoff",
+      "text": "Tell me about a technical decision you made where you were choosing between two reasonable options."
+    },
+    {
+      "seq": 7,
+      "kind": "ANSWER",
+      "questionId": "q-tradeoff",
+      "text": "We were deciding between MongoDB and Postgres for a project. Mongo was more flexible with the schema which seemed good early on since requirements kept changing, but Postgres had better support for the relational queries we needed. We went with Postgres and it worked out well.",
+      "sttConfidence": 0.834
+    },
+    {
+      "seq": 8,
+      "kind": "QUESTION",
+      "questionId": "q-debug-hard-bug",
+      "text": "Tell me about the hardest bug you have had to track down. What made it hard?"
+    },
+    {
+      "seq": 9,
+      "kind": "ANSWER",
+      "questionId": "q-debug-hard-bug",
+      "text": "I had a bug once that was really hard because the error message wasn't helpful. I used the debugger and stepped through the code until I found where it was going wrong, and then fixed it.",
+      "sttConfidence": 0.961
+    }
+  ],
+  "_generatorTiers": [
+    [
+      "practical_experience",
+      "mixed"
+    ],
+    [
+      "correctness",
+      "weak"
+    ],
+    [
+      "communication",
+      "mixed"
+    ],
+    [
+      "depth",
+      "mixed"
+    ],
+    [
+      "correctness",
+      "weak"
+    ]
+  ]
+}

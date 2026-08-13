@@ -1,0 +1,97 @@
+{
+  "synthetic": true,
+  "sessionId": "P05-s2",
+  "participant": "P05",
+  "jobName": "SDE",
+  "mode": "scripted",
+  "totalSeconds": 957,
+  "transcript": [
+    {
+      "seq": 0,
+      "kind": "QUESTION",
+      "questionId": "q-testing",
+      "text": "How do you decide what to test, when there is never time to test everything?"
+    },
+    {
+      "seq": 1,
+      "kind": "ANSWER",
+      "questionId": "q-testing",
+      "text": "I think about what breaks quietly. A crash you find immediately; something that silently computes the wrong number for three weeks is the expensive one, so that gets tested. Also what changes a lot \u2014 code nobody touches doesn't need much. I'm sceptical of coverage as a target, you can hit ninety percent and test nothing that matters. There was a payments thing where I didn't write tests for the UI layer at all because it was changing weekly, and put everything into the calculation logic. That was the right call, the UI got rewritten twice.",
+      "sttConfidence": 0.957
+    },
+    {
+      "seq": 2,
+      "kind": "QUESTION",
+      "questionId": "q-concurrency",
+      "text": "Two requests arrive at the same time and both try to update the same record. What can go wrong, and what would you do about it?"
+    },
+    {
+      "seq": 3,
+      "kind": "ANSWER",
+      "questionId": "q-concurrency",
+      "text": "Classic lost update \u2014 both read the same value, both write, one silently wins. What I'd do depends on how bad losing one actually is. If it's a counter, an atomic increment or a conditional update in the database is enough. If it's something where the second person needs to know they were working from stale data, optimistic locking with a version column, so the second write fails and you can tell them. Pessimistic locks I'd avoid unless contention is genuinely high, they cost you more than people expect.",
+      "sttConfidence": 0.831
+    },
+    {
+      "seq": 4,
+      "kind": "QUESTION",
+      "questionId": "q-explain-technical",
+      "text": "Explain something technical you have worked on to someone who is smart but not an engineer."
+    },
+    {
+      "seq": 5,
+      "kind": "ANSWER",
+      "questionId": "q-explain-technical",
+      "text": "I'd probably explain the caching layer we built. you know, the way I put it to our PM was, imagine every time someone asks you a question you walk to a filing cabinet in another building. The cache is a notepad on your desk with the twenty things people ask about most. It's much faster, but the risk is the filing cabinet changes and your notepad is out of date \u2014 so the real question is how long you're willing to be wrong. She got it immediately and then asked how long we'd chosen, which was exactly the right question.",
+      "sttConfidence": 0.935
+    },
+    {
+      "seq": 6,
+      "kind": "QUESTION",
+      "questionId": "q-tradeoff",
+      "text": "Tell me about a technical decision you made where you were choosing between two reasonable options."
+    },
+    {
+      "seq": 7,
+      "kind": "ANSWER",
+      "questionId": "q-tradeoff",
+      "text": "We were deciding between MongoDB and post grass for a project. like, mongo was more flexible with the schema which seemed good early on since requirements kept changing, but Postgres had better support for the relational queries we needed. We went with Postgres and it worked out well.",
+      "sttConfidence": 0.817
+    },
+    {
+      "seq": 8,
+      "kind": "QUESTION",
+      "questionId": "q-debug-hard-bug",
+      "text": "Tell me about the hardest bug you have had to track down. What made it hard?"
+    },
+    {
+      "seq": 9,
+      "kind": "ANSWER",
+      "questionId": "q-debug-hard-bug",
+      "text": "Intermittent failure, maybe one request in two thousand, only in production. Took about a week. The hard part was I couldn't reproduce it, so I was guessing, and my first hypothesis was completely wrong \u2014 I was sure it was a race in our code and spent two days there. What actually helped was adding enough logging to catch it in the act. Turned out to be a connection pool sized smaller than the thread pool, so under a burst some threads got a timeout that we were swallowing and turning into a generic error. Fixed the sizing, and stopped swallowing that exception, which was the real bug.",
+      "sttConfidence": 0.833
+    }
+  ],
+  "_generatorTiers": [
+    [
+      "practical_experience",
+      "strong"
+    ],
+    [
+      "correctness",
+      "strong"
+    ],
+    [
+      "communication",
+      "strong"
+    ],
+    [
+      "depth",
+      "mixed"
+    ],
+    [
+      "correctness",
+      "strong"
+    ]
+  ]
+}

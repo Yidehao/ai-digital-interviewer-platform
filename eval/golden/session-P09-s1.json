@@ -1,0 +1,97 @@
+{
+  "synthetic": true,
+  "sessionId": "P09-s1",
+  "participant": "P09",
+  "jobName": "SDE",
+  "mode": "scripted",
+  "totalSeconds": 910,
+  "transcript": [
+    {
+      "seq": 0,
+      "kind": "QUESTION",
+      "questionId": "q-debug-incident",
+      "text": "Something breaks in production and users are affected. Walk me through what you personally do, from the moment you find out."
+    },
+    {
+      "seq": 1,
+      "kind": "ANSWER",
+      "questionId": "q-debug-incident",
+      "text": "I'd check the logs and the monitoring to see what's failing. Look at whether anything got deployed recently. If it's a bad deploy then roll it back, otherwise try to find where the error's coming from and fix it. I mean, and then afterwards, um, write up what happened so it doesn't happen again.",
+      "sttConfidence": 0.812
+    },
+    {
+      "seq": 2,
+      "kind": "QUESTION",
+      "questionId": "q-scalable-system",
+      "text": "How do you approach designing a system that needs to scale?"
+    },
+    {
+      "seq": 3,
+      "kind": "ANSWER",
+      "questionId": "q-scalable-system",
+      "text": "I'd start by estimating the load, like how many requests per second we're expecting and what the read write ratio is. Then make the services state less so we can scale horizontally, add caching for the hot reads, and shard the database if it gets big enough. Probably a load balancer in front.",
+      "sttConfidence": 0.936
+    },
+    {
+      "seq": 4,
+      "kind": "QUESTION",
+      "questionId": "q-code-review",
+      "text": "You are reviewing a teammate's pull request and you think the approach is wrong - not a small bug, the whole design. How do you handle it?"
+    },
+    {
+      "seq": 5,
+      "kind": "ANSWER",
+      "questionId": "q-code-review",
+      "text": "I wouldn't do it in PR comments, that's the main thing. I mean, a line comment saying the whole design is wrong is just bad \u2014 it's public and it's hard to respond to. I'd message them, ask what constraints they were working with, because pretty often there's a reason I don't know about. If I still think it's wrong after that, I'd say so directly with what I'd do instead. And it matters how far along they are. If it's two days of work, that's a real conversation about cost, not just correctness. I've been the person who was wrong in that conversation before.",
+      "sttConfidence": 0.953
+    },
+    {
+      "seq": 6,
+      "kind": "QUESTION",
+      "questionId": "q-db-index",
+      "text": "A query that used to be fast is now taking eight seconds. Where do you start?"
+    },
+    {
+      "seq": 7,
+      "kind": "ANSWER",
+      "questionId": "q-db-index",
+      "text": "I'd look at the query plan to see what it's doing, check if there's an index on the columns in the where clause. If not I'd add one and see if it helps. Also check if the table has grown a lot recently.",
+      "sttConfidence": 0.892
+    },
+    {
+      "seq": 8,
+      "kind": "QUESTION",
+      "questionId": "q-api-design",
+      "text": "You are designing an API endpoint that other teams will call. What decisions matter most?"
+    },
+    {
+      "seq": 9,
+      "kind": "ANSWER",
+      "questionId": "q-api-design",
+      "text": "Making sure the endpoints are RESTful and the naming is consistent. Proper status codes, good error messages. Authentication and authorisation. so, versioning so you can change it later without breaking clients. And documentation so people know how to use it.",
+      "sttConfidence": 0.931
+    }
+  ],
+  "_generatorTiers": [
+    [
+      "practical_experience",
+      "mixed"
+    ],
+    [
+      "depth",
+      "mixed"
+    ],
+    [
+      "communication",
+      "strong"
+    ],
+    [
+      "correctness",
+      "mixed"
+    ],
+    [
+      "depth",
+      "mixed"
+    ]
+  ]
+}

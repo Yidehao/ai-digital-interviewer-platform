@@ -1,0 +1,97 @@
+{
+  "synthetic": true,
+  "sessionId": "P08-s2",
+  "participant": "P08",
+  "jobName": "SDE",
+  "mode": "scripted",
+  "totalSeconds": 683,
+  "transcript": [
+    {
+      "seq": 0,
+      "kind": "QUESTION",
+      "questionId": "q-testing",
+      "text": "How do you decide what to test, when there is never time to test everything?"
+    },
+    {
+      "seq": 1,
+      "kind": "ANSWER",
+      "questionId": "q-testing",
+      "text": "I'd prioritise the critical paths, the things users actually do most. Unit tests for the business logic and integration tests for the main flows. Try to cover edge cases where things could break. Probably not worth testing simple getters and setters.",
+      "sttConfidence": 0.902
+    },
+    {
+      "seq": 2,
+      "kind": "QUESTION",
+      "questionId": "q-concurrency",
+      "text": "Two requests arrive at the same time and both try to update the same record. What can go wrong, and what would you do about it?"
+    },
+    {
+      "seq": 3,
+      "kind": "ANSWER",
+      "questionId": "q-concurrency",
+      "text": "You could get a race condition where one update overwrites the other. I mean, i'd use a transaction so they don't interfere, or add a lock on the row so the second one has to wait. Optimistic locking with a version number would also work.",
+      "sttConfidence": 0.82
+    },
+    {
+      "seq": 4,
+      "kind": "QUESTION",
+      "questionId": "q-explain-technical",
+      "text": "Explain something technical you have worked on to someone who is smart but not an engineer."
+    },
+    {
+      "seq": 5,
+      "kind": "ANSWER",
+      "questionId": "q-explain-technical",
+      "text": "I'd use an analogy. Like if I was explaining an API I'd say it's like a waiter in a restaurant, you tell them what you want and they go to the kitchen and bring it back, you don't need to know how the kitchen works. Try to avoid technical terms and check if they're following.",
+      "sttConfidence": 0.923
+    },
+    {
+      "seq": 6,
+      "kind": "QUESTION",
+      "questionId": "q-tradeoff",
+      "text": "Tell me about a technical decision you made where you were choosing between two reasonable options."
+    },
+    {
+      "seq": 7,
+      "kind": "ANSWER",
+      "questionId": "q-tradeoff",
+      "text": "We had to pick between building notifications ourselves or using a hosted service. you know, hosted was faster to ship and someone else handles deliver ability, which is genuinely hard. Building it meant control and no per-message cost, which mattered at our projected volume. We went hosted, mostly because we had six weeks and two engineers. The cost was real though \u2014 we're locked into their template system and it's awkward, and I'd guess we'll migrate within two years. I'd make the same call again with those constraints, but I'd have pushed harder to keep the template rendering on our side.",
+      "sttConfidence": 0.882
+    },
+    {
+      "seq": 8,
+      "kind": "QUESTION",
+      "questionId": "q-debug-hard-bug",
+      "text": "Tell me about the hardest bug you have had to track down. What made it hard?"
+    },
+    {
+      "seq": 9,
+      "kind": "ANSWER",
+      "questionId": "q-debug-hard-bug",
+      "text": "Intermittent failure, maybe one request in two thousand, only in production. um, took about a week. The hard part was I couldn't reproduce it, so I was guessing, and my first hypothesis was completely wrong \u2014 I was sure it was a race in our code and spent two days there. What actually helped was adding enough logging to catch it in the act. Turned out to be a connection pool sized smaller than the thread pool, so under a burst some threads got a timeout that we were swallowing and turning into a generic error. Fixed the sizing, and stopped swallowing that exception, which was the real bug.",
+      "sttConfidence": 0.96
+    }
+  ],
+  "_generatorTiers": [
+    [
+      "practical_experience",
+      "mixed"
+    ],
+    [
+      "correctness",
+      "mixed"
+    ],
+    [
+      "communication",
+      "mixed"
+    ],
+    [
+      "depth",
+      "strong"
+    ],
+    [
+      "correctness",
+      "strong"
+    ]
+  ]
+}

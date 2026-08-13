@@ -1,0 +1,97 @@
+{
+  "synthetic": true,
+  "sessionId": "P03-s2",
+  "participant": "P03",
+  "jobName": "SDE",
+  "mode": "scripted",
+  "totalSeconds": 754,
+  "transcript": [
+    {
+      "seq": 0,
+      "kind": "QUESTION",
+      "questionId": "q-testing",
+      "text": "How do you decide what to test, when there is never time to test everything?"
+    },
+    {
+      "seq": 1,
+      "kind": "ANSWER",
+      "questionId": "q-testing",
+      "text": "I'd prioritise the critical paths, the things users actually do most. Unit tests for the business logic and integration tests for the main flows. Try to cover edge cases where things could break. Probably not worth testing simple getters and setters.",
+      "sttConfidence": 0.872
+    },
+    {
+      "seq": 2,
+      "kind": "QUESTION",
+      "questionId": "q-concurrency",
+      "text": "Two requests arrive at the same time and both try to update the same record. What can go wrong, and what would you do about it?"
+    },
+    {
+      "seq": 3,
+      "kind": "ANSWER",
+      "questionId": "q-concurrency",
+      "text": "There would be a race condition. like, i'd use a lock so only one request can update at a time, or put them in a queue so they get processed one after another.",
+      "sttConfidence": 0.967
+    },
+    {
+      "seq": 4,
+      "kind": "QUESTION",
+      "questionId": "q-explain-technical",
+      "text": "Explain something technical you have worked on to someone who is smart but not an engineer."
+    },
+    {
+      "seq": 5,
+      "kind": "ANSWER",
+      "questionId": "q-explain-technical",
+      "text": "I would avoid using technical jargon and explain it in simple terms, using an analogy if that helps. And keep it high level rather than going into the details.",
+      "sttConfidence": 0.86
+    },
+    {
+      "seq": 6,
+      "kind": "QUESTION",
+      "questionId": "q-tradeoff",
+      "text": "Tell me about a technical decision you made where you were choosing between two reasonable options."
+    },
+    {
+      "seq": 7,
+      "kind": "ANSWER",
+      "questionId": "q-tradeoff",
+      "text": "We had to choose between two frameworks and I researched both and made a comparison, and we picked the one that was better for our use case and had more community support.",
+      "sttConfidence": 0.916
+    },
+    {
+      "seq": 8,
+      "kind": "QUESTION",
+      "questionId": "q-debug-hard-bug",
+      "text": "Tell me about the hardest bug you have had to track down. What made it hard?"
+    },
+    {
+      "seq": 9,
+      "kind": "ANSWER",
+      "questionId": "q-debug-hard-bug",
+      "text": "I had a bug once that was really hard because the error message wasn't helpful. so, i used the debugger and stepped through the code until I found where it was going wrong, and then fixed it.",
+      "sttConfidence": 0.792
+    }
+  ],
+  "_generatorTiers": [
+    [
+      "practical_experience",
+      "mixed"
+    ],
+    [
+      "correctness",
+      "weak"
+    ],
+    [
+      "communication",
+      "weak"
+    ],
+    [
+      "depth",
+      "weak"
+    ],
+    [
+      "correctness",
+      "weak"
+    ]
+  ]
+}

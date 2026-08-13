@@ -1,0 +1,97 @@
+{
+  "synthetic": true,
+  "sessionId": "P08-s1",
+  "participant": "P08",
+  "jobName": "SDE",
+  "mode": "scripted",
+  "totalSeconds": 981,
+  "transcript": [
+    {
+      "seq": 0,
+      "kind": "QUESTION",
+      "questionId": "q-debug-incident",
+      "text": "Something breaks in production and users are affected. Walk me through what you personally do, from the moment you find out."
+    },
+    {
+      "seq": 1,
+      "kind": "ANSWER",
+      "questionId": "q-debug-incident",
+      "text": "I'd check the logs and the monitoring to see what's failing. Look at whether anything got deployed recently. If it's a bad deploy then roll it back, otherwise try to find where the error's coming from and fix it. And then afterwards, um, write up what happened so it doesn't happen again.",
+      "sttConfidence": 0.912
+    },
+    {
+      "seq": 2,
+      "kind": "QUESTION",
+      "questionId": "q-scalable-system",
+      "text": "How do you approach designing a system that needs to scale?"
+    },
+    {
+      "seq": 3,
+      "kind": "ANSWER",
+      "questionId": "q-scalable-system",
+      "text": "I'd want to know what scaling means here first \u2014 is it read heavy or write heavy, what's the traffic shape, does it need to be strongly consistent. Those give really different systems. Generally keep the services stateless so you can just add more, push state into a datastore or a cache. Caching I think about in terms of how stale is acceptable \u2014 catalogue data, a minute is fine; anything about money, no. Partitioning, I'd want to know the access pattern before picking a key, because picking wrong is painful to undo. And observability from day one, otherwise you're scaling something you can't see.",
+      "sttConfidence": 0.781
+    },
+    {
+      "seq": 4,
+      "kind": "QUESTION",
+      "questionId": "q-code-review",
+      "text": "You are reviewing a teammate's pull request and you think the approach is wrong - not a small bug, the whole design. How do you handle it?"
+    },
+    {
+      "seq": 5,
+      "kind": "ANSWER",
+      "questionId": "q-code-review",
+      "text": "I'd leave a comment explaining what I think the issue is and suggest a different approach. Try to be constructive about it rather than just saying it's wrong. If we still disagreed I'd probably ask someone else on the team what they think, or bring it up in standup.",
+      "sttConfidence": 0.961
+    },
+    {
+      "seq": 6,
+      "kind": "QUESTION",
+      "questionId": "q-db-index",
+      "text": "A query that used to be fast is now taking eight seconds. Where do you start?"
+    },
+    {
+      "seq": 7,
+      "kind": "ANSWER",
+      "questionId": "q-db-index",
+      "text": "I'd look at the query plan to see what it's doing, check if there's an index on the columns in the where clause. If not I'd add one and see if it helps. Also check if the table has grown a lot recently.",
+      "sttConfidence": 0.895
+    },
+    {
+      "seq": 8,
+      "kind": "QUESTION",
+      "questionId": "q-api-design",
+      "text": "You are designing an API endpoint that other teams will call. What decisions matter most?"
+    },
+    {
+      "seq": 9,
+      "kind": "ANSWER",
+      "questionId": "q-api-design",
+      "text": "Making sure the endpoints are RESTful and the naming is consistent. Proper status codes, good error messages. Authentication and authorisation. Versioning so you can change it later without breaking clients. you know, and documentation so people know how to use it.",
+      "sttConfidence": 0.844
+    }
+  ],
+  "_generatorTiers": [
+    [
+      "practical_experience",
+      "mixed"
+    ],
+    [
+      "depth",
+      "strong"
+    ],
+    [
+      "communication",
+      "mixed"
+    ],
+    [
+      "correctness",
+      "mixed"
+    ],
+    [
+      "depth",
+      "mixed"
+    ]
+  ]
+}

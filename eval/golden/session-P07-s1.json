@@ -1,0 +1,97 @@
+{
+  "synthetic": true,
+  "sessionId": "P07-s1",
+  "participant": "P07",
+  "jobName": "SDE",
+  "mode": "scripted",
+  "totalSeconds": 642,
+  "transcript": [
+    {
+      "seq": 0,
+      "kind": "QUESTION",
+      "questionId": "q-debug-incident",
+      "text": "Something breaks in production and users are affected. Walk me through what you personally do, from the moment you find out."
+    },
+    {
+      "seq": 1,
+      "kind": "ANSWER",
+      "questionId": "q-debug-incident",
+      "text": "First thing is figure out if it's real and how bad. I look at the error rate and the dashboards, because half the time an alert fires and it's one bad host. Then what changed \u2014 deploys, config, feature flags, in that order, because it's almost always something we did. If a deploy lines up I roll back before I understand it. That took me a while to learn honestly, I used to want to know why first, and meanwhile customers are down. Root cause after. And then a postmortem and usually an alert for whatever gap let it get that far.",
+      "sttConfidence": 0.867
+    },
+    {
+      "seq": 2,
+      "kind": "QUESTION",
+      "questionId": "q-scalable-system",
+      "text": "How do you approach designing a system that needs to scale?"
+    },
+    {
+      "seq": 3,
+      "kind": "ANSWER",
+      "questionId": "q-scalable-system",
+      "text": "I'd want to know what scaling means here first \u2014 is it read heavy or write heavy, what's the traffic shape, does it need to be strongly consistent. Those give really different systems. Generally keep the services stateless so you can just add more, push state into a datastore or a cache. Caching I think about in terms of how stale is acceptable \u2014 catalogue data, a minute is fine; anything about money, no. Partitioning, I'd want to know the access pattern before picking a key, because picking wrong is painful to undo. And observability from day one, otherwise you're scaling something you can't see.",
+      "sttConfidence": 0.853
+    },
+    {
+      "seq": 4,
+      "kind": "QUESTION",
+      "questionId": "q-code-review",
+      "text": "You are reviewing a teammate's pull request and you think the approach is wrong - not a small bug, the whole design. How do you handle it?"
+    },
+    {
+      "seq": 5,
+      "kind": "ANSWER",
+      "questionId": "q-code-review",
+      "text": "I wouldn't do it in PR comments, that's the main thing. A line comment saying the whole design is wrong is just bad \u2014 it's public and it's hard to respond to. I'd message them, ask what constraints they were working with, because pretty often there's a reason I don't know about. If I still think it's wrong after that, I'd say so directly with what I'd do instead. And it matters how far along they are. If it's two days of work, that's a real conversation about cost, not just correctness. um, i've been the person who was wrong in that conversation before.",
+      "sttConfidence": 0.943
+    },
+    {
+      "seq": 6,
+      "kind": "QUESTION",
+      "questionId": "q-db-index",
+      "text": "A query that used to be fast is now taking eight seconds. Where do you start?"
+    },
+    {
+      "seq": 7,
+      "kind": "ANSWER",
+      "questionId": "q-db-index",
+      "text": "I'd run explain first, before touching anything. Half the time what you assume is slow isn't the slow part. The other question is what changed \u2014 did the table grow, did someone add a column, did the query change, or did the statistics go stale so the planner picked a different path. Missing index is the obvious answer but I'd want to confirm the planner actually isn't using one. And I'd check whether it's slow for everyone or just one customer whose data got big, because that's a different problem. Adding an index isn't free either, it costs you on writes.",
+      "sttConfidence": 0.933
+    },
+    {
+      "seq": 8,
+      "kind": "QUESTION",
+      "questionId": "q-api-design",
+      "text": "You are designing an API endpoint that other teams will call. What decisions matter most?"
+    },
+    {
+      "seq": 9,
+      "kind": "ANSWER",
+      "questionId": "q-api-design",
+      "text": "The contract is the part you can't take back, so that gets the most thought. Naming, and modelling the resources so they still make sense in a year. Anything that returns a list needs pagination from the start \u2014 retrofitting that breaks everyone. Errors matter more than people give them credit for: for each one the caller has to know whether to retry, fix their request, or give up, and if your errors don't tell them that they'll retry everything. Idempotency on writes so a network timeout doesn't create two orders. like, and how you'll deprecate it, because you will.",
+      "sttConfidence": 0.803
+    }
+  ],
+  "_generatorTiers": [
+    [
+      "practical_experience",
+      "strong"
+    ],
+    [
+      "depth",
+      "strong"
+    ],
+    [
+      "communication",
+      "strong"
+    ],
+    [
+      "correctness",
+      "strong"
+    ],
+    [
+      "depth",
+      "strong"
+    ]
+  ]
+}

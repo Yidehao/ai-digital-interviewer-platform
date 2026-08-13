@@ -1,0 +1,14 @@
+{
+  "synthetic": true,
+  "sessionId": "P05-s2",
+  "labeler": "B",
+  "overall": 4,
+  "recommendation": "yes",
+  "dimensions": {
+    "correctness": 3,
+    "depth": 3,
+    "communication": 4,
+    "practical_experience": 5
+  },
+  "notes": ""
+}

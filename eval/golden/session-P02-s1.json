@@ -1,0 +1,97 @@
+{
+  "synthetic": true,
+  "sessionId": "P02-s1",
+  "participant": "P02",
+  "jobName": "SDE",
+  "mode": "scripted",
+  "totalSeconds": 861,
+  "transcript": [
+    {
+      "seq": 0,
+      "kind": "QUESTION",
+      "questionId": "q-debug-incident",
+      "text": "Something breaks in production and users are affected. Walk me through what you personally do, from the moment you find out."
+    },
+    {
+      "seq": 1,
+      "kind": "ANSWER",
+      "questionId": "q-debug-incident",
+      "text": "I'd check the logs and the monitoring to see what's failing. Look at whether anything got deployed recently. If it's a bad deploy then roll it back, otherwise try to find where the error's coming from and fix it. like, and then afterwards, um, write up what happened so it doesn't happen again.",
+      "sttConfidence": 0.8
+    },
+    {
+      "seq": 2,
+      "kind": "QUESTION",
+      "questionId": "q-scalable-system",
+      "text": "How do you approach designing a system that needs to scale?"
+    },
+    {
+      "seq": 3,
+      "kind": "ANSWER",
+      "questionId": "q-scalable-system",
+      "text": "I'd start by estimating the load, like how many requests per second we're expecting and what the read write ratio is. Then make the services stateless so we can scale horizontally, add caching for the hot reads, and shard the database if it gets big enough. Probably a load balancer in front.",
+      "sttConfidence": 0.818
+    },
+    {
+      "seq": 4,
+      "kind": "QUESTION",
+      "questionId": "q-code-review",
+      "text": "You are reviewing a teammate's pull request and you think the approach is wrong - not a small bug, the whole design. How do you handle it?"
+    },
+    {
+      "seq": 5,
+      "kind": "ANSWER",
+      "questionId": "q-code-review",
+      "text": "I'd leave a comment explaining what I think the issue is and suggest a different approach. so, try to be constructive about it rather than just saying it's wrong. If we still disagreed I'd probably ask someone else on the team what they think, or bring it up in standup.",
+      "sttConfidence": 0.784
+    },
+    {
+      "seq": 6,
+      "kind": "QUESTION",
+      "questionId": "q-db-index",
+      "text": "A query that used to be fast is now taking eight seconds. Where do you start?"
+    },
+    {
+      "seq": 7,
+      "kind": "ANSWER",
+      "questionId": "q-db-index",
+      "text": "I'd run EXPLAIN first, before touching anything. Half the time what you assume is slow isn't the slow part. The other question is what changed \u2014 did the table grow, did someone add a column, did the query change, or did the statistics go stale so the planner picked a different path. Missing index is the obvious answer but I'd want to confirm the planner actually isn't using one. And I'd check whether it's slow for everyone or just one customer whose data got big, because that's a different problem. Adding an index isn't free either, it costs you on writes.",
+      "sttConfidence": 0.838
+    },
+    {
+      "seq": 8,
+      "kind": "QUESTION",
+      "questionId": "q-api-design",
+      "text": "You are designing an API endpoint that other teams will call. What decisions matter most?"
+    },
+    {
+      "seq": 9,
+      "kind": "ANSWER",
+      "questionId": "q-api-design",
+      "text": "Use the right HTTP methods, GET for reading and POST for creating, and return the right status codes. Return JSON. And make sure it's secure with authentication.",
+      "sttConfidence": 0.796
+    }
+  ],
+  "_generatorTiers": [
+    [
+      "practical_experience",
+      "mixed"
+    ],
+    [
+      "depth",
+      "mixed"
+    ],
+    [
+      "communication",
+      "mixed"
+    ],
+    [
+      "correctness",
+      "strong"
+    ],
+    [
+      "depth",
+      "weak"
+    ]
+  ]
+}

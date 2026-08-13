@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Audio probe — /speech/uploadVoice</title>
+<style>
+  :root { --bg:#fff; --fg:#1a1a1a; --muted:#666; --line:#e0e0e0; --ok:#0a7c42; --bad:#c0392b; --warn:#b8860b; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#161616; --fg:#eaeaea; --muted:#999; --line:#333; --ok:#4ade80; --bad:#f87171; --warn:#fbbf24; }
+  }
+  body { background:var(--bg); color:var(--fg); font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+         max-width:860px; margin:0 auto; padding:32px 20px 64px; }
+  h1 { font-size:20px; margin:0 0 4px; }
+  p.sub { color:var(--muted); margin:0 0 28px; }
+  .card { border:1px solid var(--line); border-radius:10px; padding:18px 20px; margin:0 0 18px; }
+  .card h2 { font-size:15px; margin:0 0 6px; }
+  .card .why { color:var(--muted); font-size:13px; margin:0 0 14px; }
+  button { font:inherit; padding:9px 16px; border-radius:7px; border:1px solid var(--line);
+           background:var(--bg); color:var(--fg); cursor:pointer; margin-right:8px; }
+  button.primary { background:var(--fg); color:var(--bg); border-color:var(--fg); }
+  button:disabled { opacity:.4; cursor:not-allowed; }
+  pre { background:rgba(127,127,127,.09); border-radius:7px; padding:12px 14px; overflow-x:auto;
+        font-size:12.5px; white-space:pre-wrap; word-break:break-word; margin:12px 0 0; }
+  .verdict { font-weight:600; }
+  .ok{color:var(--ok)} .bad{color:var(--bad)} .warn{color:var(--warn)}
+  table { border-collapse:collapse; width:100%; font-size:13px; margin-top:12px; }
+  th,td { text-align:left; padding:6px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--muted); font-weight:500; }
+  code { background:rgba(127,127,127,.12); padding:1px 5px; border-radius:4px; font-size:12.5px; }
+  audio { margin-top:12px; width:100%; }
+</style>
+</head>
+<body>
+
+<h1>Audio probe — <code>/speech/uploadVoice</code></h1>
+<p class="sub">
+  Answers one question: can a browser recording reach Google STT through the endpoint the uni-app
+  client uses today? The endpoint decodes MP3 via <code>mp3spi</code>, and browsers do not record MP3 —
+  so this measures how much work the eval harness actually needs.
+</p>
+
+<div class="card">
+  <h2>0 · Setup</h2>
+  <p class="why">
+    Serve this page on port 8081 — the backend's CORS list allows it. From the repo root:
+    <code>python3 -m http.server 8081 --directory eval/harness</code>, then open
+    <code>http://127.0.0.1:8081/audio-probe.html</code>. Backend must be running on 8080.
+  </p>
+  <div>Backend: <input id="api" value="http://localhost:8080" style="width:260px;padding:6px;
+       border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg)"></div>
+  <pre id="support">checking browser support…</pre>
+</div>
+
+<div class="card">
+  <h2>1 · Record as the browser prefers <span class="muted">(MediaRecorder)</span></h2>
+  <p class="why">
+    What <code>MediaRecorder</code> produces natively — WebM/Opus in Chrome, MP4/AAC in Safari.
+    This is what the harness would send if written the obvious way.
+  </p>
+  <button id="rec1" class="primary">Record 5s &amp; send</button>
+  <span id="s1" class="muted"></span>
+  <div id="out1"></div>
+</div>
+
+<div class="card">
+  <h2>2 · Record as 16 kHz mono WAV <span class="muted">(Web Audio)</span></h2>
+  <p class="why">
+    Captures raw PCM and wraps it in a WAV header at exactly the sample rate Google STT wants
+    (16 kHz, mono, LINEAR16) — the same format <code>recognizePcm</code> already builds internally.
+    If the server accepts this, no transcoder is needed anywhere.
+  </p>
+  <button id="rec2" class="primary">Record 5s &amp; send</button>
+  <span id="s2" class="muted"></span>
+  <div id="out2"></div>
+</div>
+
+<div class="card">
+  <h2>3 · Verdict</h2>
+  <div id="verdict" class="muted">Run both tests above.</div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const api = () => $('api').value.replace(/\/$/, '');
+const results = {};
+
+// ---- browser support ------------------------------------------------------
+(function () {
+  const types = ['audio/webm', 'audio/webm;codecs=opus', 'audio/ogg;codecs=opus',
+                 'audio/mp4', 'audio/mpeg', 'audio/wav'];
+  const supported = types.filter(t => window.MediaRecorder && MediaRecorder.isTypeSupported(t));
+  $('support').textContent =
+    'MediaRecorder mimeTypes supported here:\n  ' + (supported.join('\n  ') || '(none)') +
+    '\n\nNote: audio/mpeg (MP3) is what the server currently decodes. ' +
+    (supported.includes('audio/mpeg') ? 'It IS supported here.' : 'It is NOT supported here — expected.');
+})();
+
+// ---- helpers --------------------------------------------------------------
+async function post(blob, filename) {
+  const fd = new FormData();
+  fd.append('file', blob, filename);
+  const t0 = performance.now();
+  const res = await fetch(api() + '/speech/uploadVoice', { method: 'POST', body: fd });
+  const ms = Math.round(performance.now() - t0);
+  let body;
+  const text = await res.text();
+  try { body = JSON.parse(text); } catch { body = text; }
+  return { httpStatus: res.status, ms, body };
+}
+
+function render(target, info, blob) {
+  const ok = info.result && info.result.body && info.result.body.status === 200;
+  const transcript = ok ? (info.result.body.data ?? '') : null;
+  const el = $(target);
+  el.innerHTML = '';
+  const t = document.createElement('table');
+  const rows = [
+    ['blob mimeType', info.mime || '(none)'],
+    ['blob size', info.size + ' bytes'],
+    ['filename sent', info.filename],
+    ['HTTP status', info.result.httpStatus],
+    ['round trip', info.result.ms + ' ms'],
+    ['envelope status', info.result.body && info.result.body.status],
+    ['envelope msg', info.result.body && info.result.body.msg],
+    ['transcript', transcript === null ? '—' :
+       (transcript === '' ? '(empty string — decoded but recognised nothing)' : '“' + transcript + '”')],
+  ];
+  t.innerHTML = rows.map(([k, v]) => `<tr><th>${k}</th><td>${v ?? '—'}</td></tr>`).join('');
+  el.appendChild(t);
+
+  const v = document.createElement('div');
+  v.style.marginTop = '10px';
+  v.className = 'verdict ' + (ok && transcript ? 'ok' : ok ? 'warn' : 'bad');
+  v.textContent = ok && transcript ? '✅ Works end to end — transcript returned.'
+                : ok ? '⚠️ Server accepted it but recognised nothing. Decoded OK; check mic/volume.'
+                : '❌ Rejected. See envelope msg above and the backend log for the exception.';
+  el.appendChild(v);
+
+  const audio = document.createElement('audio');
+  audio.controls = true;
+  audio.src = URL.createObjectURL(blob);
+  el.appendChild(audio);
+  const pre = document.createElement('pre');
+  pre.textContent = JSON.stringify(info.result.body, null, 2);
+  el.appendChild(pre);
+}
+
+function verdict() {
+  const a = results.mediarecorder, b = results.wav;
+  if (!a || !b) return;
+  const aOk = a.result.body && a.result.body.status === 200;
+  const bOk = b.result.body && b.result.body.status === 200;
+  let msg;
+  if (aOk) {
+    msg = '<span class="ok">Native MediaRecorder output already works.</span> The harness can post ' +
+          'blobs straight to the existing endpoint — no server change, harness stays a 1-day job.';
+  } else if (bOk) {
+    msg = '<span class="warn">Native output is rejected, but 16 kHz WAV is accepted.</span> ' +
+          'Record with Web Audio instead of MediaRecorder in the harness — a self-contained ' +
+          'client-side change, still roughly a 1-day job. No transcoder needed.';
+  } else {
+    msg = '<span class="bad">Both formats are rejected.</span> The endpoint only decodes MP3 ' +
+          '(<code>MpegAudioFileReader</code> from mp3spi). Cheapest fix is a server-side branch in ' +
+          '<code>GoogleSpeechController</code>: sniff the magic bytes, and for RIFF/WAV use ' +
+          '<code>AudioSystem.getAudioInputStream</code> directly, resample to 16 kHz mono 16-bit, and ' +
+          'feed the existing <code>recognizePcm</code>. That is ~20 lines and avoids adding ffmpeg. ' +
+          'Budget the harness at 1.5–2 days.';
+  }
+  $('verdict').innerHTML = msg;
+}
+
+async function recordWith(kind, statusEl, outEl) {
+  const st = $(statusEl);
+  try {
+    st.textContent = ' requesting mic…';
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    st.textContent = ' recording 5s…';
+    let blob, mime, filename;
+
+    if (kind === 'mediarecorder') {
+      const mr = new MediaRecorder(stream);
+      const chunks = [];
+      mr.ondataavailable = e => chunks.push(e.data);
+      const done = new Promise(r => mr.onstop = r);
+      mr.start();
+      await new Promise(r => setTimeout(r, 5000));
+      mr.stop();
+      await done;
+      mime = mr.mimeType || chunks[0]?.type || '';
+      blob = new Blob(chunks, { type: mime });
+      filename = 'probe' + (mime.includes('mp4') ? '.mp4' : mime.includes('ogg') ? '.ogg' : '.webm');
+    } else {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+      const src = ctx.createMediaStreamSource(stream);
+      const proc = ctx.createScriptProcessor(4096, 1, 1);
+      const buf = [];
+      proc.onaudioprocess = e => buf.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+      src.connect(proc); proc.connect(ctx.destination);
+      await new Promise(r => setTimeout(r, 5000));
+      proc.disconnect(); src.disconnect();
+      const rate = ctx.sampleRate;
+      await ctx.close();
+      blob = encodeWav(buf, rate);
+      mime = 'audio/wav (' + rate + ' Hz mono)';
+      filename = 'probe.wav';
+    }
+
+    stream.getTracks().forEach(t => t.stop());
+    st.textContent = ' uploading…';
+    const result = await post(blob, filename);
+    const info = { mime, size: blob.size, filename, result };
+    results[kind] = info;
+    render(outEl, info, blob);
+    st.textContent = '';
+    verdict();
+  } catch (err) {
+    st.textContent = '';
+    $(outEl).innerHTML = '<div class="verdict bad">❌ ' + err.message + '</div>' +
+      '<pre>' + (err.stack || '') + '</pre>';
+  }
+}
+
+function encodeWav(chunks, sampleRate) {
+  const len = chunks.reduce((n, c) => n + c.length, 0);
+  const pcm = new Int16Array(len);
+  let i = 0;
+  for (const c of chunks) {
+    for (let j = 0; j < c.length; j++) {
+      const s = Math.max(-1, Math.min(1, c[j]));
+      pcm[i++] = s < 0 ? s * 0x8000 : s * 0x7fff;
+    }
+  }
+  const buf = new ArrayBuffer(44 + pcm.length * 2);
+  const dv = new DataView(buf);
+  const str = (off, s) => { for (let k = 0; k < s.length; k++) dv.setUint8(off + k, s.charCodeAt(k)); };
+  str(0, 'RIFF'); dv.setUint32(4, 36 + pcm.length * 2, true); str(8, 'WAVE');
+  str(12, 'fmt '); dv.setUint32(16, 16, true); dv.setUint16(20, 1, true);
+  dv.setUint16(22, 1, true); dv.setUint32(24, sampleRate, true);
+  dv.setUint32(28, sampleRate * 2, true); dv.setUint16(32, 2, true); dv.setUint16(34, 16, true);
+  str(36, 'data'); dv.setUint32(40, pcm.length * 2, true);
+  new Int16Array(buf, 44).set(pcm);
+  return new Blob([buf], { type: 'audio/wav' });
+}
+
+$('rec1').onclick = () => recordWith('mediarecorder', 's1', 'out1');
+$('rec2').onclick = () => recordWith('wav', 's2', 'out2');
+</script>
+</body>
+</html>

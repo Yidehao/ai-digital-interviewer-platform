@@ -1,0 +1,97 @@
+{
+  "synthetic": true,
+  "sessionId": "P03-s1",
+  "participant": "P03",
+  "jobName": "SDE",
+  "mode": "scripted",
+  "totalSeconds": 834,
+  "transcript": [
+    {
+      "seq": 0,
+      "kind": "QUESTION",
+      "questionId": "q-debug-incident",
+      "text": "Something breaks in production and users are affected. Walk me through what you personally do, from the moment you find out."
+    },
+    {
+      "seq": 1,
+      "kind": "ANSWER",
+      "questionId": "q-debug-incident",
+      "text": "I'd look at the logs to find the error, and then debug it and fix the bug. Maybe ask a senior engineer if I couldn't figure it out.",
+      "sttConfidence": 0.87
+    },
+    {
+      "seq": 2,
+      "kind": "QUESTION",
+      "questionId": "q-scalable-system",
+      "text": "How do you approach designing a system that needs to scale?"
+    },
+    {
+      "seq": 3,
+      "kind": "ANSWER",
+      "questionId": "q-scalable-system",
+      "text": "I would use microservices so each part can scale on its own, and add caching and a load balancer. And make sure the database can handle the traffic, maybe use a NoSQL database since those scale better.",
+      "sttConfidence": 0.798
+    },
+    {
+      "seq": 4,
+      "kind": "QUESTION",
+      "questionId": "q-code-review",
+      "text": "You are reviewing a teammate's pull request and you think the approach is wrong - not a small bug, the whole design. How do you handle it?"
+    },
+    {
+      "seq": 5,
+      "kind": "ANSWER",
+      "questionId": "q-code-review",
+      "text": "I'd explain in the comments why I think the approach has problems and ask them to change it. um, if they push back I'd probably just approve it, it's not worth arguing over and it's their code.",
+      "sttConfidence": 0.967
+    },
+    {
+      "seq": 6,
+      "kind": "QUESTION",
+      "questionId": "q-db-index",
+      "text": "A query that used to be fast is now taking eight seconds. Where do you start?"
+    },
+    {
+      "seq": 7,
+      "kind": "ANSWER",
+      "questionId": "q-db-index",
+      "text": "I'd add an index on the columns being queried, that usually fixes slow queries. um, or add caching so it doesn't have to hit the database every time.",
+      "sttConfidence": 0.816
+    },
+    {
+      "seq": 8,
+      "kind": "QUESTION",
+      "questionId": "q-api-design",
+      "text": "You are designing an API endpoint that other teams will call. What decisions matter most?"
+    },
+    {
+      "seq": 9,
+      "kind": "ANSWER",
+      "questionId": "q-api-design",
+      "text": "Use the right HTTP methods, GET for reading and POST for creating, and return the right status codes. Return JSON. you know, and make sure it's secure with authentication.",
+      "sttConfidence": 0.955
+    }
+  ],
+  "_generatorTiers": [
+    [
+      "practical_experience",
+      "weak"
+    ],
+    [
+      "depth",
+      "weak"
+    ],
+    [
+      "communication",
+      "weak"
+    ],
+    [
+      "correctness",
+      "weak"
+    ],
+    [
+      "depth",
+      "weak"
+    ]
+  ]
+}

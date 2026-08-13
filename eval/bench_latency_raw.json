@@ -1,0 +1,55 @@
+{
+  "hardware": {
+    "cpu": "Apple M1",
+    "ram_gb": 16,
+    "platform": "macOS-26.5.1-arm64-arm-64bit"
+  },
+  "models": {
+    "qwen2.5:7b-instruct": {
+      "500": {
+        "prompt_tokens": 543,
+        "prompt_tokens_per_s": 80.93172986911992,
+        "prompt_eval_s": 6.758783,
+        "first_token_s": 6.980894088745117,
+        "gen_tokens_per_s": 10.020050120290701
+      },
+      "1500": {
+        "prompt_tokens": 1516,
+        "prompt_tokens_per_s": 78.24042446359248,
+        "prompt_eval_s": 19.376173,
+        "first_token_s": 19.63522481918335,
+        "gen_tokens_per_s": 9.471253091646982
+      },
+      "3000": {
+        "prompt_tokens": 2971,
+        "prompt_tokens_per_s": 74.21147683111948,
+        "prompt_eval_s": 40.034239,
+        "first_token_s": 40.33131790161133,
+        "gen_tokens_per_s": 9.03650113905097
+      }
+    },
+    "llama3.2:3b": {
+      "500": {
+        "prompt_tokens": 531,
+        "prompt_tokens_per_s": 218.02537044846426,
+        "prompt_eval_s": 2.440083,
+        "first_token_s": 2.707753896713257,
+        "gen_tokens_per_s": 18.469062473450723
+      },
+      "1500": {
+        "prompt_tokens": 1502,
+        "prompt_tokens_per_s": 172.5078465836335,
+        "prompt_eval_s": 8.718444,
+        "first_token_s": 8.98549509048462,
+        "gen_tokens_per_s": 18.784837067367594
+      },
+      "3000": {
+        "prompt_tokens": 2955,
+        "prompt_tokens_per_s": 157.0626344752536,
+        "prompt_eval_s": 18.826884,
+        "first_token_s": 19.171334743499756,
+        "gen_tokens_per_s": 16.312807878759948
+      }
+    }
+  }
+}

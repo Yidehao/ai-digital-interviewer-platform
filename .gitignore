@@ -1,10 +1,11 @@
-# build
 target/
 build/
 dist/
 node_modules/
+__pycache__/
+.venv/
+venv/
 
-# secrets & local config
 .env
 .env.*
 application-local.yml
@@ -13,17 +14,19 @@ application-secret.yml
 *.pem
 *.key
 
-# media & data — these will blow past GitHub's size limits
 *.mp4
 *.mkv
 *.flv
-*.ts
 uploads/
 minio-data/
 logs/
 *.log
 
-# editor / OS
+# Participant audio from mock interviews: real voices, never committed.
+# Transcripts under eval/golden/ are committed, but only after names and
+# identifying details are stripped.
+eval/audio/
+
 .idea/
 .vscode/
 .DS_Store
