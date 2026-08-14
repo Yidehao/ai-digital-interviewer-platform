@@ -14,7 +14,7 @@
       "practical_experience" : 4
     },
     "transcriptChars" : 432,
-    "gradingMs" : 42379
+    "gradingMs" : 38913
   }, {
     "id" : "strong-non_native",
     "designedTier" : "strong",
@@ -29,7 +29,7 @@
       "practical_experience" : 3
     },
     "transcriptChars" : 445,
-    "gradingMs" : 44882
+    "gradingMs" : 43085
   }, {
     "id" : "strong-verbose",
     "designedTier" : "strong",
@@ -44,7 +44,7 @@
       "practical_experience" : 4
     },
     "transcriptChars" : 891,
-    "gradingMs" : 53177
+    "gradingMs" : 48533
   }, {
     "id" : "strong-terse",
     "designedTier" : "strong",
@@ -53,13 +53,13 @@
     "overall" : 3,
     "recommendation" : "strong_yes",
     "dimensions" : {
-      "correctness" : 3,
-      "depth" : 3,
-      "communication" : 4,
+      "correctness" : 4,
+      "depth" : 4,
+      "communication" : 3,
       "practical_experience" : 2
     },
     "transcriptChars" : 296,
-    "gradingMs" : 60221
+    "gradingMs" : 52044
   }, {
     "id" : "mixed-neutral",
     "designedTier" : "mixed",
@@ -74,7 +74,7 @@
       "practical_experience" : 2
     },
     "transcriptChars" : 285,
-    "gradingMs" : 50630
+    "gradingMs" : 46746
   }, {
     "id" : "mixed-non_native",
     "designedTier" : "mixed",
@@ -89,7 +89,7 @@
       "practical_experience" : 2
     },
     "transcriptChars" : 264,
-    "gradingMs" : 62746
+    "gradingMs" : 55789
   }, {
     "id" : "mixed-verbose",
     "designedTier" : "mixed",
@@ -104,7 +104,7 @@
       "practical_experience" : 2
     },
     "transcriptChars" : 600,
-    "gradingMs" : 64363
+    "gradingMs" : 49638
   }, {
     "id" : "mixed-terse",
     "designedTier" : "mixed",
@@ -119,7 +119,7 @@
       "practical_experience" : 3
     },
     "transcriptChars" : 146,
-    "gradingMs" : 66700
+    "gradingMs" : 65703
   }, {
     "id" : "weak-neutral",
     "designedTier" : "weak",
@@ -134,7 +134,7 @@
       "practical_experience" : 1
     },
     "transcriptChars" : 145,
-    "gradingMs" : 64563
+    "gradingMs" : 66940
   }, {
     "id" : "weak-non_native",
     "designedTier" : "weak",
@@ -149,7 +149,7 @@
       "practical_experience" : 1
     },
     "transcriptChars" : 143,
-    "gradingMs" : 75162
+    "gradingMs" : 76778
   }, {
     "id" : "weak-verbose",
     "designedTier" : "weak",
@@ -159,12 +159,12 @@
     "recommendation" : "strong_yes",
     "dimensions" : {
       "correctness" : 3,
-      "depth" : 3,
+      "depth" : 2,
       "communication" : 3,
       "practical_experience" : 2
     },
     "transcriptChars" : 417,
-    "gradingMs" : 72576
+    "gradingMs" : 54097
   }, {
     "id" : "weak-terse",
     "designedTier" : "weak",
@@ -173,12 +173,12 @@
     "overall" : 2,
     "recommendation" : "strong_yes",
     "dimensions" : {
-      "correctness" : 2,
+      "correctness" : 3,
       "depth" : 2,
-      "communication" : 2,
+      "communication" : 3,
       "practical_experience" : 1
     },
     "transcriptChars" : 79,
-    "gradingMs" : 53774
+    "gradingMs" : 55237
   } ]
 }

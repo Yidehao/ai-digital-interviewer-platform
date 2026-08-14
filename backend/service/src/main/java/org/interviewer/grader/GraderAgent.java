@@ -113,7 +113,10 @@ public class GraderAgent {
         ChatResponse response = llm.chat(request);
         String body = response.contentOrEmpty();
         try {
-            return objectMapper.readValue(body, Verdict.class);
+            Verdict parsed = objectMapper.readValue(body, Verdict.class);
+            // Derived, never asked for. See recommendationFor.
+            return new Verdict(parsed.overall(), recommendationFor(parsed.overall()),
+                    parsed.dimensions(), parsed.summary());
         } catch (Exception e) {
             // Constrained decoding should make this impossible. If it happens, the schema and the
             // record have drifted, or the model ignored `format` - both are our problem, and both
@@ -122,6 +125,30 @@ public class GraderAgent {
                     input.sessionId(), body, e);
             throw new IllegalStateException("grader produced an unusable verdict", e);
         }
+    }
+
+    /**
+     * {@code recommendation} as a pure function of {@code overall}.
+     *
+     * <p>It used to be part of the schema and the model produced it. Across two full cohort runs it
+     * was consistent with {@code overall} on 1 of 12 verdicts - {@code strong_yes} was returned for
+     * candidates scored 2 out of 5. Adding the mapping to the field description changed nothing:
+     * both runs came back identical.
+     *
+     * <p>The lesson generalises. Constrained decoding guarantees the <em>shape</em> of the output -
+     * the field is present, the value is a valid enum member - and guarantees nothing about
+     * <em>coherence between fields</em>, because every enum member satisfies the schema equally.
+     * A value that is a function of another value the model already produced should be computed,
+     * not requested.
+     */
+    static String recommendationFor(int overall) {
+        return switch (overall) {
+            case 1 -> "strong_no";
+            case 2 -> "no";
+            case 3 -> "borderline";
+            case 4 -> "yes";
+            default -> "strong_yes";
+        };
     }
 
     /**

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://interviewer.org/schema/verdict.json",
   "title": "verdict",
-  "description": "The grader's output, produced under constrained decoding. Field order within a dimension is load-bearing: evidence, then reasoning, then score. The model emits fields in schema order, so this forces it to quote the candidate and argue before committing to a number. Score-first would let it pick a number and rationalise afterwards, which is a different and worse task.",
+  "description": "The grader's output, produced under constrained decoding. Field order within a dimension is load-bearing: evidence, then reasoning, then score. The model emits fields in schema order, so this forces it to quote the candidate and argue before committing to a number. Score-first would let it pick a number and rationalise afterwards, which is a different and worse task. `recommendation` is deliberately absent: it is a pure function of `overall`, and asking the model for it produced strong_yes on candidates scored 2 of 5 in two runs. Constrained decoding guarantees shape, not coherence between fields - every enum value satisfies the schema. It is derived in code.",
   "type": "object",
   "properties": {
     "overall": {
@@ -10,17 +10,6 @@
       "minimum": 1,
       "maximum": 5,
       "description": "Overall rating from 1 (poor) to 5 (excellent)."
-    },
-    "recommendation": {
-      "type": "string",
-      "enum": [
-        "strong_no",
-        "no",
-        "borderline",
-        "yes",
-        "strong_yes"
-      ],
-      "description": "Must follow from `overall`: 1 -> strong_no, 2 -> no, 3 -> borderline, 4 -> yes, 5 -> strong_yes. Do not recommend advancing a candidate you scored below 4."
     },
     "dimensions": {
       "type": "array",
@@ -71,7 +60,6 @@
   },
   "required": [
     "overall",
-    "recommendation",
     "dimensions",
     "summary"
   ],
