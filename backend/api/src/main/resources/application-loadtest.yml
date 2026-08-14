@@ -1,0 +1,25 @@
+# Load-test profile. Everything here exists to stop the benchmark measuring the wrong thing.
+
+mybatis-plus:
+  global-config:
+    banner: false
+  configuration:
+    # THE most important line in this file. The global config sets StdOutImpl, which prints every
+    # SQL statement to stdout. Under load that means the benchmark measures System.out contention -
+    # a synchronized PrintStream - rather than the application. The plan flagged this before any
+    # load test was written, and it would have silently produced a number about console I/O.
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+
+logging:
+  level:
+    root: warn
+    org.interviewer: warn
+    # Per-request INFO logging is itself a bottleneck at a few hundred requests per second, and it
+    # is not what we are trying to measure.
+
+interviewer:
+  loadtest:
+    # Simulated generation latency per model call. 50 ms keeps the app tier as the bottleneck;
+    # raise to 7000 to model a cold prompt and watch the pools saturate instead.
+    think-millis: 50
+    turns-per-session: 6

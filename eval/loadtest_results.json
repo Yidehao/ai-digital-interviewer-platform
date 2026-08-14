@@ -1,0 +1,19 @@
+{
+  "note": "App tier only, model stubbed via the loadtest profile. PER NODE: EmitterRegistry is an in-memory map because RedisOperator has no pub/sub.",
+  "levels": [
+    {
+      "concurrency": 64,
+      "completed": 48,
+      "failed": 16,
+      "errors": {
+        "no_done": 16
+      },
+      "wallSeconds": 1.56,
+      "firstEventP50": 0.029,
+      "firstEventP95": 0.033,
+      "totalP50": 1.01,
+      "totalP95": 1.52,
+      "throughput": 30.85
+    }
+  ]
+}
