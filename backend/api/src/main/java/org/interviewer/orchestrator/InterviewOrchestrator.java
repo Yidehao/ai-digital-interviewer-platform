@@ -17,6 +17,7 @@ import org.interviewer.entity.agent.TurnKind;
 import org.interviewer.entity.ollama.ChatMessage;
 import org.interviewer.service.CandidateService;
 import org.interviewer.service.JobService;
+import org.interviewer.utils.MdcKeys;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -126,7 +127,12 @@ public class InterviewOrchestrator {
 
         SessionEmitter emitter = emitters.register(sessionId, STREAM_TIMEOUT_MS);
         emitter.send("session", java.util.Map.of("sessionId", sessionId));
-        agentExecutor.execute(() -> runInterview(sessionId, emitter));
+        // MdcKeys.wrap, not a bare lambda. MDC is thread-local, so the session id would be lost
+        // the moment the work crosses onto the agent pool - precisely when the log lines start
+        // being worth reading. wrap() carries the context over and clears it afterwards, because a
+        // pool thread that kept it would stamp the next interview with this one's identity.
+        MdcKeys.putSession(sessionId, candidateId);
+        agentExecutor.execute(MdcKeys.wrap(() -> runInterview(sessionId, emitter)));
         return Optional.of(emitter);
     }
 

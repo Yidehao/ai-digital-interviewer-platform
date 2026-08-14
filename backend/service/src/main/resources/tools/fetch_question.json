@@ -2,17 +2,28 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://interviewer.org/tools/fetch_question.json",
   "title": "fetch_question",
-  "description": "Fetch the next scripted question from this job's question bank. Use when you are ready to move on to a new topic.",
+  "description": "Fetch the next scripted question from this job's question bank. Use when you are ready to move on to a new topic. Optional fields accept null: the model emits null to mean 'no preference', and rejecting that spends a repair turn on a call that was not actually wrong. Required fields stay strict, where a null IS a mistake worth correcting.",
   "type": "object",
   "properties": {
     "topic": {
-      "type": "string",
+      "type": [
+        "string",
+        "null"
+      ],
       "maxLength": 64,
       "description": "Optional topic hint."
     },
     "difficulty": {
-      "type": "string",
-      "enum": ["easy", "medium", "hard"]
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "easy",
+        "medium",
+        "hard",
+        null
+      ]
     },
     "excludeServed": {
       "type": "boolean",

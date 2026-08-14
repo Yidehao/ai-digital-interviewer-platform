@@ -19,6 +19,11 @@ spring:
 logging:
   level:
     root: info
+  pattern:
+    # requestId/sessionId on every line. An interview logs from three threads - the request thread,
+    # the agent pool, and a tool executor - and without correlation ids the first question after any
+    # incident ("show me everything from that one interview") is answered by guessing at timestamps.
+    console: "%d{HH:mm:ss.SSS} %-5level [%X{requestId:-}/%X{sessionId:-}] %logger{28} - %msg%n"
 
 
 server:

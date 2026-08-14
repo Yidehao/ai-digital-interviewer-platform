@@ -2,29 +2,43 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://interviewer.org/tools/run_code.json",
   "title": "run_code",
-  "description": "Execute a code snippet the candidate dictated, in a sandbox, and return its output. Only call this when the candidate has dictated actual, complete source code. Do NOT call it for a verbal description of an approach, for an answer containing no code, or when you simply want to assess the candidate.",
+  "description": "Execute a code snippet the candidate dictated, in a sandbox, and return its output. Only call this when the candidate has dictated actual, complete source code. Do NOT call it for a verbal description of an approach, for an answer containing no code, or when you simply want to assess the candidate. Optional fields accept null: the model emits null to mean 'no preference', and rejecting that spends a repair turn on a call that was not actually wrong. Required fields stay strict, where a null IS a mistake worth correcting.",
   "type": "object",
   "properties": {
     "language": {
       "type": "string",
-      "enum": ["python", "java", "javascript", "sql"]
+      "enum": [
+        "python",
+        "java",
+        "javascript",
+        "sql"
+      ]
     },
     "source": {
       "type": "string",
       "maxLength": 8000
     },
     "stdin": {
-      "type": "string",
+      "type": [
+        "string",
+        "null"
+      ],
       "maxLength": 2000,
       "default": ""
     },
     "timeoutMs": {
-      "type": "integer",
+      "type": [
+        "integer",
+        "null"
+      ],
       "minimum": 100,
       "maximum": 5000,
       "default": 3000
     }
   },
-  "required": ["language", "source"],
+  "required": [
+    "language",
+    "source"
+  ],
   "additionalProperties": false
 }

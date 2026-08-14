@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://interviewer.org/tools/ask_followup.json",
   "title": "ask_followup",
-  "description": "Ask a follow-up question about the answer the candidate just gave. Use to probe a vague, shallow, or unusually interesting answer.",
+  "description": "Ask a follow-up question about the answer the candidate just gave. Use to probe a vague, shallow, or unusually interesting answer. Optional fields accept null: the model emits null to mean 'no preference', and rejecting that spends a repair turn on a call that was not actually wrong. Required fields stay strict, where a null IS a mistake worth correcting.",
   "type": "object",
   "properties": {
     "question": {
@@ -10,7 +10,10 @@
       "maxLength": 400
     },
     "rationale": {
-      "type": "string",
+      "type": [
+        "string",
+        "null"
+      ],
       "maxLength": 300,
       "description": "Why this probe, in one sentence."
     },
@@ -19,10 +22,22 @@
       "description": "The questionId returned by the fetch_question call this follows up on."
     },
     "competency": {
-      "type": "string",
-      "enum": ["correctness", "depth", "communication", "practical_experience"]
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "correctness",
+        "depth",
+        "communication",
+        "practical_experience",
+        null
+      ]
     }
   },
-  "required": ["question", "parentQuestionId"],
+  "required": [
+    "question",
+    "parentQuestionId"
+  ],
   "additionalProperties": false
 }
