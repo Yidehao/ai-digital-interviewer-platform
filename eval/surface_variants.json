@@ -2,7 +2,14 @@
   "purpose": "C4 - surface-feature sensitivity. Each variant of an answer carries EXACTLY the same technical content; only the surface changes. Any score difference between variants is the grader responding to how someone speaks rather than to what they know, which for a hiring tool is the bias that matters most.",
   "method": "Grade each variant as a complete interview, then compare dimension scores against the `neutral` baseline. Content equivalence is asserted by construction and listed per question below, so a reader can check the claim rather than trust it.",
   "limitation": "The variants are authored, not collected. They are modelled on real patterns - article and preposition slips from speakers of article-less first languages, hedging from junior engineers, padding from nervous ones - but a real non-native speaker's transcript differs in ways no one thinks to write. This measures whether the grader is sensitive to these surface features; it does not establish the magnitude on real speech.",
-  "variants": ["neutral", "non_native", "hedged", "verbose", "terse"],
+  "variants": [
+    "neutral",
+    "non_native",
+    "hedged",
+    "verbose",
+    "terse",
+    "asr"
+  ],
   "questions": [
     {
       "id": "q-cache",
@@ -19,7 +26,8 @@
         "non_native": "I will put the Redis in front of read path, with TTL of 30 second. Difficult part is invalidation. We are publishing invalidation event when write happens, not depend on expiry only, because stale price is more bad than cache miss.",
         "hedged": "I think I'd probably put Redis in front of the read path, maybe with something like a 30 second TTL? The hard part is invalidation, I guess. We sort of published invalidation events on write rather than just relying on expiry, mostly because stale pricing seemed worse than a cache miss.",
         "verbose": "So the way I would approach this, and I've done this before at a previous company, is that I would put Redis in front of the read path. In terms of the TTL, I would go with 30 seconds. Now the thing about caching, and I think a lot of people underestimate this, is that the hard part is really the invalidation. What we ended up doing, after some discussion, was publishing invalidation events on write rather than relying on expiry alone. The reasoning behind that decision was that stale pricing was worse than a cache miss.",
-        "terse": "Redis on the read path, 30s TTL. Invalidation's the hard part. We published invalidation events on write instead of relying on expiry - stale pricing beats a cache miss."
+        "terse": "Redis on the read path, 30s TTL. Invalidation's the hard part. We published invalidation events on write instead of relying on expiry - stale pricing beats a cache miss.",
+        "asr": "I'd put Reedus in front of the Reed path with a 302 TTL the hard part is invalidation we published invalidation events on right rather than relying on expiry because stale pricing was worse than a cache Miss"
       }
     },
     {
@@ -36,7 +44,8 @@
         "non_native": "The query is having composite index on tenant_id and created_at, but ORM was doing order by updated_at, so it makes filesort on 400,000 rows. After adding correct index, it become from eight second to forty millisecond.",
         "hedged": "I think the query had a composite index on tenant_id and created_at? But the ORM was maybe ordering by updated_at, so it kind of did a filesort over something like 400,000 rows. Adding the matching index seemed to take it from eight seconds down to around forty milliseconds.",
         "verbose": "So this is actually something I ran into fairly recently, and it took a while to track down. The query did have a composite index on it, specifically on tenant_id and created_at, which you would think would be enough. But what was actually happening is that the ORM was generating an order by on updated_at, not created_at. And because of that mismatch, the database ended up doing a filesort, and it was doing that filesort over roughly 400,000 rows. Once we added the index that actually matched what the ORM was asking for, the query went from eight seconds all the way down to forty milliseconds.",
-        "terse": "Composite index was on (tenant_id, created_at). ORM ordered by updated_at. Filesort over 400k rows. Matching index: 8s to 40ms."
+        "terse": "Composite index was on (tenant_id, created_at). ORM ordered by updated_at. Filesort over 400k rows. Matching index: 8s to 40ms.",
+        "asr": "the query had a composite index on tennantite and created it but the orm was ordering by updated it so it did a fill a sword over 400,000 rows adding the matching index took it from 8 seconds to 40 milliseconds"
       }
     },
     {
@@ -53,8 +62,10 @@
         "non_native": "I am testing boundary and error path first, because happy path is anyway tested by everyone else. In that service I write property test for the parser, and integration test only for two flow which are touching money.",
         "hedged": "I usually try to test the boundaries and error paths first, I think, because the happy path tends to get exercised by everyone else anyway. On that service I had maybe property tests over the parser, and integration tests just for the two flows that touched money, roughly.",
         "verbose": "This is a question I've thought about quite a bit, because you're right that there's never enough time. My general approach, and this has developed over a few years, is that I test the boundaries and the error paths first. The reasoning there is that the happy path tends to get exercised by everybody else anyway, just through normal use of the system. To give you a concrete example, on one service I worked on, I had property tests covering the parser, and then for integration tests I limited those to only the two flows that actually touched money.",
-        "terse": "Boundaries and error paths first - the happy path gets exercised anyway. Property tests on the parser, integration tests only for the two money flows."
+        "terse": "Boundaries and error paths first - the happy path gets exercised anyway. Property tests on the parser, integration tests only for the two money flows.",
+        "asr": "I test the boundaries and the error paths first because the happy path gets exercised by everyone else anyway on that service I had property tests over the parser and integration tests only for the 2s that touched money"
       }
     }
-  ]
+  ],
+  "asr_note": "The `asr` variant is the `neutral` answer after a real round trip through macOS say -> /speech/uploadVoice -> Google STT. It is not authored: it is what the pipeline actually heard. Grading it against `neutral` isolates how much of the grader's judgement is the microphone rather than the candidate."
 }

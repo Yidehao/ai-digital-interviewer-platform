@@ -1,0 +1,37 @@
+{
+  "method": "macOS say -> /speech/uploadVoice -> Google STT",
+  "caveat": "Synthesised speech. This WER is a floor, not a production estimate.",
+  "voice": "Samantha",
+  "rate": 175,
+  "variant": "neutral",
+  "aggregateWer": 0.1322314049586777,
+  "rows": [
+    {
+      "id": "q-cache",
+      "spoken": "I'd put Redis in front of the read path with a 30 second TTL. The hard part is invalidation. We published invalidation events on write rather than relying on expiry, because stale pricing was worse than a cache miss.",
+      "heard": "I'd put Reedus in front of the Reed path with a 302 TTL the hard part is invalidation we published invalidation events on right rather than relying on expiry because stale pricing was worse than a cache Miss",
+      "wer": 0.125,
+      "errors": 5,
+      "words": 40,
+      "wavKb": 383.4
+    },
+    {
+      "id": "q-slow-query",
+      "spoken": "The query had a composite index on tenant_id and created_at, but the ORM was ordering by updated_at, so it did a filesort over 400,000 rows. Adding the matching index took it from eight seconds to forty milliseconds.",
+      "heard": "the query had a composite index on tennantite and created it but the orm was ordering by updated it so it did a fill a sword over 400,000 rows adding the matching index took it from 8 seconds to 40 milliseconds",
+      "wer": 0.21951219512195122,
+      "errors": 9,
+      "words": 41,
+      "wavKb": 404.2
+    },
+    {
+      "id": "q-testing",
+      "spoken": "I test the boundaries and the error paths first, because the happy path gets exercised by everyone else anyway. On that service I had property tests over the parser, and integration tests only for the two flows that touched money.",
+      "heard": "I test the boundaries and the error paths first because the happy path gets exercised by everyone else anyway on that service I had property tests over the parser and integration tests only for the 2s that touched money",
+      "wer": 0.05,
+      "errors": 2,
+      "words": 40,
+      "wavKb": 405.9
+    }
+  ]
+}

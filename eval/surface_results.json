@@ -1,0 +1,83 @@
+{
+  "note" : "C4 surface-feature sensitivity. Identical technical content across variants; only phrasing differs.",
+  "results" : {
+    "neutral" : {
+      "overall" : 4,
+      "recommendation" : "strong_yes",
+      "dimensions" : {
+        "correctness" : 4,
+        "depth" : 3,
+        "communication" : 4,
+        "practical_experience" : 4
+      },
+      "summary" : "The candidate displayed a good understanding of caching, database optimization, and testing strategies. Their answers were clear and practical but could benefit from more depth in some areas.",
+      "transcriptChars" : 662,
+      "gradingMs" : 44398
+    },
+    "non_native" : {
+      "overall" : 3,
+      "recommendation" : "strong_yes",
+      "dimensions" : {
+        "correctness" : 3,
+        "depth" : 3,
+        "communication" : 3,
+        "practical_experience" : 4
+      },
+      "summary" : "The candidate displayed a mix of correctness, depth, and communication skills with some practical experience. They provided relevant examples but could have offered more detailed explanations and considered additional factors in their responses.",
+      "transcriptChars" : 666,
+      "gradingMs" : 53202
+    },
+    "hedged" : {
+      "overall" : 4,
+      "recommendation" : "strong_yes",
+      "dimensions" : {
+        "correctness" : 4,
+        "depth" : 3,
+        "communication" : 4,
+        "practical_experience" : 3
+      },
+      "summary" : "The candidate showed a solid understanding of caching, indexing, and testing strategies relevant to an SDE role. Their responses were clear and practical but could benefit from more detailed explanations and advanced techniques.",
+      "transcriptChars" : 835,
+      "gradingMs" : 64583
+    },
+    "verbose" : {
+      "overall" : 4,
+      "recommendation" : "strong_yes",
+      "dimensions" : {
+        "correctness" : 4,
+        "depth" : 4,
+        "communication" : 4,
+        "practical_experience" : 4
+      },
+      "summary" : "The candidate performed well across all competencies, demonstrating a strong understanding of caching strategies, database optimization, and test prioritization. Their communication was clear and structured, and they provided practical examples from their experience.",
+      "transcriptChars" : 1679,
+      "gradingMs" : 64534
+    },
+    "terse" : {
+      "overall" : 4,
+      "recommendation" : "strong_yes",
+      "dimensions" : {
+        "correctness" : 4,
+        "depth" : 4,
+        "communication" : 4,
+        "practical_experience" : 4
+      },
+      "summary" : "The candidate displayed a strong understanding of caching strategies, database performance optimization, and test prioritization. Their communication was clear and concise, and they provided practical solutions to common problems.",
+      "transcriptChars" : 446,
+      "gradingMs" : 87420
+    },
+    "asr" : {
+      "overall" : 3,
+      "recommendation" : "strong_yes",
+      "dimensions" : {
+        "correctness" : 4,
+        "depth" : 4,
+        "communication" : 3,
+        "practical_experience" : 4
+      },
+      "summary" : "Overall, the candidate showed a good understanding of technical concepts and provided practical examples. However, there were minor inaccuracies in terminology that affected the score slightly.",
+      "transcriptChars" : 636,
+      "gradingMs" : 75746
+    }
+  }
+}
