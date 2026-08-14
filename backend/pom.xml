@@ -73,6 +73,21 @@
                  keeps core/annotations/databind/jsr310 on one consistent version -->
 
             <!-- json schema validation for the agent tool layer -->
+            <!-- MCP Java SDK. Versions pinned directly rather than via mcp-bom: the BOM is not
+                 in the local repository and the two artifacts below are. The SDK renames classes
+                 across minor versions, so every SDK type is confined to McpServerConfig and
+                 McpToolBridge - an upgrade should touch two files, not the whole module. -->
+            <dependency>
+                <groupId>io.modelcontextprotocol.sdk</groupId>
+                <artifactId>mcp</artifactId>
+                <version>0.11.0</version>
+            </dependency>
+            <dependency>
+                <groupId>io.modelcontextprotocol.sdk</groupId>
+                <artifactId>mcp-spring-webmvc</artifactId>
+                <version>0.11.0</version>
+            </dependency>
+
             <dependency>
                 <groupId>com.networknt</groupId>
                 <artifactId>json-schema-validator</artifactId>

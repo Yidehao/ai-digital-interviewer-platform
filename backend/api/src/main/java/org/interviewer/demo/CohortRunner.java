@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.interviewer.entity.Job;
+import org.interviewer.entity.vo.JobVO;
 import org.interviewer.entity.grading.DimensionScore;
 import org.interviewer.entity.grading.GradingInput;
 import org.interviewer.entity.grading.TranscriptTurn;
@@ -158,7 +159,9 @@ public class CohortRunner implements ApplicationRunner {
         if (jobs.getRows().isEmpty()) {
             return null;
         }
+        // queryList returns JobVO, not Job. Getting this wrong is silent: the caller falls back
+        // to a default rubric and every grade is produced against the wrong instructions.
         Object row = jobs.getRows().get(0);
-        return row instanceof Job j ? jobService.getDetail(j.getId()) : null;
+        return row instanceof JobVO vo ? jobService.getDetail(vo.getJobId()) : null;
     }
 }

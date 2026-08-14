@@ -1,0 +1,27 @@
+# Overrides for the stdio MCP transport.
+#
+# ONE RULE: nothing may write to stdout. Stdout is the JSON-RPC channel, and one stray line
+# corrupts every message after it. Everything below exists to enforce that.
+
+mybatis-plus:
+  global-config:
+    # MyBatis-Plus prints its own ASCII banner to stdout at startup, independent of Spring's.
+    # This was the ACTUAL first thing to corrupt the protocol - two lines of ASCII art arriving
+    # before any JSON-RPC frame - and it is not the log-impl setting everyone warns about. Verified
+    # by driving a real stdio session and asserting every stdout line parses as JSON.
+    banner: false
+  configuration:
+    # The global config sets this to StdOutImpl, which prints every SQL statement to stdout. It was
+    # configured that way long before MCP existed, which is exactly why it is easy to miss: the
+    # server appears to start, then the first database call silently breaks the protocol.
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+
+logging:
+  # Logback writes to stdout by default. Send everything to stderr, where an MCP client ignores it
+  # and a human debugging the process can still read it.
+  config: classpath:logback-mcp-stdio.xml
+
+spring:
+  main:
+    banner-mode: off
+    web-application-type: none

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Logging for the stdio MCP process: everything to stderr, nothing to stdout.
+
+  System.err rather than System.out is the entire content of this file. An MCP client reads stdout
+  as JSON-RPC frames, so a log line there is not noise - it is a protocol violation that manifests
+  as a client that connects and then fails to parse anything.
+-->
+<configuration>
+    <appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
+        <target>System.err</target>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="STDERR"/>
+    </root>
+</configuration>

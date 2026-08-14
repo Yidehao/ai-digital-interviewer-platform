@@ -39,6 +39,18 @@
             <artifactId>flyway-mysql</artifactId>
         </dependency>
 
+        <!-- MCP lives in `api`, never in `service`. mcp-spring-webmvc drags in servlet types,
+             and the headless eval harness links `service` - it must never get the SDK on its
+             classpath, or the offline evaluation stops being able to run without a container. -->
+        <dependency>
+            <groupId>io.modelcontextprotocol.sdk</groupId>
+            <artifactId>mcp</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.modelcontextprotocol.sdk</groupId>
+            <artifactId>mcp-spring-webmvc</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
