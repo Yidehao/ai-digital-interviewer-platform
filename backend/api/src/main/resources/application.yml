@@ -42,3 +42,17 @@ mybatis-plus:
 pagehelper:
   helper-dialect: MYSQL
   support-methods-arguments: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        # prometheus is the one that matters: interview_fallback_total{reason} is the metric that
+        # says whether the model is actually driving the interview or the ladder is carrying it.
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+  metrics:
+    tags:
+      application: ai-digital-interviewer

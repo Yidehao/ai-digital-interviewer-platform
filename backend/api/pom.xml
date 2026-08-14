@@ -39,6 +39,19 @@
             <artifactId>flyway-mysql</artifactId>
         </dependency>
 
+        <!-- Instrumentation. The metric worth watching from day one is
+             interview_fallback_total{reason}: a fallback rate above ~5% means the model is not
+             reliably driving the interview, and the "model-driven" framing needs softening. That
+             is much better learned now than after three more phases sit on top of it. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+
         <!-- MCP lives in `api`, never in `service`. mcp-spring-webmvc drags in servlet types,
              and the headless eval harness links `service` - it must never get the SDK on its
              classpath, or the offline evaluation stops being able to run without a container. -->

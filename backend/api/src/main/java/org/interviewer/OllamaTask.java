@@ -13,7 +13,6 @@ import org.interviewer.utils.OllamaConfig;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
@@ -53,7 +52,21 @@ public class OllamaTask {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Async
+    /**
+     * Runs synchronously, and always has.
+     *
+     * <p>This method carried {@code @Async} for its whole life while no {@code @EnableAsync}
+     * existed anywhere in the application, so the annotation was inert and
+     * {@code /interviewRecord/collect} has always blocked until grading finished. Phase 6 adds
+     * {@code @EnableAsync} for the agent's executors — which would have made this annotation take
+     * effect for the first time and silently converted the legacy endpoint to fire-and-forget,
+     * returning before a grade existed.
+     *
+     * <p>The annotation is removed rather than kept, because the fixed pipeline is the degraded
+     * path behind rung 9 of the fallback ladder and its behaviour must not change as a side effect
+     * of an unrelated feature. If this should become asynchronous, that is a deliberate change with
+     * its own reasoning about what the client reads afterwards.
+     */
     public void display(SubmitAnswerBO submitAnswerBO) {
         log.info("Starting asynchronous Ollama analysis...");
 

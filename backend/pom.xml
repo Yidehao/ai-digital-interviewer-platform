@@ -73,6 +73,12 @@
                  keeps core/annotations/databind/jsr310 on one consistent version -->
 
             <!-- json schema validation for the agent tool layer -->
+            <dependency>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-registry-prometheus</artifactId>
+                <version>1.14.4</version>
+            </dependency>
+
             <!-- MCP Java SDK. Versions pinned directly rather than via mcp-bom: the BOM is not
                  in the local repository and the two artifacts below are. The SDK renames classes
                  across minor versions, so every SDK type is confined to McpServerConfig and
