@@ -44,6 +44,12 @@ public class Job implements Serializable {
 
     private LocalDateTime updatedTime;
 
+    /** Added by V2__agent_loop.sql. */
+    private String interviewMode;
+
+    /** Added by V2__agent_loop.sql. */
+    private String graderPrompt;
+
     public String getId() {
         return id;
     }
@@ -106,6 +112,31 @@ public class Job implements Serializable {
 
     public void setUpdatedTime(LocalDateTime updatedTime) {
         this.updatedTime = updatedTime;
+    }
+
+    /**
+     * {@code scripted} or {@code agent}. Per job, so one job can be flipped to the agent loop
+     * without touching any other. Defaults to scripted in the schema, which is what makes the
+     * migration a no-op until someone deliberately opts a job in.
+     */
+    public String getInterviewMode() {
+        return interviewMode;
+    }
+
+    public void setInterviewMode(String interviewMode) {
+        this.interviewMode = interviewMode;
+    }
+
+    /**
+     * Rubric for the grader. Falls back to {@link #getPrompt()} when null: the interviewer and the
+     * grader want different instructions, but not every job has both written yet.
+     */
+    public String getGraderPrompt() {
+        return graderPrompt;
+    }
+
+    public void setGraderPrompt(String graderPrompt) {
+        this.graderPrompt = graderPrompt;
     }
 
     @Override

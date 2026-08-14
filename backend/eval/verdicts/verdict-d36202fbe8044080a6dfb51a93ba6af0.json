@@ -1,0 +1,40 @@
+{
+  "sessionId" : "d36202fbe8044080a6dfb51a93ba6af0",
+  "candidateId" : "2087819626509844482",
+  "verdict" : {
+    "overall" : 3,
+    "recommendation" : "borderline",
+    "dimensions" : [ {
+      "name" : "correctness",
+      "evidence" : "The candidate provided an example of using Redis with a TTL, but then switched to discussing invalidation events without addressing the interviewer's question. The response about the query optimization and index addition was relevant but did not address the cache consistency issue.",
+      "reasoning" : "While the candidate demonstrated some knowledge of caching strategies and database optimizations, there is a lack of clarity in addressing the specific issue of invalidation events for maintaining cache consistency.",
+      "score" : 2
+    }, {
+      "name" : "depth",
+      "evidence" : "The candidate discussed the use of Redis with TTLs and invalidation events, but did not provide a comprehensive explanation or delve into more advanced concepts like distributed caching strategies or load balancing techniques. The response about query optimization was relevant to database performance.",
+      "reasoning" : "The responses showed some depth in specific areas (caching and database optimization), but lacked the breadth expected of an SDE role, particularly in terms of system design at scale.",
+      "score" : 3
+    }, {
+      "name" : "communication",
+      "evidence" : "The candidate's answers were somewhat disjointed. They moved from discussing Redis to query optimization and then to microservices without a clear connection between the topics. The response about testing was relevant but not directly related to the previous questions.",
+      "reasoning" : "While the candidate attempted to provide relevant information, the responses lacked coherence and did not effectively communicate their thought process or approach.",
+      "score" : 2
+    }, {
+      "name" : "practical_experience",
+      "evidence" : "The candidate provided examples of real-world issues they faced (cache invalidation, query optimization) and how they addressed them. However, the responses were somewhat tangential to the questions asked, particularly regarding cache consistency.",
+      "reasoning" : "The candidate demonstrated some practical experience in addressing technical challenges but did not fully align their answers with the specific questions posed by the interviewer.",
+      "score" : 3
+    } ],
+    "summary" : "<div style='font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4;'> <h2>Technical Interview Summary</h2> <p><strong>Total Score:</strong> 11/20</p> <p><strong>Evaluation:</strong></p> <ul> <li><strong>Correctness (2/5):</strong> The candidate provided relevant examples but did not fully address the questions asked, particularly regarding cache consistency.</li> <li><strong>Depth (3/5):</strong> Demonstrated some depth in specific areas like caching and database optimization but lacked broader system design knowledge.</li> <li><strong>Communication (2/5):</strong> The responses were somewhat disjointed and lacked coherence, making it difficult to follow the candidate's thought process.</li> <li><strong>Practical Experience (3/5):</strong> Provided examples of real-world issues but did not fully align with the questions asked by the interviewer.</li> </ul> <p>The candidate showed some relevant experience and knowledge in technical areas, but there is room for improvement in addressing specific questions directly and maintaining a coherent flow of ideas. This score reflects their overall performance during the interview.</p> </div>"
+  },
+  "gradingMs" : 82699,
+  "stability" : {
+    "paraphraseOverallDelta" : 0,
+    "paraphraseDimensionDeltas" : {
+      "correctness" : 0,
+      "depth" : -1,
+      "communication" : 1,
+      "practical_experience" : 0
+    }
+  }
+}
