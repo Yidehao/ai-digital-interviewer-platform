@@ -47,7 +47,11 @@ import java.util.Map;
 @Component
 public class GraderEvalRunner implements ApplicationRunner {
 
-    private static final Path OUTPUT = Path.of("../eval/verdicts");
+    /**
+     * Relative to the module directory, which is where {@code mvn -pl api spring-boot:run} sets
+     * the working directory - not the repository root, as the first run discovered.
+     */
+    private static final Path OUTPUT = Path.of("../../eval/verdicts");
 
     private final GraderAgent grader;
     private final InterviewSessionMapper sessionMapper;

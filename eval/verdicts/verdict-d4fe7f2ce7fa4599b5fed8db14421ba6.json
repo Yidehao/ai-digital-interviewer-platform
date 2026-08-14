@@ -1,0 +1,40 @@
+{
+  "sessionId" : "d4fe7f2ce7fa4599b5fed8db14421ba6",
+  "candidateId" : "2087819626484678658",
+  "verdict" : {
+    "overall" : 2,
+    "recommendation" : "borderline",
+    "dimensions" : [ {
+      "name" : "correctness",
+      "evidence" : "Candidate suggested adding a cache without providing specific details or justifying the choice. Candidate also mentioned using indexes, but did not explain how they relate to Redis.",
+      "reasoning" : "The candidate's response lacks depth and detail in explaining why Redis would be a good choice for caching. They also did not provide any reasoning behind their initial suggestion of adding a cache.",
+      "score" : 1
+    }, {
+      "name" : "depth",
+      "evidence" : "Candidate repeatedly stated 'It was hard but we figured it out eventually' without providing specific details or examples. Candidate did not elaborate on the challenges and how they were addressed in any scenario.",
+      "reasoning" : "The candidate's responses lack depth as they do not provide detailed explanations, examples, or reasoning for their decisions. They also did not demonstrate a thorough understanding of the technical concepts involved.",
+      "score" : 1
+    }, {
+      "name" : "communication",
+      "evidence" : "Candidate used vague and generic statements such as 'It was hard but we figured it out eventually' in multiple instances, without providing specific details or examples. Candidate also did not explain their reasoning behind certain decisions.",
+      "reasoning" : "The candidate's communication is poor due to the lack of specificity and detail in their responses. They failed to provide clear explanations for their choices and did not engage effectively with the interviewer’s questions.",
+      "score" : 1
+    }, {
+      "name" : "practical_experience",
+      "evidence" : "Candidate provided no specific examples or details about practical experiences related to the scenarios presented by the interviewer. Candidate's responses were vague and generic, lacking concrete instances of handling production issues, designing APIs, or resolving conflicts in pull requests.",
+      "reasoning" : "The candidate did not demonstrate any practical experience through specific examples or detailed accounts of their work. Their responses were too general and did not provide evidence of hands-on technical expertise.",
+      "score" : 1
+    } ],
+    "summary" : "<div style='font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4;'> <h3>Technical Interview Summary</h3> <p><strong>Total Score:</strong> 4/15</p> <p>The candidate demonstrated a lack of depth and detail in their responses. They provided vague and generic statements without specific examples or explanations, which is not consistent with the expectations for an SDE role.</p> <p>Key areas where improvement is needed include providing clear reasoning, giving detailed examples, and demonstrating practical experience. The candidate's overall performance suggests they may need additional training or experience to meet the standards of a Software Development Engineer.</p></div>"
+  },
+  "gradingMs" : 81559,
+  "stability" : {
+    "paraphraseOverallDelta" : 0,
+    "paraphraseDimensionDeltas" : {
+      "correctness" : 1,
+      "depth" : 0,
+      "communication" : 1,
+      "practical_experience" : 0
+    }
+  }
+}
