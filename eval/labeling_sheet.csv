@@ -1,0 +1,13 @@
+participant_id,labeler,overall_1_5,correctness,depth,communication,practical_experience,notes
+strong-neutral,,,,,,,
+strong-non_native,,,,,,,
+strong-verbose,,,,,,,
+strong-terse,,,,,,,
+mixed-neutral,,,,,,,
+mixed-non_native,,,,,,,
+mixed-verbose,,,,,,,
+mixed-terse,,,,,,,
+weak-neutral,,,,,,,
+weak-non_native,,,,,,,
+weak-verbose,,,,,,,
+weak-terse,,,,,,,

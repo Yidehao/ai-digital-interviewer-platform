@@ -13,7 +13,14 @@
     },
     "recommendation": {
       "type": "string",
-      "enum": ["strong_no", "no", "borderline", "yes", "strong_yes"]
+      "enum": [
+        "strong_no",
+        "no",
+        "borderline",
+        "yes",
+        "strong_yes"
+      ],
+      "description": "Must follow from `overall`: 1 -> strong_no, 2 -> no, 3 -> borderline, 4 -> yes, 5 -> strong_yes. Do not recommend advancing a candidate you scored below 4."
     },
     "dimensions": {
       "type": "array",
@@ -24,7 +31,12 @@
         "properties": {
           "name": {
             "type": "string",
-            "enum": ["correctness", "depth", "communication", "practical_experience"]
+            "enum": [
+              "correctness",
+              "depth",
+              "communication",
+              "practical_experience"
+            ]
           },
           "evidence": {
             "type": "string",
@@ -43,7 +55,12 @@
             "description": "Integer from 1 (poor) to 5 (excellent). Must follow from the evidence above."
           }
         },
-        "required": ["name", "evidence", "reasoning", "score"],
+        "required": [
+          "name",
+          "evidence",
+          "reasoning",
+          "score"
+        ],
         "additionalProperties": false
       }
     },
@@ -52,6 +69,11 @@
       "maxLength": 1500
     }
   },
-  "required": ["overall", "recommendation", "dimensions", "summary"],
+  "required": [
+    "overall",
+    "recommendation",
+    "dimensions",
+    "summary"
+  ],
   "additionalProperties": false
 }
