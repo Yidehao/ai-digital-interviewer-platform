@@ -1,0 +1,79 @@
+{
+  "purpose": "A factorial probe of the grader: 3 quality tiers x 4 surface profiles = 12 simulated participants. Quality is designed in (the technical content genuinely differs by tier); surface is designed in independently (within a tier, every profile carries the SAME facts). Grading all 12 separates two questions C4 could only gesture at with one participant per cell: does the grader rank by competence, and does phrasing move the score independently of competence?",
+
+  "what_this_establishes": [
+    "Construct validity: Spearman between designed quality rank and grader score. A grader that cannot order strong > mixed > weak is not measuring competence at all.",
+    "Surface effect size, controlled for quality: the same phrasing shift applied at three different competence levels, so a consistent delta is not an artefact of one answer.",
+    "Range use: whether the grader actually spans 1-5 or compresses everything into 3-4."
+  ],
+
+  "what_this_does_NOT_establish": [
+    "Agreement with humans. There are no human labels here, and generating them would make 'grader vs human' mean 'grader vs the script that wrote both sides'.",
+    "A human ceiling. That needs two people rating the same transcripts, and no simulation substitutes for it.",
+    "Magnitude on real speech. These are authored to model real patterns; a real non-native speaker's transcript differs in ways nobody thinks to write."
+  ],
+
+  "quality_tiers": {
+    "strong": "Specific, quantified, names the tradeoff and why. Would advance.",
+    "mixed": "Correct direction, thin on specifics, no tradeoff reasoning. Borderline.",
+    "weak": "Vague, no mechanism, could have been said by someone who has not done it. Would not advance."
+  },
+  "surface_profiles": ["neutral", "non_native", "verbose", "terse"],
+
+  "questions": [
+    {
+      "id": "q-cache",
+      "question": "How would you add a cache in front of a read-heavy endpoint?",
+      "tiers": {
+        "strong": {
+          "facts": ["Redis on the read path", "30s TTL", "invalidation is the hard part", "publishes invalidation events on write", "stale pricing worse than a cache miss"],
+          "neutral": "I'd put Redis in front of the read path with a 30 second TTL. The hard part is invalidation. We published invalidation events on write rather than relying on expiry, because stale pricing was worse than a cache miss.",
+          "non_native": "I will put the Redis in front of read path, TTL of 30 second. Difficult part is invalidation. We are publishing invalidation event when write happens, not depend on expiry only, because stale price is more bad than cache miss.",
+          "verbose": "So the way I'd approach this, and I have done this before, is to put Redis in front of the read path. For the TTL I would go with 30 seconds. Now the thing people underestimate about caching is that the hard part is really the invalidation. What we ended up doing was publishing invalidation events on write rather than relying on expiry alone, and the reasoning was that stale pricing was worse than a cache miss.",
+          "terse": "Redis on the read path, 30s TTL. Invalidation's the hard part. We published invalidation events on write instead of relying on expiry - stale pricing beats a cache miss."
+        },
+        "mixed": {
+          "facts": ["Redis", "a TTL", "mentions invalidation exists", "no mechanism", "no tradeoff"],
+          "neutral": "I'd use Redis with a TTL on the read endpoint. You have to think about invalidation as well, since the data can go stale.",
+          "non_native": "I will use the Redis with TTL on read endpoint. Also need to think about invalidation, because data can become stale.",
+          "verbose": "So for this kind of problem I would generally reach for Redis. You would set a TTL on the read endpoint, and that handles a lot of it. The other thing you have to think about, and this is something that comes up, is invalidation, because the data can go stale over time.",
+          "terse": "Redis, TTL on the read endpoint. Invalidation matters too - data goes stale."
+        },
+        "weak": {
+          "facts": ["caching is good", "no technology", "no mechanism", "no tradeoff"],
+          "neutral": "I'd just add a cache in front of it, probably Redis or something. That should make it faster.",
+          "non_native": "I will just add the cache in front, maybe Redis or something. It should be more fast.",
+          "verbose": "So for something like this, what I would probably do is add a cache in front of it. There are a few options but Redis is one that people use. The main thing is that it should make it faster, which is what we want here.",
+          "terse": "Add a cache. Redis probably. Makes it faster."
+        }
+      }
+    },
+    {
+      "id": "q-slow-query",
+      "question": "A query that used to be fast is now taking eight seconds. Where do you start?",
+      "tiers": {
+        "strong": {
+          "facts": ["composite index on (tenant_id, created_at)", "ORM ordered by updated_at", "filesort over 400k rows", "matching index: 8s to 40ms"],
+          "neutral": "The query had a composite index on tenant_id and created_at, but the ORM was ordering by updated_at, so it did a filesort over 400,000 rows. Adding the matching index took it from eight seconds to forty milliseconds.",
+          "non_native": "The query is having composite index on tenant_id and created_at, but ORM was doing order by updated_at, so it makes filesort on 400,000 rows. After adding correct index, it become from eight second to forty millisecond.",
+          "verbose": "This is something I ran into recently and it took a while to track down. The query did have a composite index, specifically on tenant_id and created_at, which you would think would be enough. But the ORM was generating an order by on updated_at, not created_at, and because of that mismatch the database ended up doing a filesort over roughly 400,000 rows. Once we added the index that matched what the ORM was asking for, it went from eight seconds down to forty milliseconds.",
+          "terse": "Composite index was on (tenant_id, created_at). ORM ordered by updated_at. Filesort over 400k rows. Matching index: 8s to 40ms."
+        },
+        "mixed": {
+          "facts": ["would check the query plan", "suspects a missing index", "no diagnosis", "no numbers"],
+          "neutral": "I'd look at the execution plan first and check whether it's using an index. Usually when a query slows down like that it's an index problem, or the table has grown.",
+          "non_native": "I will look at execution plan first, check if index is used. Usually when query become slow like this, is index problem, or table is grown too big.",
+          "verbose": "The first thing I would do in a situation like this is pull up the execution plan, because that tells you what the database is actually doing. Then I would check whether it is using an index or not. In my experience, when a query slows down like that, it is usually either an index problem or the table has simply grown over time.",
+          "terse": "Check the execution plan. Look for a missing index. Or the table grew."
+        },
+        "weak": {
+          "facts": ["indexes make things faster", "no method", "no diagnosis"],
+          "neutral": "We used indexes. That normally makes queries faster.",
+          "non_native": "We are using index. Normally it makes the query more fast.",
+          "verbose": "So in terms of query performance, the main thing that we relied on was indexes. Indexes are generally the thing that makes queries faster, so that would be where I would look for something like this.",
+          "terse": "Indexes. They make queries faster."
+        }
+      }
+    }
+  ]
+}
