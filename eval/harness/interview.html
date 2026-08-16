@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<!--
+  The eval client.
+
+  Deliberately ugly and deliberately permanent. This is not a prototype of the production client -
+  it is the tool every future prompt, rubric or grader change gets evaluated with, so it optimises
+  for being obvious and unbreakable rather than for looking like a product.
+
+  Three decisions worth knowing:
+
+  1. RECORDS 16 kHz MONO WAV VIA WEB AUDIO, NOT MediaRecorder.
+     The plan said MediaRecorder. Phase 0's audio probe showed why that is wrong here:
+     MediaRecorder produces WebM/Opus, and the server decodes with javax.sound
+     (AudioSystem.getAudioInputStream plus an MP3 fallback), which cannot read WebM. A browser
+     recording that the server silently rejects would look like a broken interview.
+
+  2. BOTH C5 ARMS RUN THROUGH THIS PAGE.
+     The scripted arm is the degraded path (rung 9) - same endpoints, same transport, same STT,
+     same timing, model disabled. Running the agent arm here and the scripted arm on the uni-app
+     client would compare two clients as much as two strategies.
+
+  3. THE RAW EVENT LOG IS ALWAYS VISIBLE.
+     When a session goes wrong mid-interview with a person sitting there, the operator needs to see
+     what actually arrived, not a spinner.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Interview eval harness</title>
+<style>
+  body { font: 15px/1.5 -apple-system, system-ui, sans-serif; margin: 0; background: #f7f7f8; color: #1a1a1a; }
+  main { max-width: 780px; margin: 0 auto; padding: 24px 20px 64px; }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  .sub { color: #666; font-size: 13px; margin-bottom: 20px; }
+  .card { background: #fff; border: 1px solid #e3e3e6; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+  .consent { background: #fffbe6; border-color: #f0e0a0; font-size: 13px; }
+  label { display: block; font-size: 13px; color: #555; margin-bottom: 4px; }
+  input[type=text] { width: 100%; padding: 8px; font: inherit; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+  button { font: inherit; padding: 9px 16px; border-radius: 6px; border: 1px solid #c8c8cc; background: #fff; cursor: pointer; }
+  button.primary { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+  button.rec { background: #c0392b; color: #fff; border-color: #c0392b; }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  #question { font-size: 19px; line-height: 1.45; min-height: 60px; }
+  #status { font-size: 13px; color: #666; margin-top: 10px; }
+  #transcript { width: 100%; min-height: 70px; font: inherit; padding: 8px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+  #log { font: 12px/1.45 ui-monospace, Menlo, monospace; background: #16161a; color: #d8d8dc; padding: 12px;
+         border-radius: 6px; height: 220px; overflow-y: auto; white-space: pre-wrap; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .muted { color: #888; }
+  .err { color: #c0392b; }
+  .ok { color: #1e7d43; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Interview eval harness</h1>
+  <div class="sub">Bare client for evaluation. Not the production interface.</div>
+
+  <div class="card consent">
+    <strong>Before you start.</strong> This session records your voice and stores a text transcript.
+    Audio stays on this machine and is never committed. Transcripts may be published after names,
+    employers and project names are removed. You can stop at any point and ask for the recording to
+    be deleted.
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <div style="flex:1; min-width:240px">
+        <label for="candidate">Candidate ID</label>
+        <input type="text" id="candidate" placeholder="e.g. 2087819626484678658">
+      </div>
+      <div style="flex:1; min-width:200px">
+        <label for="base">Server</label>
+        <input type="text" id="base" value="http://127.0.0.1:8080">
+      </div>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <button id="start" class="primary">Start interview</button>
+      <button id="stop" disabled>End session</button>
+      <span id="sessionLabel" class="muted"></span>
+    </div>
+  </div>
+
+  <div class="card">
+    <label>Question</label>
+    <div id="question" class="muted">Not started.</div>
+    <div id="status"></div>
+  </div>
+
+  <div class="card">
+    <label for="transcript">Your answer</label>
+    <textarea id="transcript" placeholder="Record to fill this in, or type directly."></textarea>
+    <div class="row" style="margin-top:10px">
+      <button id="record" disabled>Record</button>
+      <button id="send" disabled>Submit answer</button>
+      <span id="recStatus" class="muted"></span>
+    </div>
+  </div>
+
+  <div class="card">
+    <label>Event log</label>
+    <div id="log"></div>
+  </div>
+</main>
+
+<script>
+"use strict";
+
+const $ = (id) => document.getElementById(id);
+const state = { sessionId: null, turnId: null, source: null, recording: false,
+                ctx: null, stream: null, chunks: [], processor: null };
+
+function log(msg, cls) {
+  const el = $("log");
+  const time = new Date().toISOString().substr(11, 12);
+  el.innerHTML += `<span class="${cls || ""}">${time}  ${msg}</span>\n`;
+  el.scrollTop = el.scrollHeight;
+}
+
+// ---------------------------------------------------------------- the stream
+
+$("start").onclick = () => {
+  const candidate = $("candidate").value.trim();
+  if (!candidate) { alert("Candidate ID required"); return; }
+  const base = $("base").value.replace(/\/$/, "");
+
+  log(`connecting to ${base}/interview/${candidate}/stream`);
+  // EventSource rather than fetch+ReadableStream: it reconnects on its own and parses named
+  // events, which is the whole reason the server emits named events rather than bare data.
+  const src = new EventSource(`${base}/interview/${candidate}/stream`);
+  state.source = src;
+  $("start").disabled = true;
+  $("stop").disabled = false;
+
+  src.addEventListener("session", (e) => {
+    state.sessionId = JSON.parse(e.data).sessionId;
+    $("sessionLabel").textContent = `session ${state.sessionId.substr(0, 12)}…`;
+    log(`session ${state.sessionId}`, "ok");
+  });
+
+  src.addEventListener("question", (e) => {
+    const q = JSON.parse(e.data);
+    state.turnId = q.turnId;
+    $("question").textContent = q.text;
+    $("question").className = "";
+    $("transcript").value = "";
+    $("record").disabled = false;
+    $("send").disabled = false;
+    // videoSrc is null for follow-ups: no avatar clip exists for a question that did not exist a
+    // moment ago. The production client overlays text on an idle loop; here we just show the text.
+    log(`question turn=${q.turnId}${q.videoSrc ? "" : "  (follow-up, no clip)"}: ${q.text.substr(0, 70)}…`);
+  });
+
+  src.addEventListener("done", (e) => {
+    const d = JSON.parse(e.data);
+    $("question").textContent = d.closingMessage || "Interview complete.";
+    $("record").disabled = true;
+    $("send").disabled = true;
+    log(`done  state=${d.state}`, "ok");
+    src.close();
+    $("stop").disabled = true;
+    $("start").disabled = false;
+  });
+
+  src.addEventListener("error", (e) => {
+    log(`server refused: ${e.data || "(no detail)"}`, "err");
+  });
+
+  src.onerror = () => {
+    // Fires on a normal close too, so this is informational rather than an alarm.
+    log("stream closed", "muted");
+    $("start").disabled = false;
+    $("stop").disabled = true;
+  };
+};
+
+$("stop").onclick = () => {
+  if (state.source) state.source.close();
+  $("start").disabled = false;
+  $("stop").disabled = true;
+  log("session ended by operator");
+};
+
+// ---------------------------------------------------------------- recording
+
+$("record").onclick = async () => {
+  if (state.recording) { await stopRecording(); return; }
+  try {
+    state.stream = await navigator.mediaDevices.getUserMedia({
+      audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true }
+    });
+  } catch (err) {
+    log(`microphone denied: ${err.message}`, "err");
+    return;
+  }
+  // 16 kHz explicitly. The server's STT_FORMAT is 16 kHz mono LINEAR16 and the decoder does not
+  // resample, so recording at the browser default of 44.1/48 kHz would send audio whose header
+  // disagrees with the samples.
+  state.ctx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+  const source = state.ctx.createMediaStreamSource(state.stream);
+  state.processor = state.ctx.createScriptProcessor(4096, 1, 1);
+  state.chunks = [];
+
+  state.processor.onaudioprocess = (e) => {
+    // Copy: the event buffer is reused by the audio thread, so keeping the reference would give
+    // every chunk the same (last) contents.
+    state.chunks.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+  };
+  source.connect(state.processor);
+  state.processor.connect(state.ctx.destination);
+
+  state.recording = true;
+  $("record").textContent = "Stop";
+  $("record").className = "rec";
+  $("recStatus").textContent = "recording…";
+  log("recording started (16 kHz mono)");
+};
+
+async function stopRecording() {
+  state.recording = false;
+  $("record").textContent = "Record";
+  $("record").className = "";
+  if (state.processor) state.processor.disconnect();
+  if (state.stream) state.stream.getTracks().forEach(t => t.stop());
+  if (state.ctx) await state.ctx.close();
+
+  const wav = encodeWav(state.chunks, 16000);
+  $("recStatus").textContent = `${(wav.size / 1024).toFixed(0)} KB, transcribing…`;
+  log(`recorded ${(wav.size / 1024).toFixed(0)} KB, sending to /speech/uploadVoice`);
+
+  const base = $("base").value.replace(/\/$/, "");
+  const form = new FormData();
+  form.append("file", wav, "answer.wav");
+  try {
+    const res = await fetch(`${base}/speech/uploadVoice`, { method: "POST", body: form });
+    const body = await res.json();
+    if (body.success && body.data) {
+      $("transcript").value = body.data;
+      $("recStatus").textContent = "transcribed — check it before submitting";
+      log(`transcript: ${body.data.substr(0, 80)}…`, "ok");
+    } else {
+      $("recStatus").textContent = "no transcript returned";
+      log(`STT returned nothing: ${JSON.stringify(body)}`, "err");
+    }
+  } catch (err) {
+    $("recStatus").textContent = "upload failed";
+    log(`upload failed: ${err.message}`, "err");
+  }
+}
+
+/**
+ * Float32 chunks -> a 16-bit PCM WAV blob.
+ *
+ * Written out rather than pulled from a library because it is 30 lines and the format has to match
+ * the server's STT_FORMAT exactly: 16 kHz, mono, 16-bit signed, little-endian.
+ */
+function encodeWav(chunks, sampleRate) {
+  let length = 0;
+  chunks.forEach(c => length += c.length);
+  const samples = new Float32Array(length);
+  let offset = 0;
+  chunks.forEach(c => { samples.set(c, offset); offset += c.length; });
+
+  const buffer = new ArrayBuffer(44 + samples.length * 2);
+  const view = new DataView(buffer);
+  const writeString = (pos, str) => { for (let i = 0; i < str.length; i++) view.setUint8(pos + i, str.charCodeAt(i)); };
+
+  writeString(0, "RIFF");
+  view.setUint32(4, 36 + samples.length * 2, true);
+  writeString(8, "WAVE");
+  writeString(12, "fmt ");
+  view.setUint32(16, 16, true);          // PCM header size
+  view.setUint16(20, 1, true);           // format = PCM
+  view.setUint16(22, 1, true);           // channels = mono
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true);  // byte rate
+  view.setUint16(32, 2, true);           // block align
+  view.setUint16(34, 16, true);          // bits per sample
+  writeString(36, "data");
+  view.setUint32(40, samples.length * 2, true);
+
+  let pos = 44;
+  for (let i = 0; i < samples.length; i++) {
+    // Clamp before scaling, or a sample slightly outside [-1,1] wraps to the opposite extreme and
+    // becomes an audible click.
+    const s = Math.max(-1, Math.min(1, samples[i]));
+    view.setInt16(pos, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+    pos += 2;
+  }
+  return new Blob([view], { type: "audio/wav" });
+}
+
+// ---------------------------------------------------------------- submitting
+
+$("send").onclick = async () => {
+  const text = $("transcript").value.trim();
+  // The server refuses a blank transcript - a failed STT is not an answer, and an empty ANSWER
+  // turn would be graded as if the candidate had said nothing. Catch it here so the operator sees
+  // "re-record" rather than a rejection they have to decode.
+  if (!text) { alert("Nothing to submit — record again, or type the answer."); return; }
+  if (!state.sessionId) { alert("No session"); return; }
+
+  const base = $("base").value.replace(/\/$/, "");
+  const params = new URLSearchParams({ turnId: String(state.turnId), transcript: text });
+  try {
+    const res = await fetch(`${base}/interview/${state.sessionId}/answer?${params}`, { method: "POST" });
+    const body = await res.json();
+    if (body.success) {
+      log(`answer submitted for turn ${state.turnId} (${text.length} chars)`, "ok");
+      $("send").disabled = true;
+      $("record").disabled = true;
+      $("status").textContent = "Submitted. Waiting for the next question…";
+    } else {
+      log(`answer rejected: ${JSON.stringify(body)}`, "err");
+    }
+  } catch (err) {
+    log(`submit failed: ${err.message}`, "err");
+  }
+};
+
+log("ready. Serve this page from http://127.0.0.1:8081 — the server's CORS allow-list names that");
+log("origin, and a file:// page sends Origin: null which will be refused.");
+</script>
+</body>
+</html>

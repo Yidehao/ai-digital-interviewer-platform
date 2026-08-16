@@ -169,6 +169,14 @@ public class InterviewOrchestrator {
         if (session == null || session.isTerminal()) {
             return false;
         }
+        // A blank transcript is a failed speech-to-text, not an answer. Accepting it would put an
+        // empty ANSWER turn in the transcript and the candidate would be graded on nothing - and
+        // the grader has no way to tell "said nothing" from "the microphone failed". Rejecting
+        // lets the client re-record, which is the only recovery that helps the candidate.
+        if (transcript == null || transcript.isBlank()) {
+            log.info("blank transcript for session {} turn {}, refused", sessionId, turnId);
+            return false;
+        }
         // Idempotency: a retried POST for the same turn must not be counted twice.
         if (!store.lockTurn(sessionId, turnId)) {
             log.info("duplicate answer for session {} turn {}, ignored", sessionId, turnId);
