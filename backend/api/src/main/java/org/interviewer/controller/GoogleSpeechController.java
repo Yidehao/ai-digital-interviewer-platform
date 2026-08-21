@@ -51,8 +51,9 @@ public class GoogleSpeechController {
         log.info("[speech-upload] decoded to PCM: pcmLength={} bytes (~{} seconds @16kHz mono)",
                 pcmBytes.length, pcmBytes.length / 32000);
 
-        String result = recognizePcm(pcmBytes);
-        log.info("[speech-upload] Recognition result: \"{}\"", result);
+        Recognition result = recognizePcm(pcmBytes);
+        log.info("[speech-upload] Recognition result: \"{}\" (confidence={})",
+                result.transcript(), result.confidence());
 
         return GraceJSONResult.ok(result);
     }
@@ -134,7 +135,7 @@ public class GoogleSpeechController {
     /**
      * Recognize PCM data using Google Cloud Speech-to-Text (16kHz LINEAR16).
      */
-    private String recognizePcm(byte[] pcmBytes) throws Exception {
+    private Recognition recognizePcm(byte[] pcmBytes) throws Exception {
         // Shared client - deliberately not closed here, it outlives the request
         SpeechClient speechClient = speechClientProvider.get();
         RecognitionConfig config = RecognitionConfig.newBuilder()
@@ -156,12 +157,30 @@ public class GoogleSpeechController {
         List<SpeechRecognitionResult> results = response.getResultsList();
 
         if (results.isEmpty()) {
-            return "";
+            return Recognition.empty();
         }
         SpeechRecognitionResult first = results.get(0);
         if (first.getAlternativesCount() == 0) {
-            return "";
+            return Recognition.empty();
         }
-        return first.getAlternatives(0).getTranscript();
+        SpeechRecognitionAlternative best = first.getAlternatives(0);
+        return new Recognition(best.getTranscript(), (double) best.getConfidence());
+    }
+
+    /**
+     * What the STT actually knows, rather than half of it.
+     *
+     * <p>Google returns a confidence with every alternative and this endpoint used to discard it,
+     * which made {@code Turn.sttConfidence} unfillable: the column existed, the request parameter
+     * existed, and no client could ever supply a value because the server never sent one. A field
+     * that looks like a control and cannot be set is worse than no field.
+     *
+     * <p>{@code confidence} is null when nothing was recognised — distinct from 0.0, which would
+     * claim the recogniser was certain the candidate said nothing.
+     */
+    public record Recognition(String transcript, Double confidence) {
+        static Recognition empty() {
+            return new Recognition("", null);
+        }
     }
 }

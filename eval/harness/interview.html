@@ -144,6 +144,8 @@ $("start").onclick = () => {
     $("question").textContent = q.text;
     $("question").className = "";
     $("transcript").value = "";
+    state.sttConfidence = null;
+    state.edited = false;
     $("record").disabled = false;
     $("send").disabled = false;
     // videoSrc is null for follow-ups: no avatar clip exists for a question that did not exist a
@@ -234,10 +236,15 @@ async function stopRecording() {
   try {
     const res = await fetch(`${base}/speech/uploadVoice`, { method: "POST", body: form });
     const body = await res.json();
-    if (body.success && body.data) {
-      $("transcript").value = body.data;
-      $("recStatus").textContent = "transcribed — check it before submitting";
-      log(`transcript: ${body.data.substr(0, 80)}…`, "ok");
+    // /speech/uploadVoice now returns {transcript, confidence} rather than a bare string: Google
+    // reports a confidence per alternative and the endpoint used to drop it, which left
+    // Turn.sttConfidence permanently null.
+    if (body.success && body.data && body.data.transcript) {
+      $("transcript").value = body.data.transcript;
+      state.sttConfidence = body.data.confidence;
+      const conf = body.data.confidence == null ? "n/a" : body.data.confidence.toFixed(3);
+      $("recStatus").textContent = `transcribed (confidence ${conf}) — check it before submitting`;
+      log(`transcript: ${body.data.transcript.substr(0, 80)}… (confidence ${conf})`, "ok");
     } else {
       $("recStatus").textContent = "no transcript returned";
       log(`STT returned nothing: ${JSON.stringify(body)}`, "err");
@@ -292,6 +299,11 @@ function encodeWav(chunks, sampleRate) {
 
 // ---------------------------------------------------------------- submitting
 
+// The candidate correcting a mistranscription is the normal case (measured WER 0.132, errors on
+// technical terms). Once they have fixed the words, the recogniser's confidence no longer describes
+// the text being submitted, so it is dropped rather than sent alongside corrected text.
+$("transcript").addEventListener("input", () => { state.edited = true; });
+
 $("send").onclick = async () => {
   const text = $("transcript").value.trim();
   // The server refuses a blank transcript - a failed STT is not an answer, and an empty ANSWER
@@ -302,6 +314,11 @@ $("send").onclick = async () => {
 
   const base = $("base").value.replace(/\/$/, "");
   const params = new URLSearchParams({ turnId: String(state.turnId), transcript: text });
+  // Only sent when the STT actually produced one. A typed answer has no confidence, and sending a
+  // fabricated 1.0 would tell the grader the recogniser was certain about words it never heard.
+  if (state.sttConfidence != null && !state.edited) {
+    params.set("sttConfidence", String(state.sttConfidence));
+  }
   try {
     const res = await fetch(`${base}/interview/${state.sessionId}/answer?${params}`, { method: "POST" });
     const body = await res.json();

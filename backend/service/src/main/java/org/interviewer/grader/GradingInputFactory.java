@@ -38,6 +38,20 @@ import java.util.Set;
 @Component
 public class GradingInputFactory {
 
+    /**
+     * Below this, the turn is marked uncertain.
+     *
+     * <p><b>This number is a starting point, not a measurement.</b> Google's confidence and word
+     * error rate are different quantities and nothing here has established the mapping between
+     * them. What is known is that WER on clean synthesised speech was 0.132 with the errors landing
+     * on technical vocabulary, so the honest reading is that some flagging is warranted and the
+     * threshold needs calibrating against labelled audio once real recordings exist.
+     *
+     * <p>To calibrate: record the confidence alongside a hand-corrected transcript for a few dozen
+     * turns, and pick the value that catches the turns whose errors changed the meaning.
+     */
+    static final double UNCERTAIN_BELOW = 0.85;
+
     private final QuestionLibService questionLibService;
 
     public GradingInputFactory(QuestionLibService questionLibService) {
@@ -59,7 +73,7 @@ public class GradingInputFactory {
                     ? TranscriptTurn.ANSWER
                     : TranscriptTurn.QUESTION;
             turns.add(new TranscriptTurn(turns.size(), kind, turn.getText(),
-                    turn.durationSeconds()));
+                    turn.durationSeconds(), isUncertain(turn)));
         }
 
         String rubric = job == null ? "" : firstNonBlank(job.getGraderPrompt(), job.getPrompt());
@@ -71,6 +85,17 @@ public class GradingInputFactory {
                 List.copyOf(turns),
                 totalSeconds(session),
                 withReferenceAnswers ? referenceAnswers(session) : List.of());
+    }
+
+    /**
+     * Null means the client never sent a confidence, which is not the same as low confidence.
+     *
+     * <p>Treating a missing value as uncertain would flag every turn from any client that has not
+     * been updated, and a flag that is always on carries no information.
+     */
+    private boolean isUncertain(Turn turn) {
+        Double confidence = turn.getSttConfidence();
+        return confidence != null && confidence < UNCERTAIN_BELOW;
     }
 
     /**

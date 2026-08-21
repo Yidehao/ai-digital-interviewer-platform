@@ -219,7 +219,12 @@ export default {
               var res = JSON.parse(result.data);
               // console.log(res);
               if (res.status == 200) {
-                var answerContent = res.data;
+                // /speech/uploadVoice returns {transcript, confidence} - it used to return a bare
+                // string and discard the confidence Google reports, which left Turn.sttConfidence
+                // unfillable by any client.
+                var answerContent = res.data ? res.data.transcript : "";
+                self.questionList[currentIndex].sttConfidence =
+                  res.data ? res.data.confidence : null;
 
                 console.log("answerContent = " + answerContent);
                 console.log("self.currentIndex = " + currentIndex);

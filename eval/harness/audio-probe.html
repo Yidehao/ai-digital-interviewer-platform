@@ -110,7 +110,7 @@ async function post(blob, filename) {
 
 function render(target, info, blob) {
   const ok = info.result && info.result.body && info.result.body.status === 200;
-  const transcript = ok ? (info.result.body.data ?? '') : null;
+  const transcript = ok ? (info.result.body.data?.transcript ?? '') : null;
   const el = $(target);
   el.innerHTML = '';
   const t = document.createElement('table');

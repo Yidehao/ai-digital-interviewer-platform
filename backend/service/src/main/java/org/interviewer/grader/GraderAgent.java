@@ -172,10 +172,24 @@ public class GraderAgent {
             out.append("\n");
         }
 
+        // Only stated when a turn is actually flagged. A standing caveat about transcription would
+        // sit in every prompt including the twelve authored cohort transcripts, where no ASR was
+        // involved at all - changing the baseline prompt for runs that have nothing to caveat.
+        boolean anyUncertain = input.turns().stream().anyMatch(TranscriptTurn::uncertainTranscription);
+        if (anyUncertain) {
+            out.append("Some answers below are marked [transcription uncertain]. Those were "
+                    + "converted from speech and the recogniser was unsure of the words. Judge the "
+                    + "technical content of those answers, not their wording: an odd or garbled "
+                    + "phrase there is more likely a transcription error than something the "
+                    + "candidate said. Do not lower a score for phrasing in a marked answer.\n\n");
+        }
+
         out.append("Transcript (").append(input.totalSeconds()).append("s total):\n");
         for (TranscriptTurn turn : input.turns()) {
             if (TranscriptTurn.ANSWER.equals(turn.kind())) {
-                out.append("CANDIDATE (").append(turn.seconds()).append("s):\n")
+                out.append("CANDIDATE (").append(turn.seconds()).append("s")
+                        .append(turn.uncertainTranscription() ? ", [transcription uncertain]" : "")
+                        .append("):\n")
                         .append(ANSWER_OPEN).append("\n")
                         .append(sanitize(turn.text())).append("\n")
                         .append(ANSWER_CLOSE).append("\n\n");
