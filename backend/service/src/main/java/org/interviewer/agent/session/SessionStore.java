@@ -19,6 +19,21 @@ import java.util.Optional;
  *
  * <p>TTL matches {@code REDIS_USER_TOKEN}'s three hours. A session should not outlive the login
  * that created it.
+ *
+ * <h2>Why there is also an in-memory map</h2>
+ *
+ * <p>Redis alone was <b>wrong</b>, and wrong in a way that looked like it worked. {@link #find}
+ * deserialises JSON, so every call returned a <em>different object</em>. The loop held one instance
+ * for the whole interview while {@code submitAnswer} appended the candidate's answer to a
+ * short-lived copy, saved it, and returned {@code success:true}. The answer reached Redis and never
+ * reached the interview. Worse, {@code synchronized(session)} in the two places locked different
+ * objects, so the mutual exclusion the orchestrator documents did not exist and a {@code notifyAll}
+ * woke a monitor nobody was waiting on.
+ *
+ * <p>Live sessions are therefore kept as one object per node, and Redis holds a snapshot for
+ * persistence. That is not a new constraint: {@code EmitterRegistry} is already an in-memory map,
+ * so this deployment already requires sticky sessions. What changes is that the requirement is now
+ * stated in the one place that would otherwise silently drop data.
  */
 @Slf4j
 @Component
@@ -26,11 +41,21 @@ public class SessionStore extends BaseInfoProperties {
 
     private final ObjectMapper objectMapper;
 
+    /**
+     * The one instance of each in-flight session on this node.
+     *
+     * <p>Bounded by concurrent interviews rather than by time: {@link #delete} runs in the
+     * orchestrator's {@code finally}, so a session leaves this map whether it finished, failed or
+     * timed out.
+     */
+    private final java.util.Map<String, InterviewSession> live = new java.util.concurrent.ConcurrentHashMap<>();
+
     public SessionStore(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
     public void save(InterviewSession session) {
+        live.put(session.getSessionId(), session);
         try {
             redis.set(key(session.getSessionId()),
                     objectMapper.writeValueAsString(session),
@@ -42,6 +67,13 @@ public class SessionStore extends BaseInfoProperties {
     }
 
     public Optional<InterviewSession> find(String sessionId) {
+        // The live object first. Returning a fresh deserialisation while the loop is running would
+        // hand the caller a snapshot, and mutations to it - an answer, most importantly - would be
+        // written to Redis and never seen by the interview.
+        InterviewSession inFlight = live.get(sessionId);
+        if (inFlight != null) {
+            return Optional.of(inFlight);
+        }
         String json = redis.get(key(sessionId));
         if (json == null || json.isBlank()) {
             return Optional.empty();
@@ -57,7 +89,13 @@ public class SessionStore extends BaseInfoProperties {
     }
 
     public void delete(String sessionId) {
+        live.remove(sessionId);
         redis.del(key(sessionId));
+    }
+
+    /** Live sessions on this node. Exposed for the gauge, which is how a leak would be noticed. */
+    public int liveCount() {
+        return live.size();
     }
 
     /**

@@ -78,7 +78,12 @@ public class AgentMetrics {
                 "reason", String.valueOf(session.getTerminalReason())).increment();
         registry.summary("interview.prompt_tokens").record(session.getPromptTokens());
         registry.summary("interview.completion_tokens").record(session.getCompletionTokens());
-        registry.summary("interview.turns").record(session.getTurnCount());
-        registry.summary("interview.tool_calls").record(session.getToolCallCount());
+        registry.summary("interview.session.turns").record(session.getTurnCount());
+        // NOT "interview.tool_calls". Micrometer's Prometheus naming maps both that and the
+        // per-tool counter "interview.tool.calls" onto interview_tool_calls, and Prometheus
+        // refuses a second meter of the same name with a different tag set - so this summary was
+        // silently dropped at registration and the per-session distribution never existed. The
+        // registry logs it once at WARN and then at DEBUG, which is how it went unnoticed.
+        registry.summary("interview.session.tool_calls").record(session.getToolCallCount());
     }
 }

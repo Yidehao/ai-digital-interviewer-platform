@@ -43,6 +43,10 @@ class AgentWiringTest {
             .withBean(ToolSchemas.class)
             .withBean(InProcessToolGateway.class)
             .withBean(OllamaHttpClient.class)
+            // The real gate, not CandidateGate.NONE. This test exists to prove the context starts,
+            // and it caught exactly that when the gate was added: a collaborator the loop requires
+            // is a wiring fact, so substituting the test double here would defeat the point.
+            .withBean(MonitorCandidateGate.class)
             .withBean(InterviewerAgent.class);
 
     @Test

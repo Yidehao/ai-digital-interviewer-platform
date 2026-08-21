@@ -12,6 +12,7 @@ import org.interviewer.agent.tool.ToolName;
 import org.interviewer.entity.agent.FallbackReason;
 import org.interviewer.entity.agent.InterviewSession;
 import org.interviewer.entity.agent.SessionState;
+import org.interviewer.entity.agent.Turn;
 import org.interviewer.entity.agent.TurnKind;
 import org.interviewer.entity.ollama.ChatMessage;
 import org.interviewer.entity.ollama.ChatRequest;
@@ -71,6 +72,7 @@ public class InterviewerAgent {
     private final AgentProperties agentProperties;
     private final LlmProperties llmProperties;
     private final ExecutorService toolExecutor;
+    private final CandidateGate candidateGate;
     private final Clock clock;
 
     public InterviewerAgent(OllamaClient llm,
@@ -82,6 +84,7 @@ public class InterviewerAgent {
                             AgentProperties agentProperties,
                             LlmProperties llmProperties,
                             ExecutorService toolExecutor,
+                            CandidateGate candidateGate,
                             Clock clock) {
         this.llm = llm;
         this.gateway = gateway;
@@ -92,6 +95,7 @@ public class InterviewerAgent {
         this.agentProperties = agentProperties;
         this.llmProperties = llmProperties;
         this.toolExecutor = toolExecutor;
+        this.candidateGate = candidateGate;
         this.clock = clock;
     }
 
@@ -146,8 +150,38 @@ public class InterviewerAgent {
             if (handleToolCall(session, events, response)) {
                 return session;
             }
+            // The interview's turn-taking, and the reason it is an interview. Without this the
+            // loop calls the model again the instant a tool returns; the model sees a question it
+            // has already asked and no answer, and asks another one. A real session over the
+            // polling transport produced fourteen questions and zero answers in nine seconds.
+            if (!awaitCandidate(session)) {
+                return close(session, events, FallbackReason.CANDIDATE_TIMEOUT);
+            }
         }
         return session;
+    }
+
+    /**
+     * Wait for an answer, but only when one is actually owed.
+     *
+     * <p>Most turns are not questions — the model scores a response, records evidence, runs code.
+     * Waiting after those would stall the interview on a turn the candidate was never asked to
+     * participate in, so the gate is consulted only when the last transcript turn is something a
+     * person is expected to answer.
+     *
+     * @return false when the candidate stopped answering and the interview should end
+     */
+    private boolean awaitCandidate(InterviewSession session) {
+        List<Turn> turns = session.getTurns();
+        if (turns.isEmpty()) {
+            return true;
+        }
+        Turn last = turns.get(turns.size() - 1);
+        if (last.getKind() != TurnKind.QUESTION && last.getKind() != TurnKind.FOLLOWUP) {
+            return true;
+        }
+        return candidateGate.awaitAnswer(session, last.getSeq(),
+                agentProperties.getAnswerTimeoutMs());
     }
 
     // ------------------------------------------------------------------ rungs 7 and 8
@@ -365,6 +399,11 @@ public class InterviewerAgent {
 
         while (serveNextQuestionOurselves(session, events)) {
             if (session.getToolCallCount() >= agentProperties.getMaxToolCalls()) {
+                break;
+            }
+            // The scripted fallback has to take turns as well. A candidate whose model went down
+            // mid-interview should get a slower interview, not a wall of questions.
+            if (!awaitCandidate(session)) {
                 break;
             }
         }

@@ -37,6 +37,18 @@ public class AgentProperties {
 
     private int maxWallClockMinutes = 45;
 
+    /**
+     * How long the interviewer waits for an answer before ending the interview.
+     *
+     * <p>Five minutes is longer than any answer needs and short enough that a candidate who has
+     * walked away does not hold a session slot until the 45-minute wall clock retires it.
+     *
+     * <p>The wait itself is what makes this an interview rather than a monologue: without it the
+     * loop asks the next question the moment the previous tool call returns, and a real session
+     * produced fourteen questions and zero answers in nine seconds.
+     */
+    private long answerTimeoutMs = 300_000L;
+
     /** Follow-ups per parent question. */
     private int maxFollowupsPerQuestion = 2;
 

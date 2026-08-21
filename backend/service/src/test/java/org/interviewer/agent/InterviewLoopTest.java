@@ -41,7 +41,8 @@ class InterviewLoopTest {
     private InterviewerAgent agentWith(OllamaClient llm, FakeToolGateway gateway) {
         return new InterviewerAgent(llm, gateway, ToolSchemas.compiled(mapper),
                 new FallbackPlanner(), new ConversationWindow(agentProperties), mapper,
-                agentProperties, llmProperties, executor, Clock.systemUTC());
+                agentProperties, llmProperties, executor,
+                CandidateGate.NONE, Clock.systemUTC());
     }
 
     // ------------------------------------------------------------------ the Phase 2 demo

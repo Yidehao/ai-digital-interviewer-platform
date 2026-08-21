@@ -39,5 +39,14 @@ public enum FallbackReason {
     BUDGET,
 
     /** Rung 9 - Ollama unreachable. Degrade to the scripted pipeline; the candidate still finishes. */
-    MODEL_UNREACHABLE
+    MODEL_UNREACHABLE,
+
+    /**
+     * The candidate stopped answering.
+     *
+     * <p>Not a model failure and not a bug - a person closed their laptop, or their connection
+     * died. It is a rung because the alternative is a session that occupies a thread and a slot in
+     * the concurrency budget until the 45-minute wall clock retires it.
+     */
+    CANDIDATE_TIMEOUT
 }

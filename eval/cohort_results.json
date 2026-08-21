@@ -6,37 +6,37 @@
     "designedRank" : 3,
     "surface" : "neutral",
     "overall" : 3,
-    "recommendation" : "strong_yes",
+    "recommendation" : "borderline",
     "dimensions" : {
       "correctness" : 4,
       "depth" : 4,
-      "communication" : 4,
+      "communication" : 3,
       "practical_experience" : 4
     },
     "transcriptChars" : 432,
-    "gradingMs" : 38913
+    "gradingMs" : 67703
   }, {
     "id" : "strong-non_native",
     "designedTier" : "strong",
     "designedRank" : 3,
     "surface" : "non_native",
     "overall" : 3,
-    "recommendation" : "strong_yes",
+    "recommendation" : "borderline",
     "dimensions" : {
       "correctness" : 3,
-      "depth" : 3,
-      "communication" : 3,
+      "depth" : 2,
+      "communication" : 4,
       "practical_experience" : 3
     },
     "transcriptChars" : 445,
-    "gradingMs" : 43085
+    "gradingMs" : 56003
   }, {
     "id" : "strong-verbose",
     "designedTier" : "strong",
     "designedRank" : 3,
     "surface" : "verbose",
-    "overall" : 4,
-    "recommendation" : "strong_yes",
+    "overall" : 3,
+    "recommendation" : "borderline",
     "dimensions" : {
       "correctness" : 4,
       "depth" : 4,
@@ -44,97 +44,97 @@
       "practical_experience" : 4
     },
     "transcriptChars" : 891,
-    "gradingMs" : 48533
+    "gradingMs" : 45156
   }, {
     "id" : "strong-terse",
     "designedTier" : "strong",
     "designedRank" : 3,
     "surface" : "terse",
     "overall" : 3,
-    "recommendation" : "strong_yes",
+    "recommendation" : "borderline",
     "dimensions" : {
       "correctness" : 4,
-      "depth" : 4,
-      "communication" : 3,
-      "practical_experience" : 2
+      "depth" : 3,
+      "communication" : 5,
+      "practical_experience" : 3
     },
     "transcriptChars" : 296,
-    "gradingMs" : 52044
+    "gradingMs" : 59117
   }, {
     "id" : "mixed-neutral",
     "designedTier" : "mixed",
     "designedRank" : 2,
     "surface" : "neutral",
     "overall" : 3,
-    "recommendation" : "strong_yes",
+    "recommendation" : "borderline",
     "dimensions" : {
-      "correctness" : 4,
-      "depth" : 3,
-      "communication" : 4,
+      "correctness" : 3,
+      "depth" : 2,
+      "communication" : 3,
       "practical_experience" : 2
     },
     "transcriptChars" : 285,
-    "gradingMs" : 46746
+    "gradingMs" : 49323
   }, {
     "id" : "mixed-non_native",
     "designedTier" : "mixed",
     "designedRank" : 2,
     "surface" : "non_native",
     "overall" : 3,
-    "recommendation" : "strong_yes",
+    "recommendation" : "borderline",
     "dimensions" : {
       "correctness" : 3,
-      "depth" : 3,
-      "communication" : 3,
+      "depth" : 2,
+      "communication" : 4,
       "practical_experience" : 2
     },
     "transcriptChars" : 264,
-    "gradingMs" : 55789
+    "gradingMs" : 69864
   }, {
     "id" : "mixed-verbose",
     "designedTier" : "mixed",
     "designedRank" : 2,
     "surface" : "verbose",
     "overall" : 3,
-    "recommendation" : "strong_yes",
+    "recommendation" : "borderline",
     "dimensions" : {
-      "correctness" : 4,
-      "depth" : 3,
-      "communication" : 4,
+      "correctness" : 3,
+      "depth" : 2,
+      "communication" : 3,
       "practical_experience" : 2
     },
     "transcriptChars" : 600,
-    "gradingMs" : 49638
+    "gradingMs" : 52984
   }, {
     "id" : "mixed-terse",
     "designedTier" : "mixed",
     "designedRank" : 2,
     "surface" : "terse",
     "overall" : 3,
-    "recommendation" : "strong_yes",
+    "recommendation" : "borderline",
     "dimensions" : {
-      "correctness" : 3,
-      "depth" : 3,
-      "communication" : 4,
-      "practical_experience" : 3
+      "correctness" : 4,
+      "depth" : 2,
+      "communication" : 3,
+      "practical_experience" : 2
     },
     "transcriptChars" : 146,
-    "gradingMs" : 65703
+    "gradingMs" : 43441
   }, {
     "id" : "weak-neutral",
     "designedTier" : "weak",
     "designedRank" : 1,
     "surface" : "neutral",
     "overall" : 2,
-    "recommendation" : "strong_yes",
+    "recommendation" : "no",
     "dimensions" : {
       "correctness" : 2,
       "depth" : 2,
-      "communication" : 2,
-      "practical_experience" : 1
+      "communication" : 3,
+      "practical_experience" : 2
     },
     "transcriptChars" : 145,
-    "gradingMs" : 66940
+    "gradingMs" : 40529
   }, {
     "id" : "weak-non_native",
     "designedTier" : "weak",
@@ -146,17 +146,17 @@
       "correctness" : 2,
       "depth" : 2,
       "communication" : 3,
-      "practical_experience" : 1
+      "practical_experience" : 2
     },
     "transcriptChars" : 143,
-    "gradingMs" : 76778
+    "gradingMs" : 50110
   }, {
     "id" : "weak-verbose",
     "designedTier" : "weak",
     "designedRank" : 1,
     "surface" : "verbose",
     "overall" : 3,
-    "recommendation" : "strong_yes",
+    "recommendation" : "borderline",
     "dimensions" : {
       "correctness" : 3,
       "depth" : 2,
@@ -164,21 +164,21 @@
       "practical_experience" : 2
     },
     "transcriptChars" : 417,
-    "gradingMs" : 54097
+    "gradingMs" : 55316
   }, {
     "id" : "weak-terse",
     "designedTier" : "weak",
     "designedRank" : 1,
     "surface" : "terse",
     "overall" : 2,
-    "recommendation" : "strong_yes",
+    "recommendation" : "no",
     "dimensions" : {
-      "correctness" : 3,
+      "correctness" : 2,
       "depth" : 2,
       "communication" : 3,
-      "practical_experience" : 1
+      "practical_experience" : 2
     },
     "transcriptChars" : 79,
-    "gradingMs" : 55237
+    "gradingMs" : 102949
   } ]
 }

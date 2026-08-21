@@ -52,7 +52,11 @@ class FallbackLadderTest {
         ToolSchemas schemas = ToolSchemas.compiled(mapper);
         return new InterviewerAgent(llm, gateway, schemas, new FallbackPlanner(),
                 new ConversationWindow(agentProperties), mapper,
-                agentProperties, llmProperties, executor, clock);
+                agentProperties, llmProperties, executor,
+                // No candidate here, and saying so explicitly is the point: these tests drive the
+                // loop with nobody on the other end, which is exactly the condition that hid the
+                // missing turn-taking for eight phases.
+                CandidateGate.NONE, clock);
     }
 
     // ------------------------------------------------------------------ rung 1

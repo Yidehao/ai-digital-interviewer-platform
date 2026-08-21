@@ -19,6 +19,7 @@ Anything that moves between runs cannot be reported. Anything that holds can.
     python3 eval/compare_runs.py
 """
 
+import argparse
 import json
 import sys
 from pathlib import Path
@@ -36,14 +37,36 @@ def load(name):
 
 
 def main():
-    run1 = load("cohort_results_run1.json")
-    run2 = load("cohort_results.json")
+    # Both files are named explicitly, and both conditions have to be stated. The defaults used to
+    # be baked in, and the header claimed "same grader, temperature 0" whatever was actually in the
+    # two files - so the moment one of them came from a different rubric, the script confidently
+    # reported a rubric change as run-to-run noise. Which is exactly what happened.
+    parser = argparse.ArgumentParser(description=__doc__,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--a", default="cohort_results_run1_fallbackrubric.json")
+    parser.add_argument("--b", default="cohort_results.json")
+    parser.add_argument("--label-a", default="fallback rubric")
+    parser.add_argument("--label-b", default="written rubric")
+    args = parser.parse_args()
+
+    run1 = load(args.a)
+    run2 = load(args.b)
     if not run1 or not run2:
-        print("need both cohort_results_run1.json and cohort_results.json")
+        print(f"need both {args.a} and {args.b}")
         return 1
 
+    same_condition = args.label_a == args.label_b
+
     print("=" * 78)
-    print("RUN 1 vs RUN 2 — same twelve participants, same grader, temperature 0")
+    print(f"COHORT COMPARISON — same twelve participants, temperature 0")
+    print(f"  A: {args.label_a:<28} ({args.a})")
+    print(f"  B: {args.label_b:<28} ({args.b})")
+    if not same_condition:
+        print()
+        print("  THESE ARE DIFFERENT CONDITIONS. Movement below is the change plus run-to-run")
+        print("  noise, and this script cannot separate them. Between two IDENTICAL runs, 3 of 12")
+        print("  participants moved - so a difference at that scale is not attributable to the")
+        print("  change, and only an effect clearly larger than it is worth discussing at all.")
     print("=" * 78)
 
     # ---------------------------------------------------------------- the fix
@@ -66,13 +89,17 @@ def main():
     total = len(run1)
     print(f"\n  consistent: run 1 {ok1}/{total}   run 2 {ok2}/{total}")
     if ok2 > ok1:
-        print("  >> the schema fix worked: stating the mapping was enough.")
+        print("  >> 12/12 by construction, not by persuasion. GraderAgent.recommendationFor")
+        print("     derives this field from `overall` in code; the model is no longer asked for")
+        print("     it, so an inconsistent row is unrepresentable. A run predating that change")
+        print("     shows what asking got you: 1/12.")
     elif ok2 == ok1:
         print("  >> no improvement. The model is ignoring the stated mapping, so the field needs")
         print("     to be derived in code from `overall` rather than asked for.")
 
     # ---------------------------------------------------------------- reproducibility
-    print("\nreproducibility — which scores moved between identical runs?")
+    print("\nwhich scores moved?" if not same_condition
+          else "\nreproducibility — which scores moved between identical runs?")
     moved = stable = 0
     for pid in sorted(run1):
         if pid not in run2:

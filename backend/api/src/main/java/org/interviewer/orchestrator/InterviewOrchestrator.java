@@ -189,6 +189,10 @@ public class InterviewOrchestrator {
             turn.setSttConfidence(sttConfidence);
             session.getMessages().add(ChatMessage.user(promptBuilder.wrapAnswer(transcript)));
             store.save(session);
+            // Wakes the loop, which is parked on this monitor waiting for exactly this. Without
+            // the notify the interview still continues - MonitorCandidateGate wakes on its own
+            // deadline - but every answer would cost the candidate a five-minute pause.
+            session.notifyAll();
         }
         return true;
     }
