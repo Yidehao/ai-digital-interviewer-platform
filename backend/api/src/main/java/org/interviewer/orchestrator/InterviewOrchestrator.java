@@ -55,6 +55,7 @@ public class InterviewOrchestrator {
     private final CandidateService candidateService;
     private final JobService jobService;
     private final Clock clock;
+    private final VerdictWriter verdicts;
 
     /**
      * Injected and submitted to explicitly, rather than using {@code @Async} on the method below.
@@ -78,6 +79,7 @@ public class InterviewOrchestrator {
                                  CandidateService candidateService,
                                  JobService jobService,
                                  Clock clock,
+                                 VerdictWriter verdicts,
                                  @Qualifier("agentExecutor")
                                  java.util.concurrent.Executor agentExecutor) {
         this.agent = agent;
@@ -89,6 +91,7 @@ public class InterviewOrchestrator {
         this.candidateService = candidateService;
         this.jobService = jobService;
         this.clock = clock;
+        this.verdicts = verdicts;
         this.agentExecutor = agentExecutor;
     }
 
@@ -301,6 +304,12 @@ public class InterviewOrchestrator {
         } catch (RuntimeException e) {
             log.error("could not persist session {}", session.getSessionId(), e);
         }
+        // Grading is queued, not run here. It is one model call at 40-70 seconds against the local
+        // 7B, and this method runs on the agent pool - the pool the concurrency figure is bounded
+        // by. Holding a thread there to score someone who has already left would trade capacity
+        // for nothing. Queued before the store entry is dropped, because the input is built from
+        // the live session.
+        verdicts.gradeLater(session);
         metrics.sessionFinished(session);
         store.releaseCandidate(session.getCandidateId());
         store.delete(session.getSessionId());
