@@ -14,6 +14,7 @@ import org.interviewer.entity.vo.InitQuestionsVO;
 import org.interviewer.entity.vo.QuestionLibVO;
 import org.interviewer.service.CandidateService;
 import org.interviewer.service.JobService;
+import org.interviewer.base.MediaUrlResolver;
 import org.interviewer.service.QuestionLibService;
 import org.interviewer.utils.PagedGridResult;
 import jakarta.annotation.Resource;
@@ -44,8 +45,15 @@ public class QuestionLibServiceImpl extends BaseInfoProperties implements Questi
     @Resource
     private JobService jobService;
 
+    @Resource
+    private MediaUrlResolver mediaUrls;
+
     @Override
     public void createOrUpdate(QuestionLibBO questionLibBO) {
+        // Normalised on the way in as well as the way out. Otherwise the admin UI, which submits
+        // back whatever URL it was shown, would write today's host into the row and the value
+        // would rot again the next time this machine changes address.
+        questionLibBO.setAiSrc(mediaUrls.pathOf(questionLibBO.getAiSrc()));
 
         QuestionLib questionLib = new QuestionLib();
         BeanUtils.copyProperties(questionLibBO, questionLib);
@@ -75,6 +83,9 @@ public class QuestionLibServiceImpl extends BaseInfoProperties implements Questi
         }
 
         List<QuestionLibVO> list =  questionLibMapperCustom.queryQuestionLibList(map);
+        if (list != null) {
+            list.forEach(q -> q.setAiSrc(mediaUrls.resolve(q.getAiSrc())));
+        }
 
         return setterPagedGrid(list, page);
     }
@@ -140,7 +151,14 @@ public class QuestionLibServiceImpl extends BaseInfoProperties implements Questi
         // Single query: the database does the randomisation and the limit. Asking for more
         // questions than the bank holds simply returns the whole bank.
         List<InitQuestionsVO> questions = questionLibMapperCustom.queryRandomQuestions(map);
-        return questions == null ? new ArrayList<>() : questions;
+        if (questions == null) {
+            return new ArrayList<>();
+        }
+        // Resolved here rather than at upload time, because this is the one place both the scripted
+        // path and the agent's fetch_question read questions - so a stored path becomes a reachable
+        // URL exactly once, using the endpoint this deployment is actually configured with.
+        questions.forEach(q -> q.setAiSrc(mediaUrls.resolve(q.getAiSrc())));
+        return questions;
     }
 
     @Override
