@@ -23,3 +23,12 @@ interviewer:
     # raise to 7000 to model a cold prompt and watch the pools saturate instead.
     think-millis: 50
     turns-per-session: 6
+
+  pools:
+    agent:
+      # Raised well above the production default (4/16/32) so the load test finds where the APP
+      # breaks rather than where it was configured to stop. 48 was the old rejection point - 16
+      # threads plus a 32-slot queue - which measured the config, not the machine.
+      core: 32
+      max: 128
+      queue: 384   # sweep setting; the app was still clean at 512 concurrent

@@ -1,47 +1,68 @@
-# Phase 8 — load test results
+# Load test — app tier, model stubbed
 
-**App tier, model stubbed, per node.** Apple M1, 8 cores, 16 GB. `dev,loadtest` profile.
+**Headline: the app tier did not break at any level tested.** The highest clean concurrency was, at
+every pool size, exactly the configured admission bound — threads + queue. The number is a statement
+about configuration, not about the machine.
 
-## The curve
+Apple M1, 16 GB. `dev,loadtest` profile: model stubbed, `NoWaitCandidateGate` active (no session ever
+waits for a candidate), one node.
 
-| concurrent | completed | rejected | first event p50 | total p50 | sessions/s |
-|---|---|---|---|---|---|
-| 32 | 32 | 0 | 0.019 s | 0.96 s | 30.2 |
-| 40 | 40 | 0 | 0.022 s | 0.98 s | 26.5 |
-| **48** | **48** | **0** | **0.025 s** | **1.00 s** | **31.5** |
-| 56 | 48 | 8 | 0.030 s | 1.01 s | 31.2 |
-| 64 | 48 | 16 | 0.029 s | 1.01 s | 30.9 |
+| threads | queue | admission cap | max clean | sess/s at cap | first-event p50 / p95 | session p50 |
+|---|---|---|---|---|---|---|
+| 32 | 96 | 128 | **128** | 60 | 0.087 / 0.124 s | 1.56 s |
+| 64 | 192 | 256 | **256** | 115 | 0.121 / 0.182 s | 1.36 s |
+| 128 | 384 | 512 | **512** | 205 | 0.213 / 0.323 s | 1.54 s |
 
-## What the number means
+Throughput scales linearly with thread count; latency stays flat. Beyond the bound, excess sessions
+are refused immediately and the admitted ones are unaffected — at 600 concurrent against a 512 bound,
+512 completed at 205 sessions/s while 88 were refused.
 
-**48 concurrent SSE interview sessions per node.** That is not a hardware limit — it is
-`agentExecutor`'s deliberate bound: 16 threads plus a 32-slot queue, with `AbortPolicy`. The
-measurement matches the configuration exactly, and beyond it precisely the excess is refused.
+**What was never the constraint:** CPU held between 5% and 20%, and HikariCP `connections.pending`
+never exceeded 1 against a 20-connection pool. Nothing in the app tier saturated.
 
-**Rejection is clean, not degraded.** Latency is flat across the knee: first event stays ~0.03 s
-and total ~1.0 s at 64 concurrent, where 16 sessions are being turned away. The system does not
-get slower under overload; it declines work. `CallerRunsPolicy` would have produced the opposite —
-interviews running on Tomcat threads, the app looking healthy while its request threads drained.
+## Three measurement bugs found before the numbers meant anything
 
-**The app tier was not saturated at 48.** Throughput held at ~31 sessions/s and latency did not
-move, so the ceiling is the configured bound rather than CPU or memory. Raising `maxPoolSize` and
-the queue would raise it; whether that is wise depends on what the model tier can actually feed.
+Each of these produced a plausible-looking curve that was wrong.
 
-## What this is not
+**1. Two candidate rows.** One in-flight interview per candidate is enforced by design
+(`claimCandidate`, a Redis SETNX). Driving 128 concurrent sessions against 2 candidates gives 2
+sessions and 126 refusals, which reads exactly like a capacity ceiling. `seed_loadtest_candidates.py`
+now creates one row per concurrent session.
 
-- **Not end-to-end capacity.** The model is stubbed at 50 ms. One 7B model on one GPU serialises,
-  so a real-model curve would flatten at 1–2 sessions and describe Ollama rather than this system.
-- **Not horizontal.** `EmitterRegistry` is an in-memory map because `RedisOperator` has no pub/sub.
-  A second node shares nothing, and a load balancer would need sticky sessions.
-- **Not measured with logging on.** `mybatis-plus log-impl` is `Slf4jImpl` here. Left at the global
-  `StdOutImpl`, this would have measured `System.out` contention.
+**2. A rejection leak, and then a cleanup leak.** Both left the candidate claimed:
 
-## The bug in the first version of this harness
+- `agentExecutor.execute` throws `RejectedExecutionException` under overload — by design — but by
+  then the candidate was claimed, the session was in Redis and an emitter was registered, and none
+  of it was undone. **A rejected candidate was locked out for the claim's full three-hour TTL.**
+- `finish()` ran as a straight sequence with `verdicts.gradeLater()` *before* the releases. That call
+  throws when the grading queue is full, so under load every finished session skipped its own
+  cleanup. A sweep left **134 orphaned claims with both pools completely idle.**
 
-The first run reported **114 concurrent with zero failures**. It was wrong. The harness counted any
-stream that produced events as a success, and a rejected session sends one event then closes — so
-rejections scored as successes. The server's own metrics gave it away: 169 sessions finished out of
-272 attempted.
+The second one also flattered the benchmark: sessions that skipped cleanup finished faster, so
+throughput appeared to jump from 15 to 56 sessions/s at exactly the concurrency where the grading
+queue overflowed. A bug that makes the benchmark look better is the worst kind.
 
-Fixed by requiring `event:done`. **A load test that scores rejections as successes measures
-nothing**, and the failure mode is silent — it produces a large, flattering, false number.
+**3. Not enough JVM warmup.** A fresh JVM sustains ~15 sessions/s and stays there far longer than
+feels plausible — two rounds of 48 was nowhere near enough. Steady state arrives somewhere around 700
+sessions. The tell is a curve where **throughput rises with concurrency**: that is compilation
+finishing mid-sweep, not headroom appearing. `--warmup-rounds` now defaults to 6 × 128.
+
+## The real bottleneck is grading, not the interview
+
+With every finished session actually graded, throughput settles at roughly half the thread count
+(~31/s at 64 threads). With the grading queue saturated and grades shed, it reaches ~100/s on the same
+pool. `gradingExecutor` is 2 threads by design, because grading is one model call — measured at 91 s
+against the local 7B.
+
+**That is the number that matters for capacity planning, and it is not the interview loop.** Two
+threads at ~91 s per grade is about 0.02 grades/s, so any sustained interview rate above roughly one
+per minute builds an unbounded backlog. Interviews are cheap; grading them is not.
+
+## Reproducing
+
+```bash
+python3 eval/seed_loadtest_candidates.py --count 600     # one row per concurrent session
+cd backend && mvn -pl api spring-boot:run -Dspring-boot.run.profiles=dev,loadtest
+python3 eval/loadtest.py --levels 128,256,384,512,600 --candidates "$(cat ids.txt)"
+python3 eval/seed_loadtest_candidates.py --delete        # afterwards
+```

@@ -142,6 +142,10 @@ def main():
     parser.add_argument("--candidates", default=None,
                         help="comma-separated candidate ids; defaults to the demo pair")
     parser.add_argument("--out", default=str(HERE / "loadtest_results.json"))
+    parser.add_argument("--warmup", type=int, default=128,
+                        help="unmeasured sessions per warmup round; 0 disables")
+    parser.add_argument("--warmup-rounds", type=int, default=6,
+                        help="how many warmup rounds; the JVM needs ~700 sessions, see below")
     args = parser.parse_args()
 
     candidate_ids = (args.candidates.split(",") if args.candidates
@@ -156,6 +160,26 @@ def main():
     print(f"\n  target {args.base_url}   candidates {len(candidate_ids)}\n")
     print(f"  {'conc':>5} {'ok':>5} {'fail':>5} {'first p50':>10} {'first p95':>10} "
           f"{'total p50':>10} {'sess/s':>8}  errors")
+
+    # WARM THE JVM BEFORE MEASURING ANYTHING.
+    #
+    # Without this the curve is a picture of HotSpot, not of the application. The first sweep run
+    # here reported throughput flat at ~15 sessions/s from 16 to 96 concurrent and then jumping to
+    # 59 at 128 - while p50 session time FELL from 3.35 s to 1.42 s. More load, less latency, four
+    # times the throughput: that is not a saturation curve, it is compilation finishing partway
+    # through the run. Every level before the jump was measuring interpreted bytecode.
+    # HOW MUCH WARMUP: measured, not guessed. A fresh JVM sustains ~15 sessions/s and stays there
+    # for far longer than feels plausible - two rounds of 48 was not remotely enough, and the first
+    # version of this warmup left the early levels of every sweep running interpreted. Throughput
+    # reaches its steady ~60/s somewhere around 700 sessions, after which every level from 64 to 128
+    # reports the same figure. The tell that you have not warmed enough is a curve where throughput
+    # RISES with concurrency: that is compilation finishing mid-sweep, not headroom appearing.
+    if args.warmup:
+        total = args.warmup * args.warmup_rounds
+        print(f"\n  warming up: {args.warmup_rounds} rounds x {args.warmup} = {total} sessions...")
+        for _ in range(args.warmup_rounds):
+            asyncio.run(run_level(args.base_url, candidate_ids, args.warmup, args.timeout))
+        print("  warm.\n")
 
     rows = []
     for level in levels:
@@ -174,7 +198,12 @@ def main():
 
     Path(args.out).write_text(json.dumps({
         "note": "App tier only, model stubbed via the loadtest profile. PER NODE: EmitterRegistry "
-                "is an in-memory map because RedisOperator has no pub/sub.",
+                "and the live-session map are in-memory because RedisOperator has no pub/sub. "
+                "No answer waiting - NoWaitCandidateGate is active under this profile, so these "
+                "sessions never park on the candidate. Concurrency is also bounded by the number "
+                "of candidate rows: one in-flight interview per candidate is enforced by design, "
+                "so seed at least as many as the highest level (eval/seed_loadtest_candidates.py).",
+        "warmupSessions": args.warmup,
         "levels": rows}, indent=2))
     print(f"\n  written to {args.out}")
 

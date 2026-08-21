@@ -1,0 +1,106 @@
+{
+  "note": "App tier only, model stubbed via the loadtest profile. PER NODE: EmitterRegistry and the live-session map are in-memory because RedisOperator has no pub/sub. No answer waiting - NoWaitCandidateGate is active under this profile, so these sessions never park on the candidate. Concurrency is also bounded by the number of candidate rows: one in-flight interview per candidate is enforced by design, so seed at least as many as the highest level (eval/seed_loadtest_candidates.py).",
+  "warmupSessions": 48,
+  "levels": [
+    {
+      "concurrency": 16,
+      "completed": 16,
+      "failed": 0,
+      "errors": {},
+      "wallSeconds": 1.03,
+      "firstEventP50": 0.017,
+      "firstEventP95": 0.021,
+      "totalP50": 0.94,
+      "totalP95": 1.02,
+      "throughput": 15.55
+    },
+    {
+      "concurrency": 32,
+      "completed": 32,
+      "failed": 0,
+      "errors": {},
+      "wallSeconds": 2.0,
+      "firstEventP50": 0.034,
+      "firstEventP95": 0.05,
+      "totalP50": 1.44,
+      "totalP95": 1.97,
+      "throughput": 15.98
+    },
+    {
+      "concurrency": 48,
+      "completed": 48,
+      "failed": 0,
+      "errors": {},
+      "wallSeconds": 3.08,
+      "firstEventP50": 0.046,
+      "firstEventP95": 0.058,
+      "totalP50": 1.91,
+      "totalP95": 2.96,
+      "throughput": 15.59
+    },
+    {
+      "concurrency": 64,
+      "completed": 64,
+      "failed": 0,
+      "errors": {},
+      "wallSeconds": 4.1,
+      "firstEventP50": 0.079,
+      "firstEventP95": 0.095,
+      "totalP50": 2.45,
+      "totalP95": 3.96,
+      "throughput": 15.6
+    },
+    {
+      "concurrency": 96,
+      "completed": 96,
+      "failed": 0,
+      "errors": {},
+      "wallSeconds": 6.29,
+      "firstEventP50": 0.121,
+      "firstEventP95": 0.153,
+      "totalP50": 3.42,
+      "totalP95": 5.91,
+      "throughput": 15.27
+    },
+    {
+      "concurrency": 128,
+      "completed": 128,
+      "failed": 0,
+      "errors": {},
+      "wallSeconds": 2.21,
+      "firstEventP50": 0.087,
+      "firstEventP95": 0.124,
+      "totalP50": 1.56,
+      "totalP95": 2.15,
+      "throughput": 57.82
+    },
+    {
+      "concurrency": 160,
+      "completed": 128,
+      "failed": 32,
+      "errors": {
+        "refused": 32
+      },
+      "wallSeconds": 2.14,
+      "firstEventP50": 0.062,
+      "firstEventP95": 0.093,
+      "totalP50": 1.47,
+      "totalP95": 2.09,
+      "throughput": 59.82
+    },
+    {
+      "concurrency": 200,
+      "completed": 128,
+      "failed": 72,
+      "errors": {
+        "refused": 72
+      },
+      "wallSeconds": 2.15,
+      "firstEventP50": 0.069,
+      "firstEventP95": 0.105,
+      "totalP50": 1.48,
+      "totalP95": 2.1,
+      "throughput": 59.4
+    }
+  ]
+}

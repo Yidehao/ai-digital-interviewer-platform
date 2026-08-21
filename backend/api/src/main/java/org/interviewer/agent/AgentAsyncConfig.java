@@ -1,5 +1,6 @@
 package org.interviewer.agent;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -39,9 +40,46 @@ import java.util.concurrent.Executor;
 @EnableAsync
 public class AgentAsyncConfig {
 
+    /**
+     * Agent pool size, overridable per profile.
+     *
+     * <p>Hardcoded until now, which made the load test measure a number that had been <em>chosen</em>
+     * rather than found: 16 threads plus a 32-slot queue rejects at 48, so "48 concurrent" was the
+     * configuration reading itself back. Sweeping the real ceiling needs this to move without a
+     * recompile.
+     *
+     * <p>Defaults raised from 4/16/32 to 8/32/96 on the evidence of the sweep below. The old values
+     * admitted 48 sessions and the app was nowhere near strained at that point; these admit 128,
+     * which clears the 90-concurrent target with headroom and is still a deliberate bound rather
+     * than "as many as fit".
+     *
+     * <p><b>The app tier has no ceiling worth quoting.</b> Sweeping three pool sizes on an M1 with
+     * the model stubbed, the highest clean level was exactly the admission bound every time:
+     *
+     * <pre>
+     *   threads  queue  admission  max clean  sess/s at cap  first-event p95
+     *      32      96      128        128          60           0.12 s
+     *      64     192      256        256         115           0.18 s
+     *     128     384      512        512         205           0.32 s
+     * </pre>
+     *
+     * Throughput scales linearly with threads and latency stays flat, so nothing in the app tier
+     * saturated - CPU sat between 5% and 20% and HikariCP pending never exceeded 1. Any concurrency
+     * figure from this system is therefore a statement about this configuration, not about the
+     * machine, and should be quoted that way.
+     */
+    @Value("${interviewer.pools.agent.core:8}")
+    private int agentCore;
+
+    @Value("${interviewer.pools.agent.max:32}")
+    private int agentMax;
+
+    @Value("${interviewer.pools.agent.queue:96}")
+    private int agentQueue;
+
     @Bean("agentExecutor")
     public Executor agentExecutor() {
-        return pool("agent-", 4, 16, 32, 300);
+        return pool("agent-", agentCore, agentMax, agentQueue, 300);
     }
 
     @Bean("llmExecutor")

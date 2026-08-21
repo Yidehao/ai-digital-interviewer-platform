@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Clock;
 import java.util.Optional;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.UUID;
 
 /**
@@ -137,7 +138,27 @@ public class InterviewOrchestrator {
         // being worth reading. wrap() carries the context over and clears it afterwards, because a
         // pool thread that kept it would stamp the next interview with this one's identity.
         MdcKeys.putSession(sessionId, candidateId);
-        agentExecutor.execute(MdcKeys.wrap(() -> runInterview(sessionId, emitter)));
+        try {
+            agentExecutor.execute(MdcKeys.wrap(() -> runInterview(sessionId, emitter)));
+        } catch (RejectedExecutionException e) {
+            // Rejection is the DESIGNED response to overload - AbortPolicy, chosen because queueing
+            // an interview behind twenty others is dishonest. What was not designed is what it left
+            // behind: by this point the candidate is claimed, the session is in Redis and an emitter
+            // is registered, and none of that was undone. A load test found 96 orphaned claims and
+            // 20 leaked emitters with the agent pool completely idle, which means every candidate
+            // rejected at a busy moment was locked out for the claim's full three-hour TTL.
+            //
+            // "Excess load is refused rather than degraded" was true about latency and false about
+            // the candidate: they were refused AND locked out. Unwinding here makes the refusal
+            // actually clean, so a candidate whose first attempt is rejected can simply try again.
+            log.warn("agent pool full, refusing interview for candidate {}", candidateId);
+            store.releaseCandidate(candidateId);
+            store.delete(sessionId);
+            emitter.send("error", "the interviewer is at capacity, please try again shortly");
+            emitters.complete(sessionId);
+            MdcKeys.clear();
+            return Optional.empty();
+        }
         return Optional.of(emitter);
     }
 
@@ -298,21 +319,42 @@ public class InterviewOrchestrator {
         return null;
     }
 
+    /**
+     * Release everything the session holds, whatever else went wrong.
+     *
+     * <p>Every step is independently guarded and the releases sit in a {@code finally}, because
+     * this method previously ran as a straight sequence and one throwing call in the middle of it
+     * silently skipped the rest. The candidate claim is the item that matters: a leaked Redis
+     * session key expires on its own and a leaked emitter is a few kilobytes, but a leaked claim
+     * locks a real person out of their interview for three hours with no way to recover except
+     * deleting the key by hand.
+     */
     private void finish(InterviewSession session, SessionEmitter emitter) {
         try {
-            persister.persist(session);
-        } catch (RuntimeException e) {
-            log.error("could not persist session {}", session.getSessionId(), e);
-        }
+            try {
+                persister.persist(session);
+            } catch (RuntimeException e) {
+                log.error("could not persist session {}", session.getSessionId(), e);
+            }
         // Grading is queued, not run here. It is one model call at 40-70 seconds against the local
         // 7B, and this method runs on the agent pool - the pool the concurrency figure is bounded
         // by. Holding a thread there to score someone who has already left would trade capacity
         // for nothing. Queued before the store entry is dropped, because the input is built from
         // the live session.
-        verdicts.gradeLater(session);
-        metrics.sessionFinished(session);
-        store.releaseCandidate(session.getCandidateId());
-        store.delete(session.getSessionId());
-        emitters.complete(session.getSessionId());
+            try {
+                verdicts.gradeLater(session);
+            } catch (RuntimeException e) {
+                log.error("could not queue grading for session {}", session.getSessionId(), e);
+            }
+            try {
+                metrics.sessionFinished(session);
+            } catch (RuntimeException e) {
+                log.error("could not record metrics for session {}", session.getSessionId(), e);
+            }
+        } finally {
+            store.releaseCandidate(session.getCandidateId());
+            store.delete(session.getSessionId());
+            emitters.complete(session.getSessionId());
+        }
     }
 }

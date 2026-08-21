@@ -1,0 +1,68 @@
+{
+  "note": "App tier only, model stubbed via the loadtest profile. PER NODE: EmitterRegistry and the live-session map are in-memory because RedisOperator has no pub/sub. No answer waiting - NoWaitCandidateGate is active under this profile, so these sessions never park on the candidate. Concurrency is also bounded by the number of candidate rows: one in-flight interview per candidate is enforced by design, so seed at least as many as the highest level (eval/seed_loadtest_candidates.py).",
+  "warmupSessions": 128,
+  "levels": [
+    {
+      "concurrency": 128,
+      "completed": 128,
+      "failed": 0,
+      "errors": {},
+      "wallSeconds": 2.12,
+      "firstEventP50": 0.054,
+      "firstEventP95": 0.062,
+      "totalP50": 1.44,
+      "totalP95": 2.07,
+      "throughput": 60.24
+    },
+    {
+      "concurrency": 256,
+      "completed": 256,
+      "failed": 0,
+      "errors": {},
+      "wallSeconds": 4.19,
+      "firstEventP50": 0.118,
+      "firstEventP95": 0.173,
+      "totalP50": 2.51,
+      "totalP95": 4.07,
+      "throughput": 61.09
+    },
+    {
+      "concurrency": 384,
+      "completed": 384,
+      "failed": 0,
+      "errors": {},
+      "wallSeconds": 6.07,
+      "firstEventP50": 0.176,
+      "firstEventP95": 0.244,
+      "totalP50": 3.4,
+      "totalP95": 5.9,
+      "throughput": 63.28
+    },
+    {
+      "concurrency": 512,
+      "completed": 512,
+      "failed": 0,
+      "errors": {},
+      "wallSeconds": 2.49,
+      "firstEventP50": 0.213,
+      "firstEventP95": 0.323,
+      "totalP50": 1.54,
+      "totalP95": 2.35,
+      "throughput": 205.58
+    },
+    {
+      "concurrency": 600,
+      "completed": 512,
+      "failed": 88,
+      "errors": {
+        "refused": 88
+      },
+      "wallSeconds": 2.49,
+      "firstEventP50": 0.28,
+      "firstEventP95": 0.361,
+      "totalP50": 1.52,
+      "totalP95": 2.33,
+      "throughput": 205.71
+    }
+  ]
+}

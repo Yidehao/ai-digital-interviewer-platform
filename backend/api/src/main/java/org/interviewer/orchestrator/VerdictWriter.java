@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.concurrent.Executor;
+import java.util.concurrent.RejectedExecutionException;
 
 /**
  * Grades a finished interview and stores the verdict.
@@ -82,8 +83,26 @@ public class VerdictWriter {
         String jobId = session.getJobId();
 
         MdcKeys.putSession(sessionId, candidateId);
-        gradingExecutor.execute(MdcKeys.wrap(
-                () -> grade(sessionId, candidateId, jobId, input)));
+        try {
+            gradingExecutor.execute(MdcKeys.wrap(
+                    () -> grade(sessionId, candidateId, jobId, input)));
+        } catch (RejectedExecutionException e) {
+            // The grading queue is full (2 threads, 100 slots). This THREW INTO SESSION CLEANUP and
+            // took the rest of it with it: releaseCandidate, store.delete and emitters.complete all
+            // sit after this call, so under load every finished session leaked its candidate claim
+            // for the claim's three-hour TTL. A load test found 134 orphaned claims with the pools
+            // completely idle.
+            //
+            // It also corrupted the load test's own numbers - sessions that skipped cleanup
+            // "finished" faster, so throughput appeared to jump from 15 to 56 sessions/s at the
+            // exact concurrency where the grading queue started overflowing. A bug that makes the
+            // benchmark look better is the worst kind.
+            //
+            // Dropping the grade is the right trade: the transcript is persisted and a verdict can
+            // be recomputed from it whenever, but a locked-out candidate cannot re-interview.
+            log.warn("grading queue full, session {} left ungraded - recompute from the transcript",
+                    sessionId);
+        }
     }
 
     private void grade(String sessionId, String candidateId, String jobId, GradingInput input) {
