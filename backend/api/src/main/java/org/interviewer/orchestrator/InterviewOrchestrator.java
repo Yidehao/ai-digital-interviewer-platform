@@ -12,6 +12,8 @@ import org.interviewer.agent.stream.SseAgentEvents;
 import org.interviewer.entity.Candidate;
 import org.interviewer.entity.Job;
 import org.interviewer.entity.agent.InterviewSession;
+import org.interviewer.entity.agent.PolledQuestion;
+import org.interviewer.entity.agent.Turn;
 import org.interviewer.entity.agent.SessionState;
 import org.interviewer.entity.agent.TurnKind;
 import org.interviewer.entity.ollama.ChatMessage;
@@ -189,6 +191,104 @@ public class InterviewOrchestrator {
             store.save(session);
         }
         return true;
+    }
+
+    /**
+     * Which interview this candidate's job is configured for.
+     *
+     * <p>The client asks before deciding which page to open. Routing on the server's answer rather
+     * than on a build flag is what makes {@code job.interview_mode} a real switch: flipping one
+     * column moves a job onto the agent path, and flipping it back is the rollback. Nothing has to
+     * be rebuilt or redeployed to undo it.
+     *
+     * <p>Unknown candidate returns {@code scripted}. The failure mode of guessing wrong in that
+     * direction is a familiar interview; guessing the other way would send someone into a path
+     * their job was never configured for.
+     */
+    public String interviewMode(String candidateId) {
+        Candidate candidate = candidateService.getDetail(candidateId);
+        if (candidate == null) {
+            return "scripted";
+        }
+        Job job = jobService.getDetail(candidate.getJobId());
+        return job == null || job.getInterviewMode() == null || job.getInterviewMode().isBlank()
+                ? "scripted"
+                : job.getInterviewMode();
+    }
+
+    /**
+     * Start an interview for a client that cannot hold a stream open.
+     *
+     * <p>{@code EventSource} exists in browsers. The production client is a uni-app build targeting
+     * app-plus, mp-weixin and h5, and only the last of those has it — so without this the agent
+     * loop stays reachable from the eval harness and from nothing a candidate would ever use.
+     *
+     * <p>The session is created exactly as {@link #start} creates it, emitter included. That looks
+     * wasteful and is deliberate: {@link SessionEmitter} already treats a client that is not there
+     * as normal, because a candidate whose phone locks must not kill their interview. Reusing that
+     * path means polling and streaming share one lifecycle rather than two that drift.
+     *
+     * @return the session id, or empty for an unknown candidate or one already interviewing
+     */
+    public Optional<String> startPolling(String candidateId) {
+        return start(candidateId).map(SessionEmitter::sessionId);
+    }
+
+    /**
+     * The question the candidate is currently expected to answer.
+     *
+     * <p>Computed from session state, not replayed from an event log. A queue of pending events
+     * beside the stream would be a second delivery mechanism to keep in step with the first, and
+     * the two would diverge the first time an event was added to one. The pending question is the
+     * last QUESTION or FOLLOWUP turn with no ANSWER after it, which both transports can agree on
+     * because it is a fact about the transcript rather than about delivery.
+     *
+     * <p>{@code afterSeq} is what the client already has. Returning a question it is holding would
+     * make it ask the same thing twice on every poll.
+     *
+     * <p>Note what is not returned: the turn's kind. The SSE payload omits it for the same reason —
+     * telling a candidate "this one is a follow-up" shows them the interviewer judged their last
+     * answer weak enough to probe.
+     */
+    public PolledQuestion poll(String sessionId, int afterSeq) {
+        InterviewSession session = store.find(sessionId).orElse(null);
+        if (session == null) {
+            // Sessions are deleted from the store once persisted, so "gone" and "finished" are the
+            // same observation from here. A client that polls once more after the last answer must
+            // be told the interview ended, not handed an error.
+            return PolledQuestion.finished("FINISHED");
+        }
+        String state = String.valueOf(session.getState());
+        synchronized (session) {
+            Turn pending = pendingQuestion(session);
+            if (pending != null && pending.getSeq() > afterSeq) {
+                return new PolledQuestion(state, String.valueOf(pending.getSeq()),
+                        pending.getSeq(), pending.getText(), pending.getAiSrc(), false);
+            }
+            return session.isTerminal()
+                    ? PolledQuestion.finished(state)
+                    : PolledQuestion.waiting(state);
+        }
+    }
+
+    /**
+     * The last question with nothing answering it.
+     *
+     * <p>Walked backwards: the first ANSWER encountered means every earlier question has been
+     * dealt with, and CLOSING means the interview is over and there is nothing to answer.
+     */
+    private Turn pendingQuestion(InterviewSession session) {
+        var turns = session.getTurns();
+        for (int i = turns.size() - 1; i >= 0; i--) {
+            Turn turn = turns.get(i);
+            if (turn.getKind() == TurnKind.ANSWER || turn.getKind() == TurnKind.CLOSING) {
+                return null;
+            }
+            if (turn.getKind() == TurnKind.QUESTION || turn.getKind() == TurnKind.FOLLOWUP) {
+                return turn;
+            }
+        }
+        return null;
     }
 
     private void finish(InterviewSession session, SessionEmitter emitter) {

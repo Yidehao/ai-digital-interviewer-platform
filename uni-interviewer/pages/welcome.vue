@@ -232,9 +232,31 @@
 							app.setUserInfoSession(userInfo);
 							// app.setUserSessionToken(userInfo.userToken);
 							
-							uni.navigateTo({
-								url: "/pages/interviewer",
-								animationType: "slide-in-bottom",
+							// Which interview page to open is the server's call, read from
+							// job.interview_mode. Routing here rather than on a build flag is what
+							// makes that column a real switch: one UPDATE moves a job onto the
+							// agent path and one moves it back, with nothing to rebuild.
+							//
+							// Anything other than an explicit "agent" - including an unreachable
+							// server - opens the scripted page. Guessing wrong in that direction
+							// gives a candidate a familiar interview; guessing the other way sends
+							// them into a path their job was never configured for.
+							uni.request({
+								method: "GET",
+								url: serverUrl + "/interview/" + userInfo.candidateId + "/mode",
+								complete(modeResult) {
+									var mode = "scripted";
+									var body = modeResult && modeResult.data;
+									if (body && body.status == 200 && body.data && body.data.mode) {
+										mode = body.data.mode;
+									}
+									uni.navigateTo({
+										url: mode === "agent"
+											? "/pages/interviewer-agent"
+											: "/pages/interviewer",
+										animationType: "slide-in-bottom",
+									});
+								}
 							});
 							
 						} else if (status != 200) {

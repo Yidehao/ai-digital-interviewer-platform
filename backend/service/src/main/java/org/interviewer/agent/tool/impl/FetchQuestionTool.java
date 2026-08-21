@@ -86,6 +86,9 @@ public class FetchQuestionTool implements InterviewTool<FetchQuestionArgs, Fetch
         Turn turn = session.addTurn(TurnKind.QUESTION, picked.getId(),
                 picked.getQuestion(), clock.instant());
 
+        // Recorded on the turn as well as pushed to the stream. A polling client never sees the
+        // event, so session state has to carry everything the question needs to be rendered.
+        turn.setAiSrc(picked.getAiSrc());
         ctx.events().onQuestion(turn, picked.getAiSrc());
 
         return new FetchQuestionResult(

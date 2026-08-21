@@ -39,11 +39,26 @@ public class Turn {
     /**
      * Speech-to-text confidence for {@code ANSWER} turns, null otherwise.
      *
-     * <p>Captured but not yet acted on. Phase 4 either defines a policy - flag low-confidence
-     * turns to the grader, or re-ask below a threshold - or deletes the field. A number nobody
-     * reads is worse than no number, because it looks like a control that exists.
+     * <p>Read by {@code GradingInputFactory}, which turns it into a flag telling the grader to
+     * judge the content of that turn rather than its wording. The direction is deliberate and is
+     * documented on {@code TranscriptTurn}: discounting low-confidence turns would have aimed the
+     * penalty at accented speech, which is the bias the cohort already measured.
+     *
+     * <p>Null means the client sent no confidence, which is not the same as a low one.
      */
     private Double sttConfidence;
+
+    /**
+     * The avatar clip for this question, when the bank has one.
+     *
+     * <p>Here rather than looked up again at delivery time because the polling transport has no
+     * event to carry it: SSE hands the client {@code aiSrc} alongside the question text, and a
+     * client that polls session state must be able to find the same thing in the same place.
+     *
+     * <p>Not part of the transcript the grader reads — {@code GradingInputFactory} copies text,
+     * kind, position and duration, and nothing else.
+     */
+    private String aiSrc;
 
     public long durationSeconds() {
         return startedAt == null || endedAt == null

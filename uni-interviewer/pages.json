@@ -24,6 +24,19 @@
 			}
 		},
 		{
+			// The agent interview. A separate page rather than a rework of the one above, so the
+			// scripted path stays byte-identical for every job that has not been switched over.
+			"path" : "pages/interviewer-agent",
+			"style" : {
+				"navigationBarTitleText" : "AI Interviewer",
+			    "app-plus" : {
+			        "titleNView" : false,
+					"bounce" : "none"
+			    },
+			    "enablePullDownRefresh" : false
+			}
+		},
+		{
 		    "path" : "pages/me",
 		    "style" : {
 				"navigationBarTitleText" : "Submission Result",
