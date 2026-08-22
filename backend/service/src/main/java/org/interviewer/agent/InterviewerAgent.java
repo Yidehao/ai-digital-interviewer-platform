@@ -134,6 +134,12 @@ public class InterviewerAgent {
             if (response.getPromptEvalCount() != null) {
                 session.setPromptTokens(session.getPromptTokens() + response.getPromptEvalCount());
             }
+            // The number that is actually about latency. See InterviewSession.promptEvalNanos:
+            // the token count does not fall when the prefix cache hits, but this does.
+            if (response.getPromptEvalDurationNanos() != null) {
+                session.setPromptEvalNanos(
+                        session.getPromptEvalNanos() + response.getPromptEvalDurationNanos());
+            }
             if (response.getEvalCount() != null) {
                 session.setCompletionTokens(
                         session.getCompletionTokens() + response.getEvalCount());

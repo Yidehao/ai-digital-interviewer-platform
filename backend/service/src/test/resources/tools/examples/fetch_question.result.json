@@ -1,7 +1,6 @@
 {
   "questionId": "1859402215739392001",
   "question": "Walk me through how you would add a cache in front of a read-heavy endpoint.",
-  "aiSrc": "http://127.0.0.1:9010/interviewer/q-caching.mp4",
   "topic": "caching",
   "difficulty": "medium",
   "exhausted": false,

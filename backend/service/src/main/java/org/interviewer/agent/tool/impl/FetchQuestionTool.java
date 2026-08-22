@@ -76,7 +76,7 @@ public class FetchQuestionTool implements InterviewTool<FetchQuestionArgs, Fetch
                 session.getInterviewerId(), 2, exclude);
 
         if (candidates.isEmpty()) {
-            return new FetchQuestionResult(null, null, null, null, null, true, 0);
+            return new FetchQuestionResult(null, null, null, null, true, 0);
         }
 
         InitQuestionsVO picked = candidates.get(0);
@@ -91,10 +91,12 @@ public class FetchQuestionTool implements InterviewTool<FetchQuestionArgs, Fetch
         turn.setAiSrc(picked.getAiSrc());
         ctx.events().onQuestion(turn, picked.getAiSrc());
 
+        // aiSrc goes to the client on the event and on the turn above, and NOT into this result:
+        // tool results are quoted back into the conversation, so a video URL here would be re-read
+        // by the model on this turn and every turn afterwards, for nothing.
         return new FetchQuestionResult(
                 picked.getId(),
                 picked.getQuestion(),
-                picked.getAiSrc(),
                 args.topic(),
                 args.difficulty(),
                 false,

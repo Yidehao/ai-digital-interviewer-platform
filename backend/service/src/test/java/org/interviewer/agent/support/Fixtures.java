@@ -15,11 +15,11 @@ public final class Fixtures {
 
     public static final String QUESTION_RESULT = """
             {"questionId":"q-1","question":"How would you cache a read-heavy endpoint?",
-             "aiSrc":null,"topic":"caching","difficulty":"medium",
+             "topic":"caching","difficulty":"medium",
              "exhausted":false,"remaining":4}""";
 
     public static final String EXHAUSTED_RESULT = """
-            {"questionId":null,"question":null,"aiSrc":null,"topic":null,"difficulty":null,
+            {"questionId":null,"question":null,"topic":null,"difficulty":null,
              "exhausted":true,"remaining":0}""";
 
     public static final String FOLLOWUP_RESULT = """

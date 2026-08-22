@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://interviewer.org/tools/fetch_question.result.json",
   "title": "fetch_question result",
-  "description": "One shape for every outcome. An empty bank is exhausted:true with null question fields, not an error and not a throw. referenceAnswer is deliberately absent: a model holding the model answer paraphrases it into its follow-ups, which destroys the question.",
+  "description": "One shape for every outcome. An empty bank is exhausted:true with null question fields, not an error and not a throw. referenceAnswer is deliberately absent: a model holding the model answer paraphrases it into its follow-ups, which destroys the question. aiSrc is absent for a different reason: it is a video URL for the CLIENT, and the interviewer can do nothing with it except pay for it in every prompt that quotes this result back.",
   "type": "object",
   "properties": {
     "questionId": {
@@ -12,10 +12,6 @@
     "question": {
       "type": ["string", "null"],
       "description": "The question text to put to the candidate. Null when exhausted."
-    },
-    "aiSrc": {
-      "type": ["string", "null"],
-      "description": "Avatar video URL for this question, or null when the question has no clip."
     },
     "topic": {
       "type": ["string", "null"]
@@ -34,6 +30,6 @@
       "description": "Unserved questions left in the bank after this call."
     }
   },
-  "required": ["questionId", "question", "aiSrc", "topic", "difficulty", "exhausted", "remaining"],
+  "required": ["questionId", "question", "topic", "difficulty", "exhausted", "remaining"],
   "additionalProperties": false
 }

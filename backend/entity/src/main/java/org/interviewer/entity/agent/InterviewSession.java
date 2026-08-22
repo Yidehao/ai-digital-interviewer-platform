@@ -125,6 +125,18 @@ public class InterviewSession {
      */
     private int promptTokens;
 
+    /**
+     * Nanoseconds Ollama actually spent evaluating prompts this session.
+     *
+     * <p>Kept alongside {@link #promptTokens} because the two answer different questions and only
+     * one of them is about cost. {@code prompt_eval_count} reports the <em>whole</em> prompt on
+     * every call whether or not the prefix was cached — measured here, an identical repeat call
+     * reported the same 745 tokens while its evaluation time fell from 6.89 s to 0.09 s. So a
+     * token ratio derived from the count describes prompt SIZE, and reading it as work done
+     * overstates the cost of history by whatever the cache is saving, which was 76x.
+     */
+    private long promptEvalNanos;
+
     private int completionTokens;
 
     /**

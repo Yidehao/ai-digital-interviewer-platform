@@ -142,7 +142,7 @@ class ToolRegistryTest {
 
         @Override
         public FetchQuestionResult execute(FetchQuestionArgs args, ToolContext ctx) {
-            return new FetchQuestionResult(null, null, null, null, null, true, 0);
+            return new FetchQuestionResult(null, null, null, null, true, 0);
         }
     }
 

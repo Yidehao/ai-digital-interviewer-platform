@@ -77,6 +77,14 @@ public class AgentMetrics {
                 "state", String.valueOf(session.getState()),
                 "reason", String.valueOf(session.getTerminalReason())).increment();
         registry.summary("interview.prompt_tokens").record(session.getPromptTokens());
+        // Recorded next to the token count on purpose, because quoting the count as though it were
+        // the cost is the mistake this pair exists to prevent: prompt_eval_count does not drop when
+        // the prefix cache hits, and prompt_eval_duration does. A session whose tokens rise while
+        // this stays flat is the cache working; both rising together is the cache being missed, and
+        // that is the alert worth having.
+        Timer.builder("interview.prompt_eval")
+                .register(registry)
+                .record(session.getPromptEvalNanos(), TimeUnit.NANOSECONDS);
         registry.summary("interview.completion_tokens").record(session.getCompletionTokens());
         registry.summary("interview.session.turns").record(session.getTurnCount());
         // NOT "interview.tool_calls". Micrometer's Prometheus naming maps both that and the
