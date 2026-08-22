@@ -1,0 +1,24 @@
+# vLLM instead of Ollama. Activate with: --spring.profiles.active=dev,vllm
+#
+# Ollama serves roughly one request per loaded model at a time, which is why llmExecutor is two
+# threads. vLLM batches, which is the change that makes real concurrency possible - so this profile
+# is the difference between a demo and a service, not a tuning knob.
+
+llm:
+  # The vLLM server. OpenAI-compatible API, so the path is /v1/chat/completions.
+  base-url: ${VLLM_BASE_URL:http://127.0.0.1:8000}
+  model: ${VLLM_MODEL:Qwen/Qwen2.5-7B-Instruct}
+  # Generous: a batched server under load can queue, and rung 9 (degrade to scripted) should fire
+  # for a server that is DOWN, not one that is busy.
+  read-timeout-seconds: 180
+  vllm:
+    max-tokens: 1024
+
+interviewer:
+  pools:
+    agent:
+      # vLLM batches, so the model is no longer the serialisation point and the agent pool can be
+      # what the app tier supports. 128 admitted; the sweep was still clean at 512.
+      core: 8
+      max: 32
+      queue: 96
