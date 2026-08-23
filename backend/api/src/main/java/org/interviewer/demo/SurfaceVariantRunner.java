@@ -85,7 +85,7 @@ public class SurfaceVariantRunner implements ApplicationRunner {
                     job == null ? "SDE" : job.getJobName());
 
             long started = System.currentTimeMillis();
-            Verdict verdict = grader.grade(input);
+            Verdict verdict = grader.gradeOnce(input);
             long elapsed = System.currentTimeMillis() - started;
 
             Map<String, Object> record = new LinkedHashMap<>();

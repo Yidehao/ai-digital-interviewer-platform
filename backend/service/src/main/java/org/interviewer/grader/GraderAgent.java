@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import org.interviewer.entity.grading.DimensionScore;
+import org.interviewer.entity.grading.GradingOutcome;
 import org.interviewer.entity.grading.GradingInput;
 import org.interviewer.entity.grading.TranscriptTurn;
 import org.interviewer.entity.grading.Verdict;
@@ -16,6 +18,8 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -87,16 +91,138 @@ public class GraderAgent {
         this.properties = properties;
     }
 
+    /** SHA-256 of verdict.json, computed once at startup. See {@link #schemaVersion()}. */
+    private String schemaVersion;
+
+    /**
+     * Which instrument produced a verdict.
+     *
+     * <p>Not a version string someone remembers to bump — a hash of the schema file. Field order in
+     * {@code verdict.json} is load-bearing, because constrained decoding emits fields in schema
+     * order and that is what forces claims before scores and evidence before numbers. Reordering
+     * the file changes what the grader is, and a hash makes that visible where a hand-maintained
+     * version number would not.
+     */
+    public String schemaVersion() {
+        return schemaVersion;
+    }
+
     @PostConstruct
     void loadSchema() {
         try (InputStream in = new ClassPathResource("schema/verdict.json").getInputStream()) {
-            verdictSchema = objectMapper.readTree(in);
+            byte[] bytes = in.readAllBytes();
+            verdictSchema = objectMapper.readTree(bytes);
+            byte[] digest = java.security.MessageDigest.getInstance("SHA-256").digest(bytes);
+            StringBuilder hex = new StringBuilder(64);
+            for (byte b : digest) {
+                hex.append(Character.forDigit((b >> 4) & 0xF, 16))
+                   .append(Character.forDigit(b & 0xF, 16));
+            }
+            schemaVersion = hex.toString();
         } catch (Exception e) {
             throw new IllegalStateException("schema/verdict.json is missing or malformed", e);
         }
     }
 
-    public Verdict grade(GradingInput input) {
+    /**
+     * Grade a transcript, sampling the model more than once.
+     *
+     * <p>One sample is one draw from a stochastic process, and this one moved: 3 of 12 candidates
+     * scored differently across two identical runs at temperature 0. Greedy decoding is not
+     * deterministic decoding — batching and floating-point non-associativity move logits, and near
+     * a tie that flips a token. Taking the median of {@code n} samples and escalating any
+     * disagreement turns that instability from a hidden defect into a visible one.
+     *
+     * <p>It costs {@code n} times as much. Grading is already the throughput bottleneck at ~91 s
+     * per call on a two-thread pool, so this makes verdicts land minutes later. For something that
+     * influences whether a person gets hired, that is the correct trade.
+     */
+    public GradingOutcome grade(GradingInput input) {
+        int samples = Math.max(1, properties.getGradingSamples());
+        List<Verdict> drawn = new ArrayList<>();
+        for (int i = 0; i < samples; i++) {
+            drawn.add(gradeOnce(input));
+        }
+        return aggregate(drawn);
+    }
+
+    /**
+     * Median per dimension, and the spread that decides escalation.
+     *
+     * <p>Median rather than mean: with three samples it shrugs off one outlier, and it stays on the
+     * integer scale the rubric actually defines — a mean of 2.67 is a number the rubric has no
+     * anchor for.
+     *
+     * <p>Everything non-numeric (claims, evidence, reasoning, summary) is taken from the median
+     * run rather than merged. Stitching prose from different samples would produce a verdict that
+     * no single run of the model ever actually returned, which is unauditable.
+     */
+    GradingOutcome aggregate(List<Verdict> drawn) {
+        Verdict representative = drawn.get(medianIndexByOverall(drawn));
+        List<DimensionScore> merged = new ArrayList<>();
+        int maxDimensionSpread = 0;
+
+        for (String dimension : Verdict.DIMENSIONS) {
+            List<Integer> scores = new ArrayList<>();
+            DimensionScore fromRepresentative = null;
+            for (Verdict verdict : drawn) {
+                for (DimensionScore d : verdict.dimensions()) {
+                    if (dimension.equals(d.name())) {
+                        scores.add(d.score());
+                        if (verdict == representative) {
+                            fromRepresentative = d;
+                        }
+                    }
+                }
+            }
+            if (scores.isEmpty()) {
+                continue;
+            }
+            Collections.sort(scores);
+            int median = scores.get(scores.size() / 2);
+            maxDimensionSpread = Math.max(maxDimensionSpread,
+                    scores.get(scores.size() - 1) - scores.get(0));
+            DimensionScore source = fromRepresentative != null
+                    ? fromRepresentative
+                    : representative.dimensions().stream()
+                            .filter(d -> dimension.equals(d.name())).findFirst().orElse(null);
+            merged.add(new DimensionScore(dimension,
+                    source == null ? "" : source.evidence(),
+                    source == null ? "" : source.reasoning(),
+                    median));
+        }
+
+        List<Integer> overalls = drawn.stream().map(Verdict::overall).sorted().toList();
+        int medianOverall = overalls.get(overalls.size() / 2);
+        int overallSpread = overalls.get(overalls.size() - 1) - overalls.get(0);
+
+        Verdict median = new Verdict(representative.claims(), medianOverall,
+                recommendationFor(medianOverall), merged, representative.summary());
+        return GradingOutcome.of(median, drawn.size(), maxDimensionSpread, overallSpread);
+    }
+
+    /** The run whose overall sits in the middle; its prose represents the outcome. */
+    private int medianIndexByOverall(List<Verdict> drawn) {
+        List<Integer> sorted = drawn.stream().map(Verdict::overall).sorted().toList();
+        int target = sorted.get(sorted.size() / 2);
+        for (int i = 0; i < drawn.size(); i++) {
+            if (drawn.get(i).overall() == target) {
+                return i;
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * Exactly one sample, for measurement.
+     *
+     * <p>Public on purpose, and the eval runners must use it rather than {@link #grade}. Sampling
+     * three times and taking a median is the right thing in production and would <em>destroy</em>
+     * the measurement that justified it: {@code compare_runs.py} exists to detect run-to-run
+     * movement, and a median already suppresses that movement before the comparison sees it. The
+     * cohort would report a stability the deployed system does not have.
+     */
+    public Verdict gradeOnce(GradingInput input) {
         ChatRequest request = ChatRequest.builder()
                 .model(properties.getModel())
                 .messages(List.of(
@@ -115,8 +241,8 @@ public class GraderAgent {
         try {
             Verdict parsed = objectMapper.readValue(body, Verdict.class);
             // Derived, never asked for. See recommendationFor.
-            return new Verdict(parsed.overall(), recommendationFor(parsed.overall()),
-                    parsed.dimensions(), parsed.summary());
+            return new Verdict(parsed.claims(), parsed.overall(),
+                    recommendationFor(parsed.overall()), parsed.dimensions(), parsed.summary());
         } catch (Exception e) {
             // Constrained decoding should make this impossible. If it happens, the schema and the
             // record have drifted, or the model ignored `format` - both are our problem, and both
@@ -158,7 +284,7 @@ public class GraderAgent {
      * of the model invites nothing useful while giving a determinism-breaking token to a prompt we
      * want byte-stable across the A/B and stability runs.
      */
-    String renderTranscript(GradingInput input) {
+    public String renderTranscript(GradingInput input) {
         StringBuilder out = new StringBuilder();
         out.append("Role: ").append(input.jobName()).append("\n\n");
         out.append("Rubric:\n").append(input.rubric()).append("\n\n");

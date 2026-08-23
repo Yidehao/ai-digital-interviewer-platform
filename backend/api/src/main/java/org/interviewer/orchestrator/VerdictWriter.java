@@ -6,11 +6,13 @@ import org.interviewer.entity.InterviewVerdictPO;
 import org.interviewer.entity.Job;
 import org.interviewer.entity.agent.InterviewSession;
 import org.interviewer.entity.grading.GradingInput;
+import org.interviewer.entity.grading.GradingOutcome;
 import org.interviewer.entity.grading.Verdict;
 import org.interviewer.grader.GraderAgent;
 import org.interviewer.grader.GradingInputFactory;
 import org.interviewer.mapper.InterviewVerdictMapper;
 import org.interviewer.service.JobService;
+import org.interviewer.utils.LlmProperties;
 import org.interviewer.utils.MdcKeys;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -47,13 +49,16 @@ public class VerdictWriter {
     private final InterviewVerdictMapper verdictMapper;
     private final ObjectMapper objectMapper;
     private final Executor gradingExecutor;
+    private final LlmProperties properties;
 
     public VerdictWriter(GraderAgent grader,
                          GradingInputFactory inputFactory,
                          JobService jobService,
                          InterviewVerdictMapper verdictMapper,
                          ObjectMapper objectMapper,
+                         LlmProperties properties,
                          @Qualifier("gradingExecutor") Executor gradingExecutor) {
+        this.properties = properties;
         this.grader = grader;
         this.inputFactory = inputFactory;
         this.jobService = jobService;
@@ -108,7 +113,8 @@ public class VerdictWriter {
     private void grade(String sessionId, String candidateId, String jobId, GradingInput input) {
         long started = System.currentTimeMillis();
         try {
-            Verdict verdict = grader.grade(input);
+            GradingOutcome outcome = grader.grade(input);
+            Verdict verdict = outcome.verdict();
             InterviewVerdictPO po = new InterviewVerdictPO();
             po.setSessionId(sessionId);
             po.setCandidateId(candidateId);
@@ -117,15 +123,52 @@ public class VerdictWriter {
             po.setRecommendation(verdict.recommendation());
             po.setSummary(verdict.summary());
             po.setDimensionsJson(objectMapper.writeValueAsString(verdict.dimensions()));
+            po.setClaimsJson(objectMapper.writeValueAsString(verdict.claims()));
+            po.setSamples(outcome.samples());
+            po.setDimensionSpread(outcome.maxDimensionSpread());
+            po.setOverallSpread(outcome.overallSpread());
+            po.setNeedsHumanReview(outcome.needsHumanReview());
+            po.setReviewReason(outcome.reviewReason());
+            po.setAdvisory(outcome.advisory());
+            // Provenance, so the verdict can be rebuilt and re-run later. A candidate asking why
+            // they scored a 2 deserves better than "the model said so, and we no longer know which
+            // model, which rubric, or which prompt".
+            po.setModel(properties.getModel());
+            po.setRubricHash(sha256(input.rubric()));
+            po.setPromptHash(sha256(grader.renderTranscript(input)));
+            po.setSchemaVersion(grader.schemaVersion());
             po.setGradedMs(System.currentTimeMillis() - started);
             po.setCreatedTime(LocalDateTime.now());
             verdictMapper.insert(po);
-            log.info("session {} graded: overall={} {} in {} ms",
-                    sessionId, verdict.overall(), verdict.recommendation(), po.getGradedMs());
+            log.info("session {} graded: overall={} {} in {} ms ({} samples, spread {}{})",
+                    sessionId, verdict.overall(), verdict.recommendation(), po.getGradedMs(),
+                    outcome.samples(), outcome.maxDimensionSpread(),
+                    outcome.needsHumanReview() ? ", NEEDS HUMAN REVIEW" : "");
         } catch (Exception e) {
             // Deliberately broad. The transcript is already persisted and is the artefact that
             // cannot be regenerated; a verdict can be recomputed from it whenever the model is back.
             log.error("could not grade session {}", sessionId, e);
+        }
+    }
+
+    /** Content hash, so a stored verdict names the exact text that produced it. */
+    private String sha256(String text) {
+        if (text == null) {
+            return null;
+        }
+        try {
+            byte[] digest = java.security.MessageDigest.getInstance("SHA-256")
+                    .digest(text.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            StringBuilder out = new StringBuilder(64);
+            for (byte b : digest) {
+                out.append(Character.forDigit((b >> 4) & 0xF, 16))
+                   .append(Character.forDigit(b & 0xF, 16));
+            }
+            return out.toString();
+        } catch (Exception e) {
+            // Provenance failing must not cost the verdict itself.
+            log.warn("could not hash for provenance: {}", e.getMessage());
+            return null;
         }
     }
 }

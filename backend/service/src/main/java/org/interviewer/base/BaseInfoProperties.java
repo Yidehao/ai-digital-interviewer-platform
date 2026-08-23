@@ -54,6 +54,21 @@ public class BaseInfoProperties {
     public static final String REDIS_INTERVIEW_TURN_LOCK = "redis_interview_turn_lock";
     public static final Integer INTERVIEW_SESSION_TTL_SECONDS = 3 * 60 * 60;
 
+    /**
+     * How long a candidate stays locked out of starting another interview.
+     *
+     * <p>Was the same three hours as the session TTL, and the two are not the same question. The
+     * session TTL is "how long might an interview legitimately last"; this is "how long is a
+     * candidate punished if the process dies mid-interview". A crash left the claim standing for
+     * three hours with recovery only by deleting the key by hand, which no candidate can do.
+     *
+     * <p>Fifty minutes bounds that at slightly longer than the 45-minute wall clock an interview is
+     * allowed to run, so a genuinely long interview is still protected from a double-start while a
+     * crashed one clears itself. {@code SessionStore.releaseAllOnShutdown} handles the ordinary
+     * case; this bounds the SIGKILL case, which runs no hooks.
+     */
+    public static final Integer CANDIDATE_CLAIM_TTL_SECONDS = 50 * 60;
+
     public static final String REDIS_BLOG_BOOK_LIST = "blog_book_list";
     public static final String REDIS_BLOG_ARTICLE_LIST = "blog_article_list";
 

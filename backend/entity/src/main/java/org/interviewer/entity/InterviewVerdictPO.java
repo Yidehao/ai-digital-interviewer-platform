@@ -46,5 +46,41 @@ public class InterviewVerdictPO implements Serializable {
 
     private Long gradedMs;
 
+    /** Claims extracted before scoring, as JSON. */
+    private String claimsJson;
+
+    // --- stability: how many samples, and how much they disagreed -----------------------------
+
+    private Integer samples;
+    private Integer dimensionSpread;
+    private Integer overallSpread;
+
+    // --- human review: a state the row is in, not a process someone remembers -------------------
+
+    private Boolean needsHumanReview;
+    private String reviewReason;
+
+    /** Who signed off. Null means nobody has. */
+    private String reviewedBy;
+    private LocalDateTime reviewedTime;
+
+    /**
+     * Always true, and nothing sets it false.
+     *
+     * <p>A grader whose surface-phrasing penalty scales with competence — worst for the strongest
+     * non-native candidates, which is the worst possible shape near a cutoff — must not reject
+     * anyone by itself. Stored rather than assumed so a query can prove it.
+     */
+    private Boolean advisory;
+
+    // --- provenance: enough to rebuild this verdict months later --------------------------------
+
+    private String model;
+    private String rubricHash;
+    private String promptHash;
+
+    /** Hash of verdict.json. Field order is load-bearing, so a reorder is a different instrument. */
+    private String schemaVersion;
+
     private LocalDateTime createdTime;
 }

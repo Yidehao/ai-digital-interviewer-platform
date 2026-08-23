@@ -107,7 +107,35 @@ public class SessionStore extends BaseInfoProperties {
     public boolean claimCandidate(String candidateId, String sessionId) {
         return Boolean.TRUE.equals(redis.setnx(
                 REDIS_INTERVIEW_CANDIDATE + ":" + candidateId, sessionId,
-                INTERVIEW_SESSION_TTL_SECONDS));
+                CANDIDATE_CLAIM_TTL_SECONDS));
+    }
+
+    /**
+     * Release every claim this node holds, on the way down.
+     *
+     * <p>Without this, killing the process strands its claims for the full TTL, and recovery means
+     * deleting keys from Redis by hand — which no candidate can do and no support process was
+     * written for. A restart during an interview should cost the candidate a retry, not their
+     * afternoon.
+     *
+     * <p>Best effort by construction. A SIGKILL runs no hooks at all, which is exactly why the TTL
+     * was also shortened: the hook handles the ordinary case and the TTL bounds the worst one.
+     */
+    @jakarta.annotation.PreDestroy
+    public void releaseAllOnShutdown() {
+        int released = 0;
+        for (InterviewSession session : live.values()) {
+            try {
+                redis.del(REDIS_INTERVIEW_CANDIDATE + ":" + session.getCandidateId());
+                released++;
+            } catch (RuntimeException e) {
+                log.warn("could not release claim for candidate {} during shutdown",
+                        session.getCandidateId(), e);
+            }
+        }
+        if (released > 0) {
+            log.info("released {} candidate claims during shutdown", released);
+        }
     }
 
     public void releaseCandidate(String candidateId) {

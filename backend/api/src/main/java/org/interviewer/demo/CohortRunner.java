@@ -100,7 +100,10 @@ public class CohortRunner implements ApplicationRunner {
                 GradingInput input = transcript(fixture, tier, surface, rubric, jobName, id);
 
                 long started = System.currentTimeMillis();
-                Verdict verdict = grader.grade(input);
+                // gradeOnce, not grade: the deployed path samples three times and takes a
+                // median, and doing that here would hide the run-to-run movement this cohort
+                // exists to measure. The eval measures the model; production manages it.
+                Verdict verdict = grader.gradeOnce(input);
                 long elapsed = System.currentTimeMillis() - started;
 
                 Map<String, Integer> dims = new LinkedHashMap<>();

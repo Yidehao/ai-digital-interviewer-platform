@@ -40,6 +40,19 @@ public class LlmProperties {
      */
     private String keepAlive = "30m";
 
+    /**
+     * How many times each transcript is graded before a median is taken.
+     *
+     * <p>Three, because one was measurably not enough: 3 of 12 candidates scored differently across
+     * two identical runs at temperature 0. Greedy decoding is not deterministic decoding.
+     *
+     * <p>It triples the cost of the slowest thing in the system - grading is ~91 s per call on a
+     * two-thread pool - so verdicts land minutes after the interview. That is the right trade for
+     * something that influences whether a person is hired, and the wrong one for a demo, which is
+     * why it is configurable rather than fixed.
+     */
+    private int gradingSamples = 3;
+
     private int connectTimeoutSeconds = 10;
 
     private int readTimeoutSeconds = 120;

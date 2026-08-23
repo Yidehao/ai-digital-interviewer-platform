@@ -2,9 +2,39 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://interviewer.org/schema/verdict.json",
   "title": "verdict",
-  "description": "The grader's output, produced under constrained decoding. Field order within a dimension is load-bearing: evidence, then reasoning, then score. The model emits fields in schema order, so this forces it to quote the candidate and argue before committing to a number. Score-first would let it pick a number and rationalise afterwards, which is a different and worse task. `recommendation` is deliberately absent: it is a pure function of `overall`, and asking the model for it produced strong_yes on candidates scored 2 of 5 in two runs. Constrained decoding guarantees shape, not coherence between fields - every enum value satisfies the schema. It is derived in code.",
+  "description": "The grader's output, produced under constrained decoding. FIELD ORDER IS LOAD-BEARING: the model emits fields in schema order, so the order here is the order it is forced to think in. `claims` comes first so technical content is extracted BEFORE any score exists to rationalise towards - the correctness penalty measured against non-native phrasing is the reason, since a grader scoring correctness straight from a transcript is scoring the prose and the claims together. Within a dimension the same principle applies: evidence, then reasoning, then score. `recommendation` is deliberately absent: it is a pure function of `overall`, and asking the model for it produced strong_yes on candidates scored 2 of 5 in two runs. Constrained decoding guarantees shape, not coherence between fields - every enum value satisfies the schema. It is derived in code.",
   "type": "object",
   "properties": {
+    "claims": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 12,
+      "description": "Every checkable technical assertion the candidate made, extracted before anything is scored. Restate each one plainly in your own words - stripping the phrasing is the point, because a claim is true or false independently of how fluently it was said.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "The assertion, restated plainly. Not a quote: a quote carries the phrasing back in, which is what this field exists to remove."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "correct",
+              "incorrect",
+              "unverifiable"
+            ],
+            "description": "Judge the technical content only. `unverifiable` is for claims about the candidate's own history, which cannot be checked and must not be counted as either right or wrong."
+          }
+        },
+        "required": [
+          "claim",
+          "status"
+        ],
+        "additionalProperties": false
+      }
+    },
     "overall": {
       "type": "integer",
       "minimum": 1,
@@ -41,7 +71,7 @@
             "type": "integer",
             "minimum": 1,
             "maximum": 5,
-            "description": "Integer from 1 (poor) to 5 (excellent). Must follow from the evidence above."
+            "description": "Integer from 1 (poor) to 5 (excellent). Must follow from the evidence above. For correctness, score the claims list: how many are `correct` against how many are `incorrect`. Phrasing, grammar and fluency are not evidence about correctness and must not move this number."
           }
         },
         "required": [
@@ -59,6 +89,7 @@
     }
   },
   "required": [
+    "claims",
     "overall",
     "dimensions",
     "summary"

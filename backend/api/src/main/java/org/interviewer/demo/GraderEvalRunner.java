@@ -93,7 +93,7 @@ public class GraderEvalRunner implements ApplicationRunner {
             }
 
             long started = System.currentTimeMillis();
-            Verdict verdict = grader.grade(input);
+            Verdict verdict = grader.gradeOnce(input);
             long elapsed = System.currentTimeMillis() - started;
 
             Map<String, Object> record = new LinkedHashMap<>();
@@ -128,7 +128,7 @@ public class GraderEvalRunner implements ApplicationRunner {
             GradingInput paraphrased = new GradingInput(input.sessionId(), input.jobName(),
                     paraphrase(input.rubric()), input.turns(), input.totalSeconds(),
                     input.referenceAnswers());
-            Verdict reworded = grader.grade(paraphrased);
+            Verdict reworded = grader.gradeOnce(paraphrased);
             probes.put("paraphraseOverallDelta", reworded.overall() - baseline.overall());
             probes.put("paraphraseDimensionDeltas", dimensionDeltas(baseline, reworded));
         } catch (Exception e) {
