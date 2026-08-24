@@ -54,6 +54,30 @@ public class SessionStore extends BaseInfoProperties {
         this.objectMapper = objectMapper;
     }
 
+    /** True when the interview loop for this session is running in THIS process. */
+    public boolean isOwnedHere(String sessionId) {
+        return live.containsKey(sessionId);
+    }
+
+    /**
+     * Which node is running this interview, or null if nobody is.
+     *
+     * <p>Written when the session is saved and deleted with it, so it cannot outlive the thing it
+     * points at. An answer that arrives for a session with no owner is an answer for an interview
+     * that has already ended.
+     */
+    public String ownerOf(String sessionId) {
+        return redis.get(ownerKey(sessionId));
+    }
+
+    public void claimOwnership(String sessionId, String nodeId) {
+        redis.set(ownerKey(sessionId), nodeId, INTERVIEW_SESSION_TTL_SECONDS);
+    }
+
+    private String ownerKey(String sessionId) {
+        return "redis_interview_owner:" + sessionId;
+    }
+
     public void save(InterviewSession session) {
         live.put(session.getSessionId(), session);
         try {
@@ -90,6 +114,7 @@ public class SessionStore extends BaseInfoProperties {
 
     public void delete(String sessionId) {
         live.remove(sessionId);
+        redis.del(ownerKey(sessionId));
         redis.del(key(sessionId));
     }
 

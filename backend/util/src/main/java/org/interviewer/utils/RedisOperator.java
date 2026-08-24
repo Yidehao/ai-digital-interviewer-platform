@@ -31,6 +31,25 @@ public class RedisOperator {
 	 * @param key
 	 * @return
 	 */
+	/**
+	 * Fire a message at every subscriber of a channel.
+	 *
+	 * <p>Added for cross-node answer delivery. {@code EmitterRegistry} and the live-session map are
+	 * both node-local by necessity — an SSE connection is a TCP socket on one machine and cannot be
+	 * anywhere else — so a candidate's {@code POST /answer} landing on a different node than their
+	 * stream had no way to reach the interview. It reached Redis and stopped there, which is the
+	 * same failure that made answers invisible within a single node, one layer up.
+	 *
+	 * <p><b>At-most-once, deliberately.</b> Redis pub/sub drops messages with no live subscriber. If
+	 * the owning node dies between publish and receive, the answer is lost and the candidate's
+	 * answer-gate times out after five minutes, ending the interview cleanly. A durable queue would
+	 * avoid that and would mean an answer arriving after the interview ended, which is worse: it
+	 * would be appended to a transcript already graded.
+	 */
+	public void publish(String channel, String message) {
+		redisTemplate.convertAndSend(channel, message);
+	}
+
 	public boolean keyIsExist(String key) {
 		return redisTemplate.hasKey(key);
 	}

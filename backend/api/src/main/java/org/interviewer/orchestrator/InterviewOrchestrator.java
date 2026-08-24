@@ -20,6 +20,7 @@ import org.interviewer.entity.ollama.ChatMessage;
 import org.interviewer.service.CandidateService;
 import org.interviewer.service.JobService;
 import org.interviewer.utils.MdcKeys;
+import org.interviewer.utils.NodeIdentity;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -57,6 +58,8 @@ public class InterviewOrchestrator {
     private final JobService jobService;
     private final Clock clock;
     private final VerdictWriter verdicts;
+    private final NodeIdentity nodeIdentity;
+    private final AnswerRouter answerRouter;
 
     /**
      * Injected and submitted to explicitly, rather than using {@code @Async} on the method below.
@@ -81,6 +84,8 @@ public class InterviewOrchestrator {
                                  JobService jobService,
                                  Clock clock,
                                  VerdictWriter verdicts,
+                                 NodeIdentity nodeIdentity,
+                                 AnswerRouter answerRouter,
                                  @Qualifier("agentExecutor")
                                  java.util.concurrent.Executor agentExecutor) {
         this.agent = agent;
@@ -93,6 +98,8 @@ public class InterviewOrchestrator {
         this.jobService = jobService;
         this.clock = clock;
         this.verdicts = verdicts;
+        this.nodeIdentity = nodeIdentity;
+        this.answerRouter = answerRouter;
         this.agentExecutor = agentExecutor;
     }
 
@@ -130,6 +137,10 @@ public class InterviewOrchestrator {
         // re-evaluation, measured at ~20 s on a 1.5k-token prompt.
         session.setSystemPrompt(promptBuilder.build(job.getPrompt(), 5));
         store.save(session);
+
+        // Record which node is running this, so an answer arriving anywhere can be routed to the
+        // process that actually holds the live session.
+        store.claimOwnership(sessionId, nodeIdentity.id());
 
         SessionEmitter emitter = emitters.register(sessionId, STREAM_TIMEOUT_MS);
         emitter.send("session", java.util.Map.of("sessionId", sessionId));
@@ -191,16 +202,33 @@ public class InterviewOrchestrator {
      */
     public boolean submitAnswer(String sessionId, String turnId, String transcript,
                                 Double sttConfidence) {
-        InterviewSession session = store.find(sessionId).orElse(null);
-        if (session == null || session.isTerminal()) {
-            return false;
-        }
-        // A blank transcript is a failed speech-to-text, not an answer. Accepting it would put an
-        // empty ANSWER turn in the transcript and the candidate would be graded on nothing - and
-        // the grader has no way to tell "said nothing" from "the microphone failed". Rejecting
-        // lets the client re-record, which is the only recovery that helps the candidate.
+        // A blank transcript is refused wherever it arrives - no point forwarding it to another
+        // node to be refused there.
         if (transcript == null || transcript.isBlank()) {
             log.info("blank transcript for session {} turn {}, refused", sessionId, turnId);
+            return false;
+        }
+        // The interview loop is mutating a live object in ONE process. If that process is not this
+        // one, applying the answer here would repeat - across nodes - the bug that made answers
+        // invisible within a node: store.find() would deserialise a copy, the answer would be
+        // written to it, saved to Redis, and the running interview would never see it.
+        if (!store.isOwnedHere(sessionId)) {
+            return answerRouter.forward(sessionId, turnId, transcript, sttConfidence);
+        }
+        return applyAnswer(sessionId, turnId, transcript, sttConfidence);
+    }
+
+    /**
+     * Append an answer to a session this node is running.
+     *
+     * <p>Called directly for a local session, and by {@code AnswerRouter} when another node
+     * forwarded one. Both paths must be identical, which is why there is one method rather than
+     * two that drift.
+     */
+    public boolean applyAnswer(String sessionId, String turnId, String transcript,
+                               Double sttConfidence) {
+        InterviewSession session = store.find(sessionId).orElse(null);
+        if (session == null || session.isTerminal()) {
             return false;
         }
         // Idempotency: a retried POST for the same turn must not be counted twice.
