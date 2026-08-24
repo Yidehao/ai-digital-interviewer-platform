@@ -212,8 +212,13 @@ module.exports = {
       // reviewApi, not this.$http: the panel exposes window.<name>Api modules over one shared
       // axios instance, and every other page uses them. A page that reaches for a different HTTP
       // client renders perfectly and silently fetches nothing, which is exactly what it did.
+      // `res` is ALREADY the unwrapped envelope: request.js's response interceptor returns
+      // response.data, so res is {status, msg, success, data} and res.data is the payload.
+      // Checking res.data.status was reading .status off the payload array - undefined, never
+      // 200, rows never assigned, and no error anywhere. The interceptor also rejects and shows
+      // a dialog on any non-200, so there is nothing left here to check.
       reviewApi.queue(this.unreviewedOnly).then(function (res) {
-        if (res.data.status === 200) { self.rows = res.data.data || []; }
+        self.rows = res.data || [];
       });
     },
     open(row) {
@@ -223,10 +228,8 @@ module.exports = {
       this.verdict = {};
       this.stage = "read";
       reviewApi.transcript(row.sessionId).then(function (res) {
-        if (res.data.status === 200) {
-          self.transcript = res.data.data || [];
-          self.dialog = true;
-        }
+        self.transcript = res.data || [];
+        self.dialog = true;
       });
     },
     submit() {
@@ -234,16 +237,12 @@ module.exports = {
       var body = Object.assign({ sessionId: this.current.sessionId }, this.mine);
       // Recorded first. The verdict is only fetched afterwards, so it cannot influence what was
       // just submitted - which is the whole reason these are two calls.
-      reviewApi.decide(body).then(function (res) {
-        if (res.data.status !== 200) {
-          self.$message.error("Could not record the assessment");
-          return;
-        }
+      reviewApi.decide(body).then(function () {
+        // Only now is the model's assessment fetched. The reviewer's is already recorded, so
+        // seeing this cannot influence it - which is the entire reason these are two calls.
         reviewApi.verdict(self.current.sessionId).then(function (r2) {
-          if (r2.data.status === 200) {
-            self.verdict = r2.data.data || {};
-            self.stage = "compare";
-          }
+          self.verdict = r2.data || {};
+          self.stage = "compare";
         });
       });
     },
