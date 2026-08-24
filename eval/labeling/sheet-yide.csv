@@ -1,0 +1,13 @@
+candidate,labeler,overall_1_5,correctness,depth,communication,practical_experience,notes
+A,yide,3,4,2,4,2,"Execution-plan-first is the right opening move. Names invalidation but never resolves it. Reads as textbook rather than lived."
+B,yide,4,5,5,3,5,"Specific ORM/filesort root cause plus an explicit staleness-vs-miss tradeoff. Comm docked for filler that lowers signal-to-noise, not for length itself."
+C,yide,2,2,1,2,1,"Largely restates the question. Padding actively obscures; no mechanism, no tradeoff, no diagnostic path."
+D,yide,2,2,1,3,1,"Clear but empty. Naming Redis and indexes is not an answer. Comm not docked for terseness - it is unambiguous."
+E,yide,2,2,1,3,1,"Content identical to D and F. Scored identically; non-native grammar not penalized."
+F,yide,2,2,1,3,1,"Fluent and vacuous. 'Makes it faster' restates the goal rather than proposing an approach."
+G,yide,5,5,5,4,5,"Dense and precise. Comm docked one because Q2 opens on a past finding with no framing of the diagnostic path - a colleague would need one follow-up."
+H,yide,5,5,5,5,5,"Substance identical to J. Deliberately not docked on communication for non-native grammar: every technical detail transmits and actionability is the same."
+I,yide,3,4,2,3,2,"Same substance as A with more words. 'In my experience' is asserted but nothing specific backs it."
+J,yide,5,5,5,5,5,"Complete and well-sequenced: root cause, why the obvious index missed, and a measured outcome."
+K,yide,3,4,2,4,2,"Same substance as A and L. Non-native phrasing not penalized; content is fully legible."
+L,yide,3,4,2,4,2,"Terse and clear. Correct starting point, no depth past it."

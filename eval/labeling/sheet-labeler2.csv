@@ -1,0 +1,13 @@
+candidate,labeler,overall_1_5,correctness,depth,communication,practical_experience,notes
+A,labeler2,3,5,2,4,2,"Directly answers the question asked: plan first, then index. Correct procedure. Stops there - invalidation named, never resolved."
+B,labeler2,4,4,5,3,5,"Real root cause and a stated tradeoff. Corr 4 because Q2 recounts a solved case rather than giving a starting procedure. Comm 3 for filler."
+C,labeler2,2,2,1,2,1,"Restates the prompt. No mechanism, no tradeoff, no diagnostic path."
+D,labeler2,2,2,1,3,1,"Unambiguous and empty. Not docked for terseness; emptiness is captured in correctness and depth."
+E,labeler2,2,2,1,3,1,"Identical content to D and F. Scored identically. Grammar not penalized."
+F,labeler2,2,2,1,3,1,"Fluent, restates the goal instead of proposing an approach."
+G,labeler2,4,4,5,3,5,"Strong substance. Comm 3 under a responsiveness reading: Q2 gives a conclusion with no framing and no starting procedure."
+H,labeler2,5,4,5,5,5,"Substance identical to J; scored identically. Non-native grammar not docked - every technical detail transmits."
+I,labeler2,3,5,2,3,2,"Correct opening move, correct order. Padding and an unsupported experience claim; no depth past the surface."
+J,labeler2,5,4,5,5,5,"Best-sequenced of the set. Corr 4 only because Q2 answers 'what did you find' rather than 'where do you start'."
+K,labeler2,3,5,2,4,2,"Same substance as A and L. Non-native phrasing not penalized."
+L,labeler2,3,5,2,4,2,"Terse, correct, responsive. No depth beyond the first move."
