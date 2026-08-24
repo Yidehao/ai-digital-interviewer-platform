@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.interviewer.entity.InterviewVerdictPO;
 import org.interviewer.entity.Job;
 import org.interviewer.entity.agent.InterviewSession;
+import org.interviewer.entity.agent.TurnKind;
 import org.interviewer.entity.grading.GradingInput;
 import org.interviewer.entity.grading.GradingOutcome;
 import org.interviewer.entity.grading.Verdict;
@@ -75,10 +76,19 @@ public class VerdictWriter {
      * object to another thread after the orchestrator has removed it from the store.
      */
     public void gradeLater(InterviewSession session) {
-        if (session.getTurns().isEmpty()) {
-            // Nothing was asked or answered. Grading an empty transcript would produce a score for
-            // a candidate who never spoke, which is worse than no score.
-            log.info("session {} has no turns, not grading", session.getSessionId());
+        // The check is for ANSWERS, not for turns. `turns.isEmpty()` was the obvious guard and the
+        // wrong one: a session that asked a question and received nothing has one turn, passes an
+        // is-empty check, and gets graded - producing a score for a candidate who never spoke.
+        //
+        // Found by a real run. A credentials failure broke speech-to-text mid-interview, every
+        // answer was refused, the answer-gate timed out after five minutes, and the session closed
+        // with CANDIDATE_TIMEOUT holding exactly one QUESTION turn. That is a candidate whose
+        // microphone failed, and the only honest thing to say about them is nothing.
+        boolean answered = session.getTurns().stream()
+                .anyMatch(t -> t.getKind() == TurnKind.ANSWER);
+        if (!answered) {
+            log.info("session {} has no answers ({} turns, terminal reason {}), not grading",
+                    session.getSessionId(), session.getTurns().size(), session.getTerminalReason());
             return;
         }
         Job job = jobService.getDetail(session.getJobId());

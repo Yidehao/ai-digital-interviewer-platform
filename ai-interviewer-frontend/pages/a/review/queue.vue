@@ -209,7 +209,10 @@ module.exports = {
     },
     load() {
       var self = this;
-      this.$http.get("/review/queue?unreviewedOnly=" + this.unreviewedOnly).then(function (res) {
+      // reviewApi, not this.$http: the panel exposes window.<name>Api modules over one shared
+      // axios instance, and every other page uses them. A page that reaches for a different HTTP
+      // client renders perfectly and silently fetches nothing, which is exactly what it did.
+      reviewApi.queue(this.unreviewedOnly).then(function (res) {
         if (res.data.status === 200) { self.rows = res.data.data || []; }
       });
     },
@@ -219,7 +222,7 @@ module.exports = {
       this.mine = this.blank();
       this.verdict = {};
       this.stage = "read";
-      this.$http.get("/review/" + row.sessionId + "/transcript").then(function (res) {
+      reviewApi.transcript(row.sessionId).then(function (res) {
         if (res.data.status === 200) {
           self.transcript = res.data.data || [];
           self.dialog = true;
@@ -231,12 +234,12 @@ module.exports = {
       var body = Object.assign({ sessionId: this.current.sessionId }, this.mine);
       // Recorded first. The verdict is only fetched afterwards, so it cannot influence what was
       // just submitted - which is the whole reason these are two calls.
-      this.$http.post("/review/decide", body).then(function (res) {
+      reviewApi.decide(body).then(function (res) {
         if (res.data.status !== 200) {
           self.$message.error("Could not record the assessment");
           return;
         }
-        self.$http.get("/review/" + self.current.sessionId + "/verdict").then(function (r2) {
+        reviewApi.verdict(self.current.sessionId).then(function (r2) {
           if (r2.data.status === 200) {
             self.verdict = r2.data.data || {};
             self.stage = "compare";
