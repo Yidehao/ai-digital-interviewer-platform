@@ -93,6 +93,10 @@ def main():
         print("     derives this field from `overall` in code; the model is no longer asked for")
         print("     it, so an inconsistent row is unrepresentable. A run predating that change")
         print("     shows what asking got you: 1/12.")
+    elif ok2 == ok1 == len(run1):
+        print("  >> 12/12 in both, by construction. GraderAgent.recommendationFor derives this")
+        print("     field from `overall` in code, so an inconsistent row is unrepresentable.")
+        print("     A run predating that change shows what asking the model got you: 1/12.")
     elif ok2 == ok1:
         print("  >> no improvement. The model is ignoring the stated mapping, so the field needs")
         print("     to be derived in code from `overall` rather than asked for.")

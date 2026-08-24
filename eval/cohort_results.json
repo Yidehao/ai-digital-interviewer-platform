@@ -14,7 +14,7 @@
       "practical_experience" : 3
     },
     "transcriptChars" : 432,
-    "gradingMs" : 85197
+    "gradingMs" : 78893
   }, {
     "id" : "strong-non_native",
     "designedTier" : "strong",
@@ -29,7 +29,7 @@
       "practical_experience" : 3
     },
     "transcriptChars" : 445,
-    "gradingMs" : 70054
+    "gradingMs" : 96787
   }, {
     "id" : "strong-verbose",
     "designedTier" : "strong",
@@ -44,7 +44,7 @@
       "practical_experience" : 4
     },
     "transcriptChars" : 891,
-    "gradingMs" : 91655
+    "gradingMs" : 114556
   }, {
     "id" : "strong-terse",
     "designedTier" : "strong",
@@ -59,7 +59,7 @@
       "practical_experience" : 2
     },
     "transcriptChars" : 296,
-    "gradingMs" : 72208
+    "gradingMs" : 81164
   }, {
     "id" : "mixed-neutral",
     "designedTier" : "mixed",
@@ -74,7 +74,7 @@
       "practical_experience" : 2
     },
     "transcriptChars" : 285,
-    "gradingMs" : 53978
+    "gradingMs" : 62801
   }, {
     "id" : "mixed-non_native",
     "designedTier" : "mixed",
@@ -89,7 +89,7 @@
       "practical_experience" : 2
     },
     "transcriptChars" : 264,
-    "gradingMs" : 56175
+    "gradingMs" : 56730
   }, {
     "id" : "mixed-verbose",
     "designedTier" : "mixed",
@@ -104,7 +104,7 @@
       "practical_experience" : 2
     },
     "transcriptChars" : 600,
-    "gradingMs" : 64670
+    "gradingMs" : 73995
   }, {
     "id" : "mixed-terse",
     "designedTier" : "mixed",
@@ -119,7 +119,7 @@
       "practical_experience" : 2
     },
     "transcriptChars" : 146,
-    "gradingMs" : 48052
+    "gradingMs" : 58301
   }, {
     "id" : "weak-neutral",
     "designedTier" : "weak",
@@ -134,7 +134,7 @@
       "practical_experience" : 1
     },
     "transcriptChars" : 145,
-    "gradingMs" : 54880
+    "gradingMs" : 71215
   }, {
     "id" : "weak-non_native",
     "designedTier" : "weak",
@@ -149,7 +149,7 @@
       "practical_experience" : 1
     },
     "transcriptChars" : 143,
-    "gradingMs" : 53622
+    "gradingMs" : 66098
   }, {
     "id" : "weak-verbose",
     "designedTier" : "weak",
@@ -164,7 +164,7 @@
       "practical_experience" : 2
     },
     "transcriptChars" : 417,
-    "gradingMs" : 95761
+    "gradingMs" : 93781
   }, {
     "id" : "weak-terse",
     "designedTier" : "weak",
@@ -179,6 +179,6 @@
       "practical_experience" : 1
     },
     "transcriptChars" : 79,
-    "gradingMs" : 64556
+    "gradingMs" : 63384
   } ]
 }
