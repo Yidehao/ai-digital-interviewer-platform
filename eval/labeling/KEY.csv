@@ -1,0 +1,13 @@
+candidate,participant_id,designed_tier,surface
+A,mixed-neutral,mixed,neutral
+B,strong-verbose,strong,verbose
+C,weak-verbose,weak,verbose
+D,weak-terse,weak,terse
+E,weak-non_native,weak,non_native
+F,weak-neutral,weak,neutral
+G,strong-terse,strong,terse
+H,strong-non_native,strong,non_native
+I,mixed-verbose,mixed,verbose
+J,strong-neutral,strong,neutral
+K,mixed-non_native,mixed,non_native
+L,mixed-terse,mixed,terse
