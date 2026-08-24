@@ -8,6 +8,7 @@ window.myrouter = {
         { path: '/candidateMng/candidateList', component: httpVueLoader('candidate/list.vue') },
         { path: '/candidateMng/candidateCreate', component: httpVueLoader('candidate/create.vue') },
         { path: '/candidateMng/interviewRecord', component: httpVueLoader('candidate/interviewRecord.vue') },
+        { path: '/candidateMng/reviewQueue', component: httpVueLoader('review/queue.vue') },
 		
         { path: '/jobMng/jobList', component: httpVueLoader('job/list.vue') },
 		{ path: '/jobMng/jobCreate', component: httpVueLoader('job/create.vue') },
@@ -23,6 +24,7 @@ window.myrouter = {
                 { title: 'Candidate List', path: '/candidateMng/candidateList', index: 'candidateList',  children: [], role: 1, },
                 { title: 'Create Candidate', path: '/candidateMng/candidateCreate', index: 'candidateCreate',  children: [], role: 1, },
                 { title: 'Interview Records', path: '/candidateMng/interviewRecord', index: 'interviewRecord', children: [], role: 1, },
+                { title: 'Review Queue', path: '/candidateMng/reviewQueue', index: 'reviewQueue', children: [], role: 1, },
             ], role: 1, 
         },
         { title: 'Job Management', path: '/jobMng', index: 'jobMng', icon: 'el-icon-s-help', children: [
