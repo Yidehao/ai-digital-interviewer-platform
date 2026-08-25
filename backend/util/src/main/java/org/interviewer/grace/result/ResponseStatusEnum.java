@@ -92,6 +92,25 @@ public enum ResponseStatusEnum {
     FACE_VERIFY_TYPE_ERROR(600, false, "Face comparison verification type is incorrect!"),
     FACE_VERIFY_LOGIN_ERROR(601, false, "Face login failed!"),
 
+    // ----------------------------------------------------------------- speech-to-text
+    //
+    // A candidate mid-interview who is told "System busy, please try again later!" learns nothing
+    // they can act on, and the only recovery available to them - record it again - is the one thing
+    // that message does not suggest. These separate the cases by WHO CAN FIX IT:
+    //
+    //   the candidate    no speech detected, clip too short  -> tell them exactly what to do
+    //   the operator     credentials, quota, service down    -> tell them their answer is safe and
+    //                                                           to wait, and log the real reason
+    //   the client       unreadable audio format             -> a bug, and it should be loud
+    //
+    // Nothing here reveals which of those it is beyond what the candidate needs. "Google
+    // credentials are not configured" is an operator's problem and belongs in the log, not in
+    // front of someone being assessed.
+    SPEECH_NO_SPEECH_DETECTED(520, false, "We could not hear any speech in that recording. Please check your microphone and answer again."),
+    SPEECH_TOO_SHORT(521, false, "That recording was too short to transcribe. Please answer again."),
+    SPEECH_UNREADABLE_AUDIO(522, false, "That recording could not be read. Please answer again."),
+    SPEECH_SERVICE_UNAVAILABLE(523, false, "Speech recognition is temporarily unavailable. Your interview is safe - please wait a moment and answer again."),
+
     // System error, unexpected error 555
     SYSTEM_ERROR(555, false, "System busy, please try again later!"),
     SYSTEM_OPERATION_ERROR(556, false, "Operation failed, please try again or contact administrator"),

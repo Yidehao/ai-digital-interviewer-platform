@@ -37,8 +37,29 @@ public class GoogleSpeechController {
     @Resource
     private GoogleSpeechClientProvider speechClientProvider;
 
+    /** Below this, there is not enough audio to recognise anything. ~0.4 s at 16 kHz 16-bit mono. */
+    private static final int MIN_PCM_BYTES = 12_800;
+
+    /**
+     * Transcribe one recorded answer.
+     *
+     * <p><b>Every failure here is classified by who can fix it</b>, because this endpoint is the
+     * one a candidate hits repeatedly while being assessed and the previous behaviour was to answer
+     * every problem with {@code 555 System busy, please try again later!}. That message is useless
+     * to a candidate: it does not say whether to re-record, wait, or give up, and the one recovery
+     * available to them is the one it fails to suggest.
+     *
+     * <p>It also hid a real outage. A missing credentials file threw, the generic handler turned it
+     * into "System busy", and the interview looked healthy while every answer was silently refused
+     * — the candidate's answer-gate eventually timed out and closed the interview. That happened
+     * here, and it took reading the server log to find out why.
+     *
+     * <p>What the candidate is told never includes which of these it was beyond what they can act
+     * on. "Google credentials are not configured" is an operator's problem and belongs in the log,
+     * not in front of someone being interviewed.
+     */
     @PostMapping(value = "uploadVoice")
-    public GraceJSONResult uploadFile(@RequestParam("file") MultipartFile file) throws Exception {
+    public GraceJSONResult uploadFile(@RequestParam("file") MultipartFile file) {
         String filename = file.getOriginalFilename();
         if (StringUtils.isBlank(filename)) {
             return GraceJSONResult.errorCustom(ResponseStatusEnum.FILE_UPLOAD_NULL_ERROR);
@@ -47,14 +68,46 @@ public class GoogleSpeechController {
         log.info("[speech-upload] Received audio: filename={}, size={} bytes, contentType={}",
                 filename, file.getSize(), file.getContentType());
 
-        byte[] pcmBytes = convertToPcm(file.getBytes());
+        byte[] pcmBytes;
+        try {
+            pcmBytes = convertToPcm(file.getBytes());
+        } catch (Exception e) {
+            // The client sent something this server cannot decode. That is a client bug - the
+            // recorder is producing a format the pipeline never agreed to - so it is logged at
+            // error, while the candidate is simply told to answer again.
+            log.error("[speech-upload] could not decode {} ({}): {}",
+                    filename, file.getContentType(), e.toString());
+            return GraceJSONResult.errorCustom(ResponseStatusEnum.SPEECH_UNREADABLE_AUDIO);
+        }
+
+        if (pcmBytes.length < MIN_PCM_BYTES) {
+            log.info("[speech-upload] {} bytes of PCM is too short to recognise", pcmBytes.length);
+            return GraceJSONResult.errorCustom(ResponseStatusEnum.SPEECH_TOO_SHORT);
+        }
         log.info("[speech-upload] decoded to PCM: pcmLength={} bytes (~{} seconds @16kHz mono)",
                 pcmBytes.length, pcmBytes.length / 32000);
 
-        Recognition result = recognizePcm(pcmBytes);
+        Recognition result;
+        try {
+            result = recognizePcm(pcmBytes);
+        } catch (Exception e) {
+            // Credentials, quota, network, service outage. All of these are the operator's to fix
+            // and none of them are the candidate's fault, so the candidate is told their interview
+            // is safe and to wait - which is both true and actionable - and the real cause goes to
+            // the log where someone can act on it.
+            log.error("[speech-upload] speech recognition failed", e);
+            return GraceJSONResult.errorCustom(ResponseStatusEnum.SPEECH_SERVICE_UNAVAILABLE);
+        }
+
+        if (result.transcript() == null || result.transcript().isBlank()) {
+            // Recognition worked and heard nothing. This is the one case the candidate can
+            // genuinely fix, and the only one where telling them to check their microphone helps.
+            log.info("[speech-upload] recognised no speech in {} bytes of PCM", pcmBytes.length);
+            return GraceJSONResult.errorCustom(ResponseStatusEnum.SPEECH_NO_SPEECH_DETECTED);
+        }
+
         log.info("[speech-upload] Recognition result: \"{}\" (confidence={})",
                 result.transcript(), result.confidence());
-
         return GraceJSONResult.ok(result);
     }
 

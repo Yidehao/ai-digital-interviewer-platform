@@ -258,10 +258,13 @@ export default {
           var confidence = body && body.status === 200 && body.data ? body.data.confidence : null;
 
           if (!transcript) {
-            // The server refuses a blank transcript, because an empty ANSWER turn would be graded
-            // as if the candidate had said nothing. Re-recording is the only recovery that helps.
-            uni.showToast({ title: "Could not hear that — please answer again", icon: "none",
-                            duration: 3000 });
+            // The server classifies speech failures by who can fix them and returns a message the
+            // candidate can act on - re-record, or wait because the service is down and their
+            // interview is safe. Showing body.msg beats any string this client could invent,
+            // because only the server knows which of those happened.
+            var reason = (body && body.msg)
+                || "Could not hear that — please answer again";
+            uni.showToast({ title: reason, icon: "none", duration: 4000 });
             self.phase = "ready";
             return;
           }

@@ -49,6 +49,8 @@
   .muted { color: #888; }
   .err { color: #c0392b; }
   .ok { color: #1e7d43; }
+  /* Candidate-fixable failures: visible, but not the red that means the server is broken. */
+  .warn { color: #b9770e; }
 </style>
 </head>
 <body>
@@ -246,8 +248,16 @@ async function stopRecording() {
       $("recStatus").textContent = `transcribed (confidence ${conf}) — check it before submitting`;
       log(`transcript: ${body.data.transcript.substr(0, 80)}… (confidence ${conf})`, "ok");
     } else {
-      $("recStatus").textContent = "no transcript returned";
-      log(`STT returned nothing: ${JSON.stringify(body)}`, "err");
+      // The server now says WHICH failure this was and what the candidate should do about it.
+      // Showing body.msg rather than a generic string is the whole point: "System busy" told a
+      // candidate nothing, and the one recovery available to them - record it again - was the one
+      // thing it failed to suggest.
+      const msg = (body && body.msg) || "no transcript returned";
+      $("recStatus").textContent = msg;
+      // 523 is the operator's problem, not the candidate's, and is worth making loud here because
+      // it means every answer will fail until someone fixes the server.
+      log(`STT failed (${body && body.status}): ${msg}`,
+          body && body.status === 523 ? "err" : "warn");
     }
   } catch (err) {
     $("recStatus").textContent = "upload failed";
