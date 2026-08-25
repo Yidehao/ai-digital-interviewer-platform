@@ -1,0 +1,11 @@
+# Evaluation profile. Activate with: --spring.profiles.active=dev,eval
+#
+# Exists so that the one setting the eval harness needs relaxed is relaxed BY NAME, in a file
+# someone has to opt into, rather than defaulting to insecure everywhere and being tightened later.
+
+interviewer:
+  auth:
+    # The harness drives interviews without going through the SMS login, so it has no candidate
+    # session token to present. This is the only profile where that is acceptable, and it must
+    # never be active anywhere a real candidate can reach.
+    candidate-session-required: false

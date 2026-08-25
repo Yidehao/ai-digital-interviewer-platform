@@ -58,3 +58,14 @@ google:
       project-id: ai-interviewer-504209
       language-code: en-US   # language, en-US、zh-CN
 
+
+interviewer:
+  auth:
+    # Shared secret for the review console. Blank refuses every request - failing closed is
+    # deliberate, because an unset secret is a misconfiguration and reading it as "no auth needed"
+    # is how transcripts end up public.
+    #   export REVIEW_ADMIN_TOKEN=$(openssl rand -hex 24)
+    admin-token: ${REVIEW_ADMIN_TOKEN:}
+    # Starting an interview requires the candidate's own login session. The eval profile turns this
+    # off, by name, because the harness drives interviews without an SMS login.
+    candidate-session-required: true
