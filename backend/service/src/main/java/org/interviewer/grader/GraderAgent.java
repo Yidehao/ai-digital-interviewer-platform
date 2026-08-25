@@ -192,9 +192,13 @@ public class GraderAgent {
                     median));
         }
 
+        // Recomputed from the MERGED dimension medians, not the median of the samples' overalls.
+        // Those are different numbers and only one of them is consistent with the verdict that
+        // actually gets stored: a reader who adds up the four dimensions on screen must arrive at
+        // the overall printed beside them.
         List<Integer> overalls = drawn.stream().map(Verdict::overall).sorted().toList();
-        int medianOverall = overalls.get(overalls.size() / 2);
         int overallSpread = overalls.get(overalls.size() - 1) - overalls.get(0);
+        int medianOverall = overallFrom(merged);
 
         Verdict median = new Verdict(representative.claims(), medianOverall,
                 recommendationFor(medianOverall), merged, representative.summary());
@@ -241,8 +245,10 @@ public class GraderAgent {
         try {
             Verdict parsed = objectMapper.readValue(body, Verdict.class);
             // Derived, never asked for. See recommendationFor.
-            return new Verdict(parsed.claims(), parsed.overall(),
-                    recommendationFor(parsed.overall()), parsed.dimensions(), parsed.summary());
+            // Both derived, neither asked for. See overallFrom and recommendationFor.
+            int overall = overallFrom(parsed.dimensions());
+            return new Verdict(parsed.claims(), overall, recommendationFor(overall),
+                    parsed.dimensions(), parsed.summary());
         } catch (Exception e) {
             // Constrained decoding should make this impossible. If it happens, the schema and the
             // record have drifted, or the model ignored `format` - both are our problem, and both
@@ -251,6 +257,37 @@ public class GraderAgent {
                     input.sessionId(), body, e);
             throw new IllegalStateException("grader produced an unusable verdict", e);
         }
+    }
+
+    /**
+     * {@code overall} as a function of the dimension scores the model already produced.
+     *
+     * <p>It used to be in the schema, and it sat <em>before</em> {@code dimensions} there. Since
+     * constrained decoding emits fields in schema order, that made the model commit to a headline
+     * number before it had scored a single dimension or written a word of evidence — the exact
+     * inversion of the evidence-then-reasoning-then-score discipline enforced inside each
+     * dimension. It then rationalised underneath the number it had already chosen.
+     *
+     * <p>The failure is not theoretical. On a real interview the model returned {@code overall=3}
+     * while scoring the four dimensions 4, 4, 4 and 3; a human reviewer, independently, gave the
+     * same four dimension scores and an overall of 4. They agreed about everything they had looked
+     * at and disagreed only about arithmetic the model should never have been asked to do.
+     *
+     * <p><b>Unweighted mean, rounded half-up.</b> Weighting correctness above communication is
+     * defensible and is a <em>policy</em> decision belonging to whoever owns the rubric, not a
+     * default that should be buried in a grader. An unweighted mean is the one aggregation nobody
+     * has to reverse-engineer, and any weighting can be introduced later as a visible change.
+     *
+     * <p>Empty dimensions cannot occur — the schema requires four — but the guard returns the
+     * mid-point rather than dividing by zero, because a grader that throws here would lose a
+     * transcript over an arithmetic edge case.
+     */
+    static int overallFrom(List<DimensionScore> dimensions) {
+        if (dimensions == null || dimensions.isEmpty()) {
+            return 3;
+        }
+        double mean = dimensions.stream().mapToInt(DimensionScore::score).average().orElse(3);
+        return Math.max(1, Math.min(5, (int) Math.round(mean)));
     }
 
     /**

@@ -5,16 +5,16 @@
     "designedTier" : "strong",
     "designedRank" : 3,
     "surface" : "neutral",
-    "overall" : 4,
-    "recommendation" : "yes",
+    "overall" : 3,
+    "recommendation" : "borderline",
     "dimensions" : {
       "correctness" : 4,
-      "depth" : 4,
-      "communication" : 4,
+      "depth" : 3,
+      "communication" : 3,
       "practical_experience" : 3
     },
     "transcriptChars" : 432,
-    "gradingMs" : 98658
+    "gradingMs" : 78893
   }, {
     "id" : "strong-non_native",
     "designedTier" : "strong",
@@ -23,13 +23,13 @@
     "overall" : 3,
     "recommendation" : "borderline",
     "dimensions" : {
-      "correctness" : 4,
+      "correctness" : 3,
       "depth" : 3,
-      "communication" : 2,
-      "practical_experience" : 2
+      "communication" : 3,
+      "practical_experience" : 3
     },
     "transcriptChars" : 445,
-    "gradingMs" : 72086
+    "gradingMs" : 96787
   }, {
     "id" : "strong-verbose",
     "designedTier" : "strong",
@@ -44,44 +44,44 @@
       "practical_experience" : 4
     },
     "transcriptChars" : 891,
-    "gradingMs" : 100251
+    "gradingMs" : 114556
   }, {
     "id" : "strong-terse",
     "designedTier" : "strong",
     "designedRank" : 3,
     "surface" : "terse",
-    "overall" : 3,
-    "recommendation" : "borderline",
+    "overall" : 4,
+    "recommendation" : "yes",
     "dimensions" : {
       "correctness" : 4,
       "depth" : 3,
-      "communication" : 3,
+      "communication" : 4,
       "practical_experience" : 2
     },
     "transcriptChars" : 296,
-    "gradingMs" : 70397
+    "gradingMs" : 81164
   }, {
     "id" : "mixed-neutral",
     "designedTier" : "mixed",
     "designedRank" : 2,
     "surface" : "neutral",
-    "overall" : 2,
-    "recommendation" : "no",
+    "overall" : 3,
+    "recommendation" : "borderline",
     "dimensions" : {
-      "correctness" : 2,
+      "correctness" : 3,
       "depth" : 2,
       "communication" : 3,
       "practical_experience" : 2
     },
     "transcriptChars" : 285,
-    "gradingMs" : 61211
+    "gradingMs" : 62801
   }, {
     "id" : "mixed-non_native",
     "designedTier" : "mixed",
     "designedRank" : 2,
     "surface" : "non_native",
-    "overall" : 2,
-    "recommendation" : "no",
+    "overall" : 3,
+    "recommendation" : "borderline",
     "dimensions" : {
       "correctness" : 2,
       "depth" : 2,
@@ -89,7 +89,7 @@
       "practical_experience" : 2
     },
     "transcriptChars" : 264,
-    "gradingMs" : 60664
+    "gradingMs" : 56730
   }, {
     "id" : "mixed-verbose",
     "designedTier" : "mixed",
@@ -98,28 +98,28 @@
     "overall" : 3,
     "recommendation" : "borderline",
     "dimensions" : {
-      "correctness" : 4,
+      "correctness" : 2,
       "depth" : 2,
-      "communication" : 3,
+      "communication" : 2,
       "practical_experience" : 2
     },
     "transcriptChars" : 600,
-    "gradingMs" : 78205
+    "gradingMs" : 73995
   }, {
     "id" : "mixed-terse",
     "designedTier" : "mixed",
     "designedRank" : 2,
     "surface" : "terse",
-    "overall" : 2,
-    "recommendation" : "no",
+    "overall" : 3,
+    "recommendation" : "borderline",
     "dimensions" : {
-      "correctness" : 2,
+      "correctness" : 3,
       "depth" : 2,
-      "communication" : 2,
-      "practical_experience" : 1
+      "communication" : 3,
+      "practical_experience" : 2
     },
     "transcriptChars" : 146,
-    "gradingMs" : 54471
+    "gradingMs" : 58301
   }, {
     "id" : "weak-neutral",
     "designedTier" : "weak",
@@ -131,10 +131,10 @@
       "correctness" : 2,
       "depth" : 2,
       "communication" : 2,
-      "practical_experience" : 2
+      "practical_experience" : 1
     },
     "transcriptChars" : 145,
-    "gradingMs" : 59208
+    "gradingMs" : 71215
   }, {
     "id" : "weak-non_native",
     "designedTier" : "weak",
@@ -149,22 +149,22 @@
       "practical_experience" : 1
     },
     "transcriptChars" : 143,
-    "gradingMs" : 60751
+    "gradingMs" : 66098
   }, {
     "id" : "weak-verbose",
     "designedTier" : "weak",
     "designedRank" : 1,
     "surface" : "verbose",
-    "overall" : 2,
-    "recommendation" : "no",
+    "overall" : 3,
+    "recommendation" : "borderline",
     "dimensions" : {
-      "correctness" : 2,
+      "correctness" : 3,
       "depth" : 2,
       "communication" : 3,
       "practical_experience" : 2
     },
     "transcriptChars" : 417,
-    "gradingMs" : 98343
+    "gradingMs" : 93781
   }, {
     "id" : "weak-terse",
     "designedTier" : "weak",
@@ -179,6 +179,6 @@
       "practical_experience" : 1
     },
     "transcriptChars" : 79,
-    "gradingMs" : 52994
+    "gradingMs" : 63384
   } ]
 }

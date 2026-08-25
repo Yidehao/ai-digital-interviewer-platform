@@ -149,6 +149,21 @@ def write_labeling_sheet(rows):
     ceiling, which is what makes every other agreement number interpretable.
     """
     path = HERE / "labeling_sheet.csv"
+
+    # NEVER overwrite labels that exist. This function opened the file "w" unconditionally, so
+    # every run of the cohort analysis silently destroyed the human labels - the single most
+    # expensive artefact in the project, two people's judgement on twelve transcripts, wiped by a
+    # read-only-sounding script called "analyse". It happened, and the labels survived only because
+    # eval/labeling/sheet-*.csv is the source of truth and --unblind can rebuild this file.
+    if path.exists():
+        with path.open() as existing:
+            filled = [line for line in existing.readlines()[1:] if line.split(",")[1:2] != [""]]
+        if filled:
+            print(f"\n{path.name} already holds {len(filled)} labeled rows - left untouched.")
+            print("  Delete it deliberately if you want a fresh blank sheet, or use")
+            print("  eval/make_labeling_packet.py, which writes a blinded packet instead.")
+            return
+
     with path.open("w", newline="") as handle:
         writer = csv.writer(handle)
         writer.writerow(["participant_id", "labeler", "overall_1_5", "correctness", "depth",

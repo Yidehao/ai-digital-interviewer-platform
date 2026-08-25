@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://interviewer.org/schema/verdict.json",
   "title": "verdict",
-  "description": "The grader's output, produced under constrained decoding. FIELD ORDER IS LOAD-BEARING: the model emits fields in schema order, so the order here is the order it is forced to think in. `claims` comes first so technical content is extracted BEFORE any score exists to rationalise towards - the correctness penalty measured against non-native phrasing is the reason, since a grader scoring correctness straight from a transcript is scoring the prose and the claims together. Within a dimension the same principle applies: evidence, then reasoning, then score. `recommendation` is deliberately absent: it is a pure function of `overall`, and asking the model for it produced strong_yes on candidates scored 2 of 5 in two runs. Constrained decoding guarantees shape, not coherence between fields - every enum value satisfies the schema. It is derived in code.",
+  "description": "The grader's output, produced under constrained decoding. FIELD ORDER IS LOAD-BEARING: the model emits fields in schema order, so the order here is the order it is forced to think in. `claims` comes first so technical content is extracted BEFORE any score exists to rationalise towards - the correctness penalty measured against non-native phrasing is the reason. Within a dimension the same principle applies: evidence, then reasoning, then score. TWO FIELDS ARE DELIBERATELY ABSENT. `recommendation` is a pure function of `overall`, and asking the model for it produced strong_yes on candidates scored 2 of 5 in two runs. `overall` was here and emitted BEFORE `dimensions`, which meant the model committed to a headline number before producing a single dimension score - the exact inversion of evidence-then-score - and then rationalised underneath it. On a real interview it returned overall 3 while scoring the four dimensions 4, 4, 4, 3, and a human reviewer independently gave the same four dimension scores and an overall of 4. Both fields are now computed from what the model actually produced. Constrained decoding guarantees shape, not coherence between fields.",
   "type": "object",
   "properties": {
     "claims": {
@@ -34,12 +34,6 @@
         ],
         "additionalProperties": false
       }
-    },
-    "overall": {
-      "type": "integer",
-      "minimum": 1,
-      "maximum": 5,
-      "description": "Overall rating from 1 (poor) to 5 (excellent)."
     },
     "dimensions": {
       "type": "array",
@@ -90,7 +84,6 @@
   },
   "required": [
     "claims",
-    "overall",
     "dimensions",
     "summary"
   ],
