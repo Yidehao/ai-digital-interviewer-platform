@@ -151,9 +151,29 @@ public class VllmClient implements OllamaClient {
             body.put("tool_choice", "required");
         }
         if (request.getFormat() != null) {
-            // vLLM's constrained decoding. The grader's verdict schema goes here, and if this is
-            // silently ignored the model can omit a dimension or score outside 1-5 - which is
-            // precisely what the schema exists to make unrepresentable.
+            // Constrained decoding. `response_format` with a json_schema is the OpenAI standard;
+            // vLLM also accepts `guided_json`, which is its own extension.
+            //
+            // The standard is used here because the extension is NOT portable, and testing found
+            // that the hard way: pointed at an OpenAI-compatible server that was not vLLM,
+            // `guided_json` was silently ignored and the model answered in prose. Nothing errors
+            // when that happens - the request succeeds, the schema simply does not bind - so the
+            // grader would have started returning unparseable verdicts on a backend swap, with no
+            // signal pointing at the cause.
+            //
+            // Both fields are sent. vLLM honours either, a plain OpenAI server honours the first,
+            // and a server that understands neither still fails loudly at parse time rather than
+            // quietly producing an unconstrained verdict.
+            ObjectNode schema = objectMapper.createObjectNode();
+            schema.put("name", "verdict");
+            schema.put("strict", true);
+            schema.set("schema", objectMapper.valueToTree(request.getFormat()));
+
+            ObjectNode responseFormat = objectMapper.createObjectNode();
+            responseFormat.put("type", "json_schema");
+            responseFormat.set("json_schema", schema);
+
+            body.set("response_format", responseFormat);
             body.set("guided_json", objectMapper.valueToTree(request.getFormat()));
         }
         return body;

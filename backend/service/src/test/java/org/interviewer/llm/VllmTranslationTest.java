@@ -102,9 +102,19 @@ class VllmTranslationTest {
                 .build();
 
         JsonNode body = toOpenAi(request);
+
+        // response_format is the OpenAI standard and the one that must be present. guided_json is
+        // vLLM's own extension: testing against an OpenAI-compatible server that was not vLLM
+        // showed it being SILENTLY IGNORED - the request succeeded, the schema did not bind, and
+        // the model answered in prose. Sending only the extension would mean the grader quietly
+        // stopped being constrained on a backend swap.
+        assertThat(body.has("response_format")).isTrue();
+        assertThat(body.path("response_format").path("type").asText()).isEqualTo("json_schema");
+        assertThat(body.path("response_format").path("json_schema").path("schema")
+                .path("properties").path("overall").path("maximum").asInt()).isEqualTo(5);
+
+        // Both are sent, so vLLM honours either and a plain OpenAI server honours the standard.
         assertThat(body.has("guided_json")).isTrue();
-        assertThat(body.path("guided_json").path("properties").path("overall").path("maximum")
-                .asInt()).isEqualTo(5);
     }
 
     @Test
