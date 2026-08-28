@@ -1,5 +1,10 @@
 # AI Digital Interviewer Platform
 
+**▶ [Try the review console](https://yidehao.github.io/ai-digital-interviewer-platform/demo/)** — a
+real interview, its real verdict, and the measurements that decided this tool should assist human
+review rather than screen candidates.
+
+
 A video-based AI interviewing system. Recruiters define jobs, digital interviewers (video avatars) and a
 question bank in a web admin panel; candidates log in on a mobile app with phone + verification code, watch
 the avatar ask each question, and **answer out loud**. Their speech is transcribed with Google Cloud
