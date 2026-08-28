@@ -60,6 +60,26 @@
   .big { font-size:15px; }
   ul { padding-left:20px; }
   li { margin-bottom:6px; }
+
+  /* Wide content scrolls inside its own box rather than making the page scroll sideways. */
+  .scroll-x { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+
+  /* Narrow phones. The scoring row is the tight one: a 170px label beside five 34px buttons
+     needs 364px, and an iPhone SE leaves 299px inside the panel. Stacking the label above the
+     buttons is the fix - shrinking the buttons would make them hard to hit, and a rating control
+     you have to aim at is worse than one that takes two lines. */
+  @media (max-width: 560px) {
+    .wrap { padding:0 14px 60px; }
+    header { padding:34px 0 22px; }
+    h1 { font-size:25px; }
+    .lede { font-size:17px; }
+    .links a { display:block; margin:0 0 8px; }
+    .rate { display:block; }
+    .rate span.lbl { display:block; width:auto; margin-bottom:6px; }
+    .rate button { width:calc(20% - 5px); max-width:52px; }
+    .panel { padding:14px; }
+    pre { font-size:12px; }
+  }
 </style>
 </head>
 <body>
@@ -117,7 +137,7 @@ would launder a known bias through a human signature.</p>
   </div>
 
   <div id="stage-compare" class="hidden">
-    <table id="cmp"></table>
+    <div class="scroll-x"><table id="cmp"></table></div>
     <h3>Claims the model extracted before scoring</h3>
     <div id="claims"></div>
     <h3>Evidence behind each score</h3>
@@ -134,12 +154,12 @@ would launder a known bias through a human signature.</p>
 facts are held <em>identical</em> within a tier and only the phrasing changes. Any score difference
 is therefore a response to phrasing alone. Two people then labeled the same transcripts, blinded.</p>
 
-<table>
+<div class="scroll-x"><table>
   <tr><th>Correctness penalty for non-native phrasing</th><th>mean</th><th>by tier</th></tr>
   <tr><td>Human labeler A</td><td>+0.00</td><td>0 / 0 / 0</td></tr>
   <tr><td>Human labeler B</td><td>+0.00</td><td>0 / 0 / 0</td></tr>
   <tr><td><strong>The model</strong></td><td><strong>−1.00</strong></td><td><strong>−1 / −1 / −1</strong></td></tr>
-</table>
+</table></div>
 
 <p>Neither human docked a point of <em>technical correctness</em> for non-native phrasing at any
 competence level. The model docked one at every level, reproduced across every run since it was
@@ -150,12 +170,12 @@ result that would have made it merely typical.</p>
 the strongest available lever — improved the scale and <strong>did not remove the penalty</strong>.</p>
 
 <h3>Agreement, read against a human ceiling</h3>
-<table>
+<div class="scroll-x"><table>
   <tr><th></th><th>QWK</th></tr>
   <tr><td>Two humans, with each other <span class="tag">the ceiling</span></td><td>0.97</td></tr>
   <tr><td>Model vs labeler A</td><td>0.64</td></tr>
   <tr><td>Model vs labeler B</td><td>0.59</td></tr>
-</table>
+</table></div>
 <p class="note">Without the ceiling these numbers are uninterpretable — 0.60 is excellent against a
 ceiling of 0.62 and poor against 0.97. Caveats I keep attached to this: 0.97 is implausibly high for
 independent raters and should be read as an upper bound, and the blinding failed by construction
