@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AI Digital Interviewer — demo &amp; findings</title>
+<title>AI Digital Interviewer: demo and findings</title>
 <meta name="description" content="A model-driven interview agent, and the measurements that decided it should not gate candidates.">
 <style>
   :root {
@@ -88,9 +88,9 @@
 <header>
   <div class="kicker">Personal project · Spring Boot · local LLM</div>
   <h1>AI Digital Interviewer</h1>
-  <p class="lede">A model-driven agent conducts a technical interview by calling typed tools, then a
-  separate grader assesses the transcript. I measured whether the grader is fair enough to screen
-  people. It isn't — so it doesn't.</p>
+  <p class="lede">A model-driven agent runs a technical interview by calling typed tools, then a separate grader
+  assesses the transcript. I measured whether the grader is fair enough to screen people. It is not,
+  so it does not.</p>
   <div class="links">
     <a href="https://github.com/Yidehao/ai-digital-interviewer-platform">Source on GitHub →</a>
     <a href="#demo">Try the review console ↓</a>
@@ -99,21 +99,21 @@
 </header>
 
 <h2>What it does</h2>
-<p>A candidate answers spoken questions. Speech is transcribed, and an agent decides what to ask
-next — it isn't a fixed question list. On each turn the model must call exactly one of six typed
+<p>A candidate answers spoken questions. The speech is transcribed, and an agent decides what to ask
+next, so it is not a fixed question list. On each turn the model must call exactly one of six typed
 tools (<code>fetch_question</code>, <code>ask_followup</code>, <code>score_response</code>,
 <code>record_evidence</code>, <code>run_code</code>, <code>finish_interview</code>), validated
 against JSON Schema in both directions. When the model does something unusable, a nine-rung
 fallback ladder handles it deterministically; the last rung degrades to the original fixed pipeline
 so a candidate always finishes.</p>
 
-<p>Grading is a separate model call over a <strong>structurally isolated input</strong> — the
+<p>Grading is a separate model call over a <strong>structurally isolated input</strong>. The
 grader's type cannot carry the interviewer's reasoning, enforced by a test that fails the build if
 it ever could.</p>
 
 <h2 id="demo">Try it: the review console</h2>
-<p>This is the screen a recruiter uses, running on a <strong>real interview I took myself</strong> —
-real speech, real transcription errors, the real stored verdict.</p>
+<p>This is the screen a recruiter uses, running on a <strong>real interview I took myself</strong>:
+real speech, real transcription errors, and the verdict that was actually stored.</p>
 
 <p class="note">It makes you read the transcript and commit your own scores <em>before</em> it shows
 you the model's. That ordering is deliberate: a console that shows a verdict and offers "approve"
@@ -124,10 +124,10 @@ would launder a known bias through a human signature.</p>
   <div class="steps" id="steps"></div>
   <div id="stage-read">
     <div id="transcript"></div>
-    <p class="note">Notice the transcription errors — “paint on current behavior”, “a narrow seen”.
+    <p class="note">Notice the transcription errors: “paint on current behavior”, “a narrow seen”.
     Measured word error rate is 0.132 and the errors land on exactly the technical vocabulary being
     graded. That is why the candidate can edit the transcript before submitting.</p>
-    <button onclick="toScore()">I've read it — score it</button>
+    <button onclick="toScore()">I have read it, score it</button>
   </div>
 
   <div id="stage-score" class="hidden">
@@ -163,11 +163,11 @@ is therefore a response to phrasing alone. Two people then labeled the same tran
 
 <p>Neither human docked a point of <em>technical correctness</em> for non-native phrasing at any
 competence level. The model docked one at every level, reproduced across every run since it was
-found. That is a defect humans don't have — not a shared bias the model inherited, which is the
-result that would have made it merely typical.</p>
+found. That is a defect the humans do not have, rather than a bias the model picked up from them, which
+is the result that would have made it unremarkable.</p>
 
-<p>I tried to fix it. Extracting the candidate's technical claims <em>before</em> any score exists —
-the strongest available lever — improved the scale and <strong>did not remove the penalty</strong>.</p>
+<p>I tried to fix it. Extracting the candidate's technical claims <em>before</em> any score exists,
+the strongest lever I had, improved the scale and <strong>did not remove the penalty</strong>.</p>
 
 <h3>Agreement, read against a human ceiling</h3>
 <div class="scroll-x"><table>
@@ -176,8 +176,8 @@ the strongest available lever — improved the scale and <strong>did not remove 
   <tr><td>Model vs labeler A</td><td>0.64</td></tr>
   <tr><td>Model vs labeler B</td><td>0.59</td></tr>
 </table></div>
-<p class="note">Without the ceiling these numbers are uninterpretable — 0.60 is excellent against a
-ceiling of 0.62 and poor against 0.97. Caveats I keep attached to this: 0.97 is implausibly high for
+<p class="note">Without the ceiling these numbers cannot be read at all: 0.60 is excellent against a ceiling of
+0.62 and poor against 0.97. Caveats I keep attached to this: 0.97 is implausibly high for
 independent raters and should be read as an upper bound, and the blinding failed by construction
 because attentive labelers spotted the identical-content triplets.</p>
 
@@ -185,14 +185,14 @@ because attentive labelers spotted the identical-content triplets.</p>
 <ul>
   <li><strong>The loop never waited for the candidate.</strong> A real session produced 8 questions,
   6 follow-ups and <em>zero answers</em> in nine seconds. Two causes: no turn-taking, and answers
-  were being appended to a deserialised copy of the session the interview never saw. 93 tests were
-  passing throughout — none asserted on the shape of the resulting transcript.</li>
-  <li><strong><code>overall</code> contradicted its own dimensions.</strong> Found in the demo below:
-  the model scored 4/4/4/3 and returned an overall of 3. A human reviewer independently gave the
+  were being appended to a deserialised copy of the session the interview never saw. 93 tests were passing
+  throughout, and none of them asserted on the shape of the resulting transcript.</li>
+  <li><strong><code>overall</code> contradicted its own dimensions.</strong> Visible in the demo above: the model scored
+  4/4/4/3 and returned an overall of 3. A human reviewer independently gave the
   same four dimension scores and a 4. It's now computed in code, not asked for.</li>
-  <li><strong>“48 concurrent sessions” was the configuration reading itself back.</strong> Sweeping
-  three pool sizes, the ceiling was always exactly the admission bound — 512 concurrent per node,
-  with CPU at 5–20%.</li>
+  <li><strong>“48 concurrent sessions” was the configuration reading itself back.</strong> Sweeping three pool
+  sizes, the ceiling was always exactly the admission bound: 512 concurrent per node, with CPU
+  between 5 and 20%.</li>
 </ul>
 
 <h2>Stack</h2>
@@ -246,7 +246,7 @@ function renderTranscript() {
     .map(t => {
       const answer = t.k === "ANSWER";
       const flag = answer && t.c != null && t.c < 0.85
-        ? ' <span class="tag warn">transcription uncertain — judge the content, not the wording</span>'
+        ? ' <span class="tag warn">transcription uncertain: judge the content, not the wording</span>'
         : "";
       return `<div class="turn ${answer ? "a" : "q"}">
         <div class="who">${answer ? "Candidate" : "Interviewer"}${flag}</div>
@@ -307,7 +307,7 @@ function toCompare() {
      median taken · verdict stored with the evidence above.
      <br><br><strong>Look at the overall row.</strong> The model scored the four dimensions
      ${esc(dimScores)} and returned an overall of ${SESSION.overall}. When I reviewed this session
-     myself I gave the same four dimension scores and an overall of 4 — we agreed on everything we
+     myself I gave the same four dimension scores and an overall of 4. We agreed on everything we
      had actually looked at, and disagreed only about arithmetic. The cause was in the schema:
      <code>overall</code> was emitted <em>before</em> the dimensions, so the model committed to a
      headline number before scoring anything, then rationalised underneath it. It is now computed

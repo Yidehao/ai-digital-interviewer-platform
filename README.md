@@ -1,24 +1,123 @@
-# AI Digital Interviewer Platform
+<div align="center">
 
-**▶ [Try the review console](https://yidehao.github.io/ai-digital-interviewer-platform/demo/)** — a
-real interview, its real verdict, and the measurements that decided this tool should assist human
-review rather than screen candidates.
+# AI Digital Interviewer
 
+**A model-driven agent that runs technical interviews, and the measurements that made me decide it
+should support a human reviewer instead of screening people.**
 
-A video-based AI interviewing system. Recruiters define jobs, digital interviewers (video avatars) and a
-question bank in a web admin panel; candidates log in on a mobile app with phone + verification code, watch
-the avatar ask each question, and **answer out loud**. Their speech is transcribed with Google Cloud
-Speech-to-Text and assessed by a local **Ollama** model.
+[![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)](https://openjdk.org/projects/jdk/21/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.9-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![Model](https://img.shields.io/badge/Ollama-qwen2.5%3A7b-000000?logo=ollama&logoColor=white)](https://ollama.com)
+[![MCP](https://img.shields.io/badge/MCP-stdio%20%2B%20SSE-8A2BE2)](https://modelcontextprotocol.io)
+[![Tests](https://img.shields.io/badge/tests-123%20passing-1e7d43)](#testing)
 
-**There are two interview paths, and a job chooses between them with one column.**
+### [Try the review console](https://yidehao.github.io/ai-digital-interviewer-platform/demo/)
 
-| `job.interview_mode` | What happens |
+*A real interview I took myself, its verdict, and the disagreement that changed the design.
+It opens in a browser, no setup.*
+
+</div>
+
+---
+
+## What it is
+
+A candidate answers spoken questions. The speech is transcribed, and an agent picks what to ask
+next, so it is not a fixed question list. On every turn the model has to call exactly one of six
+typed tools, and the arguments and results are both validated against JSON Schema. Grading is a
+separate model call over an input type that cannot carry the interviewer's reasoning.
+
+```
+     candidate speech                    the agent loop                     assessment
+  ┌────────────────────┐        ┌──────────────────────────────┐      ┌──────────────────┐
+  │  16 kHz mono WAV   │──STT──▶│  fetch_question   ask_followup│      │ claims extracted │
+  │  browser / uni-app │        │  score_response   run_code    │─────▶│ 4 dimensions 1–5 │
+  └────────────────────┘        │  record_evidence  finish      │      │ evidence per one │
+           ▲                    └──────────────┬───────────────┘      └────────┬─────────┘
+           │                                   │                                │
+      next question ◀──────── SSE / polling ───┘                    human review console
+                                                                    (scores before reveal)
+```
+
+When the model returns something unusable there is a nine-rung fallback ladder that handles it
+deterministically. The last rung falls back to the original fixed pipeline, so a candidate always
+finishes an interview even if the model is down.
+
+---
+
+## What I actually learned building it
+
+Most of the work was measurement rather than plumbing, and the results are the interesting part.
+
+| | |
 |---|---|
-| `scripted` *(default)* | The original fixed pipeline: three random questions, fixed order, one LLM call at the end that writes an HTML evaluation |
-| `agent` | A model-driven loop that decides what to ask next by calling typed tools, asks follow-ups based on what the candidate actually said, and produces a structured verdict with per-dimension evidence |
+| **The grader is worse than the humans it would replace** | Two people labeling the same twelve transcripts agreed with each other at QWK 0.97. The model agreed with them at 0.59–0.64. That gap is why this is a screening aid and not a filter |
+| **It penalises non-native phrasing** | One point of technical correctness, at every competence tier, reproduced in every run. Neither human labeler docked anything. So it is a defect the humans do not have, not a bias it picked up from them |
+| **Claims come before scores** | The grader lists every checkable technical claim before any score exists, because a constrained decoder emits fields in schema order and that order is the order it reasons in |
+| **Temperature 0 is not deterministic** | Three of twelve candidates scored differently across identical runs. Grading now samples three times, takes the median, and sends any disagreement to a human |
+| **It cannot decide on its own** | `advisory` is always true and nothing sets it false. Anyone wanting to auto-reject has to edit a test that explains why they should not |
+| **Model choice was a benchmark, not a preference** | The 3B model obeyed a prompt injection telling it to finish with a perfect score. The 7B did not, and picked the right tool 73% of the time against 40% |
 
-The agent path is additive. `pages/interviewer.vue` still serves every `scripted` job unchanged, so switching
-a job over — and switching it back — is a single `UPDATE`, not a redeploy.
+---
+
+## Quick start
+
+You need MySQL on `6606`, Redis on `6380`, MinIO on `9010`, [Ollama](https://ollama.com), and a
+Google Cloud Speech-to-Text key.
+
+**1. Pull the model**
+```bash
+ollama pull qwen2.5:7b-instruct
+```
+
+**2. Create the database.** Flyway builds every table on first start.
+```bash
+mysql -h 127.0.0.1 -P 6606 -u root -p -e "CREATE DATABASE interviewer DEFAULT CHARSET utf8mb4;"
+```
+
+**3. Run it**
+```bash
+export GOOGLE_APPLICATION_CREDENTIALS=/absolute/path/to/key.json
+export REVIEW_ADMIN_TOKEN=$(openssl rand -hex 24)     # blank refuses every request, on purpose
+cd backend && mvn -pl api spring-boot:run -Dspring-boot.run.profiles=dev
+```
+
+**4. Move a job onto the agent.** One column, and the same statement rolls it back.
+```sql
+UPDATE job SET interview_mode = 'agent';   -- 'scripted' to undo
+```
+
+**5. Take an interview.** Serve `eval/harness/` and open `interview.html`, or run the uni-app
+client. Then review it in the admin panel under **Candidate Management → Review Queue**.
+
+---
+
+## How it works
+
+| Stage | What happens | Where |
+|---|---|---|
+| **1. Ask** | The model calls `fetch_question` or `ask_followup`. Arguments are schema-validated, and `additionalProperties:false` catches invented fields | `InterviewerAgent` |
+| **2. Wait** | The loop blocks for an answer and gives up after 5 minutes. Without it the loop asked 14 questions to nobody in 9 seconds, which is how I found it | `CandidateGate` |
+| **3. Transcribe** | 16 kHz mono WAV to Google STT, returning `{transcript, confidence}`. Turns under 0.85 are flagged to the grader as "judge the content, not the wording" | `GoogleSpeechController` |
+| **4. Recover** | Nine rungs: prose instead of a tool call, invalid arguments (one repair fixes 84%), unknown tool, timeout, our own schema violated, repeated call, error budget, turn budget, model unreachable | `FallbackPlanner` |
+| **5. Grade** | A separate call over `GradingInput`, which cannot hold agent state. A reflection test walks its field types and fails the build if it ever could | `GraderAgent` |
+| **6. Review** | A person reads the transcript and commits their own scores before the model's are shown | `ReviewController` |
+
+---
+
+## Numbers, and what they are conditional on
+
+| Claim | Number | Conditions |
+|---|---|---|
+| Concurrent sessions per node | **512** | app tier, model stubbed, no answer waiting. My earlier "48" was the thread pool config reading itself back |
+| First token, cache-warm | **~0.4 s** | qwen2.5:7b Q4_K_M, M1 16 GB, ~1.5k prompt. About 7 s on the cold first turn |
+| Prefix cache value | **76×** | 6.89 s to 0.09 s on an identical prompt. `prompt_eval_count` does not show this, only the duration does |
+| Tool-argument validity | **100%** | on the current schemas. One repair turn recovers 84% on a deliberately worse version |
+| Word error rate | **0.132** | synthesised speech, so a floor rather than a production number |
+| Human ceiling | **QWK 0.97** | two labelers, blinded. Implausibly high for independent raters, so treat it as an upper bound |
+
+<sub>All of these are reproducible from `eval/`. The claims this project cannot support are listed
+under Known limitations, including a few that were on my résumé before I measured them.</sub>
 
 ---
 
@@ -43,7 +142,9 @@ There is no root-level build; each of the three parts is started independently.
 
 ---
 
-## Architecture
+## Architecture, deployment topology
+
+*The agent loop is diagrammed above; this is where the processes live.*
 
 ```
  ┌──────────────────────────┐          ┌──────────────────────────┐
@@ -63,40 +164,40 @@ There is no root-level build; each of the three parts is started independently.
                   (:6606)   (:6380)  (:9010)          (:11434)     (cloud)
 ```
 
-- **MySQL** — all persistent data
-- **Redis** — verification codes (10 min TTL) and candidate session tokens (3 h TTL)
-- **MinIO** — uploaded avatar images and interview videos
-- **Ollama** — local LLM: drives the agent loop and writes the evaluation (`qwen2.5:7b-instruct`, selected by benchmark — a 3B model matched on tool-call emission but chose the right tool 40% of the time against 73%, and complied with a prompt injection)
-- **Google Cloud Speech-to-Text** — transcribes the candidate's recorded answers
+- **MySQL**, all persistent data
+- **Redis**, verification codes (10 min TTL) and candidate session tokens (3 h TTL)
+- **MinIO**, uploaded avatar images and interview videos
+- **Ollama**, local LLM: drives the agent loop and writes the evaluation (`qwen2.5:7b-instruct`, selected by benchmark, a 3B model matched on tool-call emission but chose the right tool 40% of the time against 73%, and complied with a prompt injection)
+- **Google Cloud Speech-to-Text**, transcribes the candidate's recorded answers
 
 ---
 
 ## Interview flow (scripted path)
 
-1. **Login** — `POST /welcome/getSMSCode` generates a 6-digit code and stores it in Redis for 10 minutes.
+1. **Login**, `POST /welcome/getSMSCode` generates a 6-digit code and stores it in Redis for 10 minutes.
    There is no SMS provider wired up in this version: the code is **printed to the backend console**.
    `POST /welcome/verify` checks the code, requires the phone number to match a candidate created by the
    recruiter, rejects anyone who already has an interview record (one interview per candidate), and issues
    a 3-hour UUID session token.
-2. **Question prep** — `GET /questionLib/prepareQuestion?candidateId=` validates the Redis session, resolves
+2. **Question prep**, `GET /questionLib/prepareQuestion?candidateId=` validates the Redis session, resolves
    candidate → job → digital interviewer, and returns **3 random questions** (question text, reference
    answer, avatar video `aiSrc`).
-3. **Interview** — the app plays each question's avatar video with the question overlaid, and records the
+3. **Interview**, the app plays each question's avatar video with the question overlaid, and records the
    candidate's spoken answer with `uni.getRecorderManager()`.
-4. **Transcription** — `POST /speech/uploadVoice` converts the upload to 16 kHz / 16-bit PCM and calls
+4. **Transcription**, `POST /speech/uploadVoice` converts the upload to 16 kHz / 16-bit PCM and calls
    Google STT, returning the transcript **and the recogniser's confidence**. Both paths share this step.
-5. **Evaluation** — `POST /interviewRecord/collect` hands the answer set to `OllamaTask.display()`, which
+5. **Evaluation**, `POST /interviewRecord/collect` hands the answer set to `OllamaTask.display()`, which
    builds the prompt as `job.prompt` + an instruction block that distinguishes the reference answer from
    what the candidate actually said, streams `POST {ollama}/api/generate`, and saves an `interview_record`
    with the transcript, the LLM's verdict, and the total elapsed time.
-6. **Review** — the recruiter reads the result in the admin panel under Candidate → Interview Record.
+6. **Review**, the recruiter reads the result in the admin panel under Candidate → Interview Record.
 
 ---
 
 ## The agent interview path
 
 The scripted flow above asks three questions in a fixed order and grades once at the end. The agent path
-replaces the *orchestration*, not the infrastructure — same STT, same question bank, same avatar clips.
+replaces the *orchestration*, not the infrastructure, same STT, same question bank, same avatar clips.
 
 ### The loop
 
@@ -112,7 +213,7 @@ It never writes the interview as prose:
 | `run_code` | Execute a candidate's code in a Docker sandbox (`--network=none`, read-only, non-root, pid-capped) |
 | `finish_interview` | End it. Termination is an explicit action, not a loop condition |
 
-Arguments and results are validated against **JSON Schema in both directions** — the same twelve schema
+Arguments and results are validated against **JSON Schema in both directions**, the same twelve schema
 files are read by the loop, sent to Ollama as its tool definitions, and published over MCP, so the three
 cannot disagree. `additionalProperties: false` is load-bearing: it catches the model inventing fields.
 
@@ -125,15 +226,15 @@ scripted pipeline**, so a candidate always finishes an interview.
 ### Turn-taking
 
 After asking, the loop waits for the answer (`CandidateGate`) and gives up after five minutes with a
-`CANDIDATE_TIMEOUT`. This is not incidental — without it the loop asks its next question the instant a tool
+`CANDIDATE_TIMEOUT`. This is not incidental, without it the loop asks its next question the instant a tool
 returns, and an interview becomes fourteen questions asked to nobody.
 
 ### Reaching it from a client
 
 | Transport | For |
 |---|---|
-| **SSE** — `GET /interview/{candidateId}/stream` | Browsers. Named events: `session`, `question`, `done`, `error` |
-| **Polling** — `POST /interview/{candidateId}/start` then `GET /interview/{sessionId}/poll?afterSeq=N` | app-plus and mp-weixin, which have no `EventSource` |
+| **SSE**, `GET /interview/{candidateId}/stream` | Browsers. Named events: `session`, `question`, `done`, `error` |
+| **Polling**, `POST /interview/{candidateId}/start` then `GET /interview/{sessionId}/poll?afterSeq=N` | app-plus and mp-weixin, which have no `EventSource` |
 
 Both read the same session state; the pending question is *computed* from the transcript rather than
 replayed from an event queue, so the two transports cannot drift apart.
@@ -141,13 +242,13 @@ replayed from an event queue, so the two transports cannot drift apart.
 ### Grading
 
 The grader is a separate model call over a **structurally isolated input**. `GradingInput` holds the
-transcript, the rubric, the role, the duration and the reference answers — and it *cannot* hold agent state,
+transcript, the rubric, the role, the duration and the reference answers, and it *cannot* hold agent state,
 because the type has nowhere to put it. A reflection test walks its transitive field types and fails the
 build if anything from the agent packages appears. Follow-ups are flattened to plain questions on the way
 in: a grader that can see where the interviewer chose to probe is reading the interviewer's opinion of the
 candidate.
 
-The verdict is produced by constrained decoding — four dimensions, 1–5, each with its evidence — and stored
+The verdict is produced by constrained decoding, four dimensions, 1–5, each with its evidence, and stored
 structurally in `interview_verdict` rather than as an HTML blob, so scores can be aggregated and compared.
 `recommendation` is derived in code from `overall`, because the model agreed with its own score on 1 of 12
 verdicts when asked for it directly.
@@ -156,7 +257,7 @@ verdicts when asked for it directly.
 
 The same six tools are published over the Model Context Protocol on both stdio and SSE transports, from the
 same schema files, so an external client (Claude Desktop, MCP Inspector) can drive them. This is a second
-facade for inspection — live interviews dispatch in-process.
+facade for inspection, live interviews dispatch in-process.
 
 ---
 
@@ -164,11 +265,11 @@ facade for inspection — live interviews dispatch in-process.
 
 | Table | Key fields |
 |---|---|
-| `interviewer` | `id`, `ai_name`, `image` — a digital interviewer (avatar) |
+| `interviewer` | `id`, `ai_name`, `image`, a digital interviewer (avatar) |
 | `job` | `id`, `job_name`, `job_desc`, `status` (1 on / 2 off), `interviewer_id`, `prompt` (LLM prompt prefix used to grade this job) |
 | `candidate` | `id`, `real_name`, `identity_num`, `mobile`, `sex`, `face`, `email`, `birthday`, `country`/`state`/`city`/`county`/`address`, `job_id`, `remark` |
 | `question_lib` | `id`, `question`, `reference_answer`, `ai_src` (avatar video URL), `interviewer_id`, `is_on` (1/0) |
-| `interview_record` | `id`, `candidate_id`, `job_name` (snapshot), `answer_content` (full transcript), `take_time` (seconds), `result` (LLM evaluation) — **scripted path only** |
+| `interview_record` | `id`, `candidate_id`, `job_name` (snapshot), `answer_content` (full transcript), `take_time` (seconds), `result` (LLM evaluation), **scripted path only** |
 
 Added by the agent path (Flyway `V2`–`V5`):
 
@@ -180,7 +281,7 @@ Added by the agent path (Flyway `V2`–`V5`):
 | `interview_verdict` | `session_id` (PK), `overall`, `recommendation`, `summary`, `dimensions_json` (four scores with evidence), `graded_ms` |
 
 `tool_invocation` is the table the "adaptive" claim gets checked against: run two candidates who answer
-differently and diff their rows. Argument storage is selective — the two tools whose arguments quote the
+differently and diff their rows. Argument storage is selective, the two tools whose arguments quote the
 candidate (`ask_followup.question`, `record_evidence.quote`) store only a hash.
 
 `job` also gains `interview_mode` (`scripted` / `agent`) and `grader_prompt` (the rubric the agent grader
@@ -192,7 +293,7 @@ Relationships: `interviewer` 1—N `job`, `interviewer` 1—N `question_lib`, `j
 > **Flyway now owns the schema.** `backend/api/src/main/resources/db/migration/` holds `V1__baseline.sql`
 > through `V5__interview_verdict.sql`, and migrations run on startup. An existing database is baselined at
 > version 1 and only `V2` onwards apply; a fresh empty schema gets the full set. Create the empty database
-> and start the app — nothing needs creating by hand.
+> and start the app, nothing needs creating by hand.
 
 ---
 
@@ -214,7 +315,7 @@ All responses use the `GraceJSONResult` envelope: `{ "status": 200, "msg": "OK",
 
 | Method | Path | Purpose |
 |---|---|---|
-| GET | `/interview/{candidateId}/mode` | `{"mode": "agent"}` or `"scripted"` — which page the client should open |
+| GET | `/interview/{candidateId}/mode` | `{"mode": "agent"}` or `"scripted"`, which page the client should open |
 | GET | `/interview/{candidateId}/stream` | Open an SSE stream and start the interview |
 | POST | `/interview/{candidateId}/start` | Start without a stream, for clients with no `EventSource` |
 | GET | `/interview/{sessionId}/poll?afterSeq=N` | The pending question, or nothing yet |
@@ -245,7 +346,7 @@ All responses use the `GraceJSONResult` envelope: `{ "status": 200, "msg": "OK",
 | Redis | listening on **6380**, password `interviewer` |
 | MinIO | API on **9010**, bucket `interviewer` |
 | Ollama | running locally, with the configured model pulled (`qwen2.5:7b-instruct`) |
-| Docker | only for the agent path's `run_code` tool — the sandbox pulls its images at startup |
+| Docker | only for the agent path's `run_code` tool, the sandbox pulls its images at startup |
 | Google Cloud | a project with the Speech-to-Text API enabled and a service-account JSON key |
 | HBuilderX | to build/run the uni-app candidate client |
 | Static server | VS Code **Live Server** (or equivalent) for the admin panel, on port **5500** |
@@ -290,7 +391,7 @@ mvn -pl api spring-boot:run        # or run org.interviewer.Application from the
 
 ### 4. Admin panel
 
-Serve `ai-interviewer-frontend/` as static files and open `pages/a/admin.html` — in VS Code, right-click the
+Serve `ai-interviewer-frontend/` as static files and open `pages/a/admin.html`, in VS Code, right-click the
 file → *Open with Live Server*. It must be served on **`http://127.0.0.1:5500`**, because that is the single
 origin allowed by `CorsConfig` in the dev profile.
 
@@ -303,14 +404,14 @@ tags, and `.vue` files are fetched at runtime by `httpVueLoader`. The API base U
 Open `uni-interviewer/` in HBuilderX and run to a device, emulator, or H5.
 
 Set the backend address in `uni-interviewer/App.vue` (`globalData.serverUrl`) to your machine's **LAN IP**,
-not `localhost` — a phone or emulator cannot reach the host's loopback address. The same applies to
+not `localhost`, a phone or emulator cannot reach the host's loopback address. The same applies to
 `minio.fileHost` in `application-dev.yml`, since avatar videos and images are served straight from MinIO to
 the device.
 
 ### 6. First-run setup in the admin panel
 
 1. **AI Settings → digital interviewer**: create an interviewer, uploading an avatar image (the clips in
-   `Data/` are the source material — upload them so `aiSrc` resolves to a MinIO URL).
+   `Data/` are the source material, upload them so `aiSrc` resolves to a MinIO URL).
 2. **AI Settings → question library**: add questions, each with a reference answer, an avatar video, and the
    owning interviewer. Enable them.
 3. **Job management**: create a job, assign the interviewer, and write the `prompt` used to grade it.
@@ -333,7 +434,7 @@ and `application-prod.yml` (port 8099).
 | `ollama.base-url` / `ollama.model` | Ollama server and model name; the model must appear in `ollama list` |
 | `google.cloud.credentials.location` | Absolute path to the service-account JSON |
 | `google.cloud.speech.language-code` | Recognition language (`en-US`) |
-| `spring.servlet.multipart.max-file-size` | 10 MB — caps both recorded answers and uploaded videos |
+| `spring.servlet.multipart.max-file-size` | 10 MB, caps both recorded answers and uploaded videos |
 
 ---
 
@@ -366,13 +467,39 @@ and `application-prod.yml` (port 8099).
   built to compute one and deliberately refuses to print a kappa against synthetic labels rather than emit
   a misleading figure. `eval/labeling_sheet.csv` is where that starts.
 - **`overall` does not aggregate its own dimensions.** A live verdict came back `overall=3` with all four
-  dimensions at 2. Deriving it in code — as `recommendation` already is — would invalidate every existing
+  dimensions at 2. Deriving it in code, as `recommendation` already is, would invalidate every existing
   number computed on model-produced `overall`, so it belongs in a measured before/after.
 - **The concurrency figure is app-tier only.** 48 concurrent sessions per node with the model stubbed and no
   answer waiting. `EmitterRegistry` and the live-session map are both node-local, so any deployment needs
   sticky sessions and the number is strictly **per node**.
 - **The `sttConfidence` threshold (0.85) is a default, not a calibration.** ASR confidence and word error
   rate are different quantities and the mapping has not been established.
+
+---
+
+## Testing
+
+```bash
+cd backend && mvn test        # 123 tests, no infrastructure required
+```
+
+The loop runs headless with no HTTP and no GPU, which is what makes forty tests on the fallback
+ladder worth writing: `OllamaClient` is an interface so a fake model can misbehave on demand —
+write prose instead of calling a tool, emit invalid arguments twice, name a tool that does not
+exist, refuse to ever finish. None of those are reliably producible from a real model.
+
+Three tests exist because of specific incidents and are worth knowing about:
+
+| Test | Why it exists |
+|---|---|
+| `GradingInputIsolationTest` | Walks `GradingInput`'s transitive field types and fails the build if anything from the agent packages appears. The claim is not "we remember to filter agent state out", it is that the type has nowhere to put it |
+| `AgentWiringTest` | 62 tests once passed while the application would not boot, on a duplicate bean name. It caught a missing bean again when `CandidateGate` was added |
+| `ToolSchemaDriftTest` | Each tool's schema, its Java record and its example instance must agree. It found a third copy of a field I had removed from the other two |
+
+> **What tests could not catch.** Four times in this project every component was correct in
+> isolation and nothing joined them, answers written to a copy of the session the loop never read,
+> a console fetching from an HTTP client that did not exist. Each was found by running the thing,
+> not by testing the pieces.
 
 ---
 
@@ -383,13 +510,13 @@ and `application-prod.yml` (port 8099).
 | Script | What it answers |
 |---|---|
 | `analyse_cohort.py` | Does the grader rank by competence, and does *phrasing* move the score independently of it? 3 quality tiers x 4 surface profiles, facts held constant within a tier |
-| `compare_runs.py` | Which findings survive a second run — anything that moves between runs cannot be reported |
+| `compare_runs.py` | Which findings survive a second run, anything that moves between runs cannot be reported |
 | `asr_probe.py` | Word error rate through the real STT path |
 | `loadtest.py` | Concurrent sessions per node, app tier, model stubbed |
 | `harness/interview.html` | A browser client for running real sessions: streams, records 16 kHz WAV, transcribes, submits |
 
 The most useful thing it has found is not an accuracy number. It is that **the grader scores identical
-technical content differently depending on phrasing** — a designed-strong candidate using non-native
+technical content differently depending on phrasing**, a designed-strong candidate using non-native
 phrasing lost a point on all four dimensions while a weak one lost nothing, so the penalty scales with
 competence. Reproduced across two runs before being believed.
 
@@ -397,6 +524,6 @@ competence. Reproduced across two runs before being believed.
 
 ## Further reading
 
-- `ai-interviewer-frontend/README.md` — detailed walkthrough of the build-free admin SPA (routing, API
+- `ai-interviewer-frontend/README.md`, detailed walkthrough of the build-free admin SPA (routing, API
   wrappers, `httpVueLoader`).
-- `uni-interviewer/README.md` — page-by-page description of the candidate app and its utilities.
+- `uni-interviewer/README.md`, page-by-page description of the candidate app and its utilities.
